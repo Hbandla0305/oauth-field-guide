@@ -1,0 +1,274 @@
+{
+  "app": {
+    "name": "GitLab",
+    "slug": "gitlab",
+    "website": "https://gitlab.com",
+    "developerPortal": "https://gitlab.com/-/user_settings/applications",
+    "category": "Developer tools"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth 2.0 API guide", "url": "https://docs.gitlab.com/api/oauth2/" },
+    { "kind": "scopes", "label": "GitLab as an OAuth provider (scopes)", "url": "https://docs.gitlab.com/integration/oauth_provider/" },
+    { "kind": "console", "label": "User applications settings", "url": "https://gitlab.com/-/user_settings/applications" },
+    { "kind": "api", "label": "GitLab MCP server", "url": "https://docs.gitlab.com/user/model_context_protocol/mcp_server/" },
+    { "kind": "api", "label": "GitLab.com rate limits", "url": "https://docs.gitlab.com/user/gitlab_com/rate_limits/" }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Any GitLab user can register an OAuth application (user, group or instance level) and any GitLab.com user can authorize it the same day: there's no review, verification or marketplace. The work is in token handling (2-hour access tokens with rotating refresh tokens) and in self-managed instances, where each customer's GitLab needs its own application registration.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": { "min": 0.25, "max": 1 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["g1", "g2"],
+        "note": "Add an application with a redirect URI and scopes, then run authorization code + PKCE. No verification step is documented."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "A GitLab.com OAuth app requesting read_api or api to read and act on users' projects; self-managed customers add per-instance registration time.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["g2"],
+        "note": "The provider docs describe no approval or review requirement for applications."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A GitLab.com account (or Owner role on a group for a group-owned app)",
+      "why": "Applications are owned by a user, a group (Owner role needed) or, on self-managed, the instance (admin needed).",
+      "evidence": { "label": "sourced", "sourceIds": ["g2", "g3"], "note": null }
+    },
+    {
+      "item": "A redirect URI that exactly matches what your client sends",
+      "why": "GitLab compares the redirect URI exactly.",
+      "evidence": { "label": "sourced", "sourceIds": ["g3"], "note": "Stated in the MCP pre-registered app section." }
+    },
+    {
+      "item": "For self-managed or Dedicated customers: an application registered on their instance",
+      "why": "OAuth applications live on a specific GitLab instance, so a gitlab.com client ID doesn't work elsewhere.",
+      "evidence": { "label": "inferred", "sourceIds": ["g2"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity only",
+      "examples": ["openid", "profile", "email", "read_user"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Sign-in and basic profile. Not enough for reading projects.",
+      "evidence": { "label": "sourced", "sourceIds": ["g2"], "note": null }
+    },
+    {
+      "tier": "Read access to projects and code",
+      "examples": ["read_api", "read_repository"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read groups, projects, issues and merge requests via the API, and private repositories over Git HTTP or the Repository Files API. Good default for a read-only agent.",
+      "evidence": { "label": "sourced", "sourceIds": ["g2"], "note": null }
+    },
+    {
+      "tier": "Full read/write API",
+      "examples": ["api", "write_repository"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Create issues, comment, open merge requests, push code. Broad: api covers groups, projects, registries and packages.",
+      "evidence": { "label": "sourced", "sourceIds": ["g2"], "note": null }
+    },
+    {
+      "tier": "MCP and AI",
+      "examples": ["mcp", "ai_features", "ai_workflows"],
+      "reviewRequired": false,
+      "time": "Same day (if the group allows MCP)",
+      "impact": "mcp is required for the GitLab MCP server at /api/v4/mcp; legacy PATs are rejected. An admin or top-level group owner must allow MCP access first.",
+      "evidence": { "label": "sourced", "sourceIds": ["g3", "g5"], "note": "ai_workflows seen only in live scopes_supported; not described in the docs we read." }
+    },
+    {
+      "tier": "Admin-only",
+      "examples": ["sudo", "admin_mode", "read_service_ping"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Only meaningful when the authorizing user is an administrator, typically on self-managed instances.",
+      "evidence": { "label": "sourced", "sourceIds": ["g2"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in and open Applications",
+      "owner": "human",
+      "detail": "Go to Edit profile > Access > Applications > Add new application (or a group's Settings > Applications for a group-owned app).",
+      "url": "https://gitlab.com/-/user_settings/applications",
+      "duration": "2 min",
+      "evidence": { "label": "tested", "sourceIds": ["g2"], "note": "URL returned 302 to /users/sign_in on 2026-10-20; we didn't sign in." }
+    },
+    {
+      "title": "Choose the scopes",
+      "owner": "agent",
+      "detail": "Pick least privilege: read_api (+ read_repository) for read-only agents, api for write actions, mcp if using the MCP server, openid for sign-in.",
+      "url": "https://docs.gitlab.com/integration/oauth_provider/",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["g2"], "note": null }
+    },
+    {
+      "title": "Create the application",
+      "owner": "human",
+      "detail": "Enter name, redirect URI and scopes; leave Confidential checked for server-side apps (clear it for public/PKCE-only clients). Copy the Application ID and Secret.",
+      "url": "https://gitlab.com/-/user_settings/applications",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["g2", "g3"], "note": null }
+    },
+    {
+      "title": "Implement authorization code + PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://gitlab.com/oauth/authorize with client_id, redirect_uri, response_type=code, state, scope and an S256 code_challenge. Exchange at POST https://gitlab.com/oauth/token with the code_verifier.",
+      "url": "https://docs.gitlab.com/api/oauth2/",
+      "duration": "1-2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["g1"], "note": null }
+    },
+    {
+      "title": "Handle refresh-token rotation",
+      "owner": "agent",
+      "detail": "Access tokens expire after 2 hours by default. A refresh invalidates both old tokens and returns new ones, so store the new refresh token atomically.",
+      "url": "https://docs.gitlab.com/api/oauth2/",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["g1", "g2"], "note": null }
+    },
+    {
+      "title": "Support self-managed instances",
+      "owner": "agent",
+      "detail": "Let users enter their GitLab base URL, and store per-instance client credentials (or use DCR where the instance allows it).",
+      "url": "https://docs.gitlab.com/integration/oauth_provider/",
+      "duration": "2-4 h",
+      "evidence": { "label": "inferred", "sourceIds": ["g2", "g3"], "note": null }
+    },
+    {
+      "title": "Ask customers to register your app on their instance",
+      "owner": "human",
+      "detail": "For self-managed customers, an admin creates an instance-wide application (optionally trusted, which skips the consent screen) and shares the credentials with you.",
+      "url": "https://docs.gitlab.com/integration/oauth_provider/",
+      "duration": "varies by customer",
+      "evidence": { "label": "sourced", "sourceIds": ["g2"], "note": null }
+    },
+    {
+      "title": "Optionally use the MCP server",
+      "owner": "agent",
+      "detail": "Connect to https://gitlab.com/api/v4/mcp with an mcp-scoped token. MCP clients can self-register via DCR at https://gitlab.com/oauth/register (10 registrations per IP per hour).",
+      "url": "https://docs.gitlab.com/user/model_context_protocol/mcp_server/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["g3", "g5"], "note": null }
+    },
+    {
+      "title": "Plan for rate limits",
+      "owner": "agent",
+      "detail": "Handle 429s with backoff. GitLab has published proposed per-user and per-group limits (e.g. Free 5,000/hour per user); MCP is limited to 60/min (Free) or 600/min (Premium/Ultimate) per user.",
+      "url": "https://docs.gitlab.com/user/gitlab_com/rate_limits/",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["g4", "g3"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose least-privilege scopes (read_api vs api)",
+    "Implement authorization code + PKCE and rotating refresh",
+    "Build per-instance base URL and credential handling",
+    "Register MCP clients via DCR and handle 429 backoff",
+    "Check OIDC discovery at /.well-known/openid-configuration"
+  ],
+  "humanMustDo": [
+    "Sign in and create the application, copying the secret",
+    "Customer side: top-level group owner enables MCP access if using MCP",
+    "Customer side: self-managed admins register an instance-wide app"
+  ],
+  "blockers": [
+    {
+      "symptom": "'The redirect URI included is not valid.' on the authorize page",
+      "cause": "The redirect_uri doesn't exactly match the application's registered URI.",
+      "fix": "Register the exact URI and send it identically in authorize and token requests.",
+      "evidence": { "label": "unverified", "sourceIds": ["g3"], "note": "Exact-match rule is sourced; the error wording is from memory of GitLab's Doorkeeper UI and wasn't checked." }
+    },
+    {
+      "symptom": "invalid_grant on refresh",
+      "cause": "Refresh tokens rotate; reusing an old one fails.",
+      "fix": "Persist the newest refresh token after each refresh and serialise refreshes.",
+      "evidence": { "label": "inferred", "sourceIds": ["g1"], "note": null }
+    },
+    {
+      "symptom": "403 insufficient_scope from /api/v4/mcp",
+      "cause": "Using a legacy personal/project/group access token or an OAuth token without the mcp scope.",
+      "fix": "Request the mcp scope in OAuth, or use a fine-grained PAT with the MCP tool permission.",
+      "evidence": { "label": "sourced", "sourceIds": ["g3"], "note": null }
+    },
+    {
+      "symptom": "MCP clients fail to register behind a corporate VPN",
+      "cause": "DCR is limited to 10 registrations per IP per hour, or an admin disabled DCR.",
+      "fix": "Use a pre-registered OAuth application (mcp scope, Confidential cleared).",
+      "evidence": { "label": "sourced", "sourceIds": ["g3"], "note": null }
+    },
+    {
+      "symptom": "MCP tools unavailable for some users",
+      "cause": "The top-level group (GitLab.com) or instance hasn't allowed MCP server access.",
+      "fix": "Ask a group owner or admin to enable it.",
+      "evidence": { "label": "sourced", "sourceIds": ["g3"], "note": null }
+    },
+    {
+      "symptom": "429 Too Many Requests",
+      "cause": "Per-user, per-group or per-IP limits on GitLab.com.",
+      "fix": "Back off using the rate-limit headers and spread work over time.",
+      "evidence": { "label": "sourced", "sourceIds": ["g4"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire after 2 hours by default; self-managed and Dedicated admins can change the lifetime (GitLab 19.1+).",
+      "evidence": { "label": "sourced", "sourceIds": ["g2"], "note": null }
+    },
+    {
+      "text": "Device authorization grant is GA (17.9+), and gitlab.com also advertises client_credentials and PKCE (plain and S256) in its discovery document.",
+      "evidence": { "label": "tested", "sourceIds": ["g1", "g5"], "note": "grant_types and code_challenge_methods observed in openid-configuration on 2026-10-20." }
+    },
+    {
+      "text": "GitLab has published new per-user and per-top-level-group rate limits that are proposed but not yet in effect, with brownouts announced in advance. Plan for Free users at 5,000 requests/hour.",
+      "evidence": { "label": "sourced", "sourceIds": ["g4"], "note": null }
+    },
+    {
+      "text": "Groups with SAML SSO may require passing root_namespace_id on the authorize request.",
+      "evidence": { "label": "sourced", "sourceIds": ["g1"], "note": null }
+    },
+    {
+      "text": "Instance-wide applications can be marked trusted, which skips the consent screen for that instance's users.",
+      "evidence": { "label": "sourced", "sourceIds": ["g2"], "note": null }
+    },
+    {
+      "text": "Applications created through the REST API don't enforce PKCE, and GitLab doesn't verify which client uses a given client ID.",
+      "evidence": { "label": "sourced", "sourceIds": ["g3"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "g1", "title": "GitLab docs: OAuth 2.0 identity provider API", "url": "https://docs.gitlab.com/api/oauth2/" },
+    { "id": "g2", "title": "GitLab docs: Configure GitLab as an OAuth 2.0 provider", "url": "https://docs.gitlab.com/integration/oauth_provider/" },
+    { "id": "g3", "title": "GitLab docs: GitLab MCP server", "url": "https://docs.gitlab.com/user/model_context_protocol/mcp_server/" },
+    { "id": "g4", "title": "GitLab docs: GitLab.com rate limits", "url": "https://docs.gitlab.com/user/gitlab_com/rate_limits/" },
+    { "id": "g5", "title": "GitLab.com OpenID Connect discovery document", "url": "https://gitlab.com/.well-known/openid-configuration" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://gitlab.com/.well-known/openid-configuration: issuer https://gitlab.com, PKCE plain/S256, grants authorization_code/client_credentials/device_code/refresh_token, scopes include mcp, ai_features, ai_workflows",
+      "GET https://gitlab.com/.well-known/oauth-authorization-server: registration_endpoint https://gitlab.com/oauth/register",
+      "POST https://gitlab.com/oauth/register with {}: 400 invalid_client_metadata",
+      "POST https://gitlab.com/api/v4/mcp unauthenticated: 401 with scope=\"mcp\" and resource_metadata",
+      "GET https://gitlab.com/-/user_settings/applications: 302 to /users/sign_in"
+    ],
+    "openQuestions": [
+      "When the proposed GitLab.com rate limits take effect",
+      "Whether top-level group owners on GitLab.com can block third-party OAuth applications for their members",
+      "What the ai_workflows and mcp_orbit scopes grant",
+      "Exact error text for redirect URI mismatches"
+    ]
+  }
+}

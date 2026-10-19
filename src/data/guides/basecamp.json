@@ -1,0 +1,254 @@
+{
+  "app": {
+    "name": "Basecamp",
+    "slug": "basecamp",
+    "website": "https://basecamp.com",
+    "developerPortal": "https://launchpad.37signals.com/integrations",
+    "category": "Project management"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth 2.0 authentication guide", "url": "https://github.com/basecamp/bc-api/blob/master/sections/authentication.md" },
+    { "kind": "api", "label": "Basecamp API reference (bc-api)", "url": "https://github.com/basecamp/bc-api" },
+    { "kind": "console", "label": "Integrations console (Launchpad)", "url": "https://launchpad.37signals.com/integrations" },
+    { "kind": "api", "label": "Basecamp for AI assistants (hosted MCP)", "url": "https://basecamp.com/ai" },
+    { "kind": "scopes", "label": "Authorization server metadata (scopes)", "url": "https://app.basecamp.com/.well-known/oauth-authorization-server" }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Register an integration at launchpad.37signals.com, get a client ID and secret, and any Basecamp user can authorize it immediately: there's no review, marketplace or install cap in the docs. Classic Launchpad tokens are all-or-nothing, but a newer authorization server at app.basecamp.com (live, but not yet in the written docs) adds a read-only scope, PKCE, Dynamic Client Registration and a hosted MCP server.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": { "min": 0.25, "max": 1 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["b1"],
+        "note": "Register the app (a dummy redirect URI is accepted), run the authorization code flow, call authorization.json to find the account href. No verification step is documented."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "A standard Launchpad integration reading and writing project data with full-access tokens; the read-only path via app.basecamp.com is equally self-serve but less documented.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["b1", "b2"],
+        "note": "The docs describe no review or approval step. Absence of a review is our reading, not an explicit statement."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A 37signals ID (Basecamp account) to sign in to Launchpad",
+      "why": "The integrations console redirects to sign-in, and the first test authorization needs a Basecamp account.",
+      "evidence": { "label": "tested", "sourceIds": ["b1"], "note": "https://launchpad.37signals.com/integrations returned 302 to /signin on 2026-10-20." }
+    },
+    {
+      "item": "A redirect URI",
+      "why": "Required at registration; Basecamp's docs say a dummy URL like http://myapp.com/oauth works if you aren't ready yet.",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    },
+    {
+      "item": "A User-Agent header naming your app with a URL or email on every API request",
+      "why": "Requests without it get 400 Bad Request.",
+      "evidence": { "label": "sourced", "sourceIds": ["b2"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Full access (classic Launchpad tokens)",
+      "examples": ["full"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Launchpad's authorize request takes no scope parameter; tokens act as the user across all their Basecamp accounts and projects. The authorization document reports scope 'full' for Basecamp-issued tokens.",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    },
+    {
+      "tier": "Read-only (new authorization server)",
+      "examples": ["read", "offline_access"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "app.basecamp.com advertises a read scope, and the hosted MCP server lets users pick Read-only or Full access at consent. Useful for summarising agents that shouldn't write.",
+      "evidence": { "label": "tested", "sourceIds": ["b4", "b5", "b7"], "note": "Scopes observed in live metadata on 2026-10-20; the written OAuth guide doesn't document requesting them yet." }
+    },
+    {
+      "tier": "MCP access",
+      "examples": ["mcp", "full"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Needed to call the hosted MCP server at https://mcp.basecamp.com/mcp, whose 401 challenge asks for scope=\"mcp full\".",
+      "evidence": { "label": "tested", "sourceIds": ["b6"], "note": "Observed in the WWW-Authenticate header on 2026-10-20." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to Launchpad and register an integration",
+      "owner": "human",
+      "detail": "Go to the integrations console, create a new app, and enter name, company, website and redirect URI. Copy the client_id and client_secret.",
+      "url": "https://launchpad.37signals.com/integrations",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": "Form fields beyond redirect URI weren't observed because we didn't sign in." }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://launchpad.37signals.com/authorization/new?response_type=code&client_id=...&redirect_uri=... , then POST grant_type=authorization_code with client_id, client_secret, redirect_uri and code to https://launchpad.37signals.com/authorization/token. The legacy type=web_server parameter is still accepted but not recommended.",
+      "url": "https://github.com/basecamp/bc-api/blob/master/sections/authentication.md",
+      "duration": "1-2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["b1", "b3"], "note": null }
+    },
+    {
+      "title": "Resolve the user's accounts",
+      "owner": "agent",
+      "detail": "GET https://launchpad.37signals.com/authorization.json (or https://3.basecampapi.com/authorization.json) with the token. Pick accounts with product 'bc3' and use each account's href (https://3.basecampapi.com/{account_id}) as the API base URL.",
+      "url": "https://github.com/basecamp/bc-api/blob/master/sections/authentication.md",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    },
+    {
+      "title": "Add refresh handling",
+      "owner": "agent",
+      "detail": "Access tokens expire after 2 weeks (expires_in 1209600). POST grant_type=refresh_token with the refresh token, client_id and client_secret to the same token endpoint.",
+      "url": "https://github.com/basecamp/bc-api/blob/master/sections/authentication.md",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    },
+    {
+      "title": "Build API calls with User-Agent, pagination and backoff",
+      "owner": "agent",
+      "detail": "Send a User-Agent with app name and contact. Follow Link rel=next headers (geared pages of 15/30/50/100). Honour 429 Retry-After (first limit is about 50 requests per 10 seconds per IP) and retry 5xx with exponential backoff.",
+      "url": "https://github.com/basecamp/bc-api",
+      "duration": "1-3 h",
+      "evidence": { "label": "sourced", "sourceIds": ["b2"], "note": null }
+    },
+    {
+      "title": "Optionally move to the app.basecamp.com authorization server for read-only or public clients",
+      "owner": "agent",
+      "detail": "Its metadata lists authorize /oauth/authorizations/new, token /oauth/tokens, PKCE S256, device and client_credentials grants, DPoP, a registration endpoint (/oauth/clients) and client ID metadata documents, with scopes full/read/mcp/offline_access. Test carefully: this isn't yet described in the written guide.",
+      "url": "https://app.basecamp.com/.well-known/oauth-authorization-server",
+      "duration": "1-2 h",
+      "evidence": { "label": "tested", "sourceIds": ["b4"], "note": "Fetched 2026-10-20. An empty POST to /oauth/clients returned 400 invalid_redirect_uri 'redirect_uris is required', so DCR is live." }
+    },
+    {
+      "title": "Or connect to the hosted MCP server",
+      "owner": "agent",
+      "detail": "If your agent is an MCP client, point it at https://mcp.basecamp.com/mcp. Basecamp says there's nothing to set up on its end; users sign in, pick an account and choose Read-only or Full access.",
+      "url": "https://basecamp.com/ai",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["b7", "b6"], "note": null }
+    },
+    {
+      "title": "Test with a real Basecamp account",
+      "owner": "human",
+      "detail": "Authorize the app once with your own Basecamp account and confirm projects and to-dos load.",
+      "url": "https://launchpad.37signals.com/authorization/new",
+      "duration": "10 min",
+      "evidence": { "label": "inferred", "sourceIds": ["b1"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the authorization code exchange and 2-week refresh cycle",
+    "Resolve accounts via authorization.json and pick bc3 account hrefs",
+    "Build paginated, User-Agent-compliant API calls with 429 backoff",
+    "Register a client via DCR on app.basecamp.com if using the new server",
+    "Configure an MCP client for https://mcp.basecamp.com/mcp"
+  ],
+  "humanMustDo": [
+    "Sign in to Launchpad and register the integration",
+    "Store the client secret securely",
+    "Authorize once with a real Basecamp account to test"
+  ],
+  "blockers": [
+    {
+      "symptom": "400 Bad Request on every API call",
+      "cause": "Missing User-Agent header with app name and contact.",
+      "fix": "Send e.g. 'User-Agent: MyAgent (support@example.com)'.",
+      "evidence": { "label": "sourced", "sourceIds": ["b2"], "note": null }
+    },
+    {
+      "symptom": "{\"error\":\"Unsupported authorization type. Use response_type=code.\"} from /authorization/new",
+      "cause": "The authorize request is missing response_type=code (or legacy type=web_server).",
+      "fix": "Add response_type=code with client_id and redirect_uri.",
+      "evidence": { "label": "tested", "sourceIds": ["b1"], "note": "Observed with a bare GET on 2026-10-20." }
+    },
+    {
+      "symptom": "401 after about two weeks",
+      "cause": "Access tokens expire after 2 weeks.",
+      "fix": "Refresh with grant_type=refresh_token before expires_at.",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    },
+    {
+      "symptom": "429 Too Many Requests",
+      "cause": "Dynamic rate limits; the first most clients hit is 50 requests per 10 seconds per IP.",
+      "fix": "Honour Retry-After and spread requests, especially if many users share one server IP.",
+      "evidence": { "label": "sourced", "sourceIds": ["b2"], "note": null }
+    },
+    {
+      "symptom": "API calls return 404 or wrong data for some accounts",
+      "cause": "The token covers several 37signals products and accounts; you're using a non-bc3 account or the identity id.",
+      "fix": "Filter accounts to product 'bc3' and use the account href as the base URL; don't use identity ids in API calls.",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    },
+    {
+      "symptom": "401 using a DPoP-bound token with 'Authorization: Bearer'",
+      "cause": "Bound tokens reject the Bearer scheme.",
+      "fix": "Send 'Authorization: DPoP <token>' plus a DPoP proof header.",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Classic Launchpad tokens have no scopes: one token grants full access to everything the user can see, across all their Basecamp accounts. Use the newer read scope if your agent only reads.",
+      "evidence": { "label": "inferred", "sourceIds": ["b1", "b4"], "note": "No scope parameter is documented for Launchpad; the read scope comes from live app.basecamp.com metadata." }
+    },
+    {
+      "text": "Basecamp advises against using its OAuth for 'Login with Basecamp' because it doesn't verify email addresses.",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    },
+    {
+      "text": "Accounts include an RFC 8707 resource indicator (urn:bc:account:<id>) for requesting account-scoped tokens, and DPoP-bound tokens are supported.",
+      "evidence": { "label": "sourced", "sourceIds": ["b1"], "note": null }
+    },
+    {
+      "text": "The API defines an 'Agent' person type for AI agents using client-credentials tokens; agents can reach only a limited set of endpoints and get 403 elsewhere. New person types may appear without a version change.",
+      "evidence": { "label": "sourced", "sourceIds": ["b2"], "note": null }
+    },
+    {
+      "text": "Flat routes (e.g. /todos/{id}.json) are now canonical; project-scoped /buckets/{id}/ routes are legacy but supported. The API isn't compatible with Basecamp 2 or Classic.",
+      "evidence": { "label": "sourced", "sourceIds": ["b2"], "note": null }
+    },
+    {
+      "text": "Rate limits are per IP, so a multi-tenant agent backend shares one budget across users unless it spreads egress.",
+      "evidence": { "label": "inferred", "sourceIds": ["b2"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "b1", "title": "Basecamp API: Authentication", "url": "https://github.com/basecamp/bc-api/blob/master/sections/authentication.md" },
+    { "id": "b2", "title": "Basecamp API README (bc-api, formerly bc3-api)", "url": "https://github.com/basecamp/bc3-api" },
+    { "id": "b3", "title": "Launchpad OAuth authorization server metadata", "url": "https://launchpad.37signals.com/.well-known/oauth-authorization-server" },
+    { "id": "b4", "title": "app.basecamp.com OAuth authorization server metadata", "url": "https://app.basecamp.com/.well-known/oauth-authorization-server" },
+    { "id": "b5", "title": "Basecamp API protected-resource metadata", "url": "https://3.basecampapi.com/.well-known/oauth-protected-resource" },
+    { "id": "b6", "title": "Basecamp MCP protected-resource metadata", "url": "https://mcp.basecamp.com/.well-known/oauth-protected-resource/mcp" },
+    { "id": "b7", "title": "Basecamp: Use Basecamp with your AI assistant", "url": "https://basecamp.com/ai" },
+    { "id": "b8", "title": "Basecamp: Bring your AI agents to Basecamp", "url": "https://basecamp.com/agents" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://launchpad.37signals.com/integrations: 302 to /signin",
+      "GET https://launchpad.37signals.com/authorization/new (no params): 400 'Unsupported authorization type. Use response_type=code.'",
+      "GET https://launchpad.37signals.com/.well-known/oauth-authorization-server: authorization_code and refresh_token only",
+      "GET https://app.basecamp.com/.well-known/oauth-authorization-server: DCR, client ID metadata documents, PKCE S256, device/client_credentials/token-exchange grants, scopes full/read/mcp/offline_access",
+      "POST https://app.basecamp.com/oauth/clients with {}: 400 invalid_redirect_uri 'redirect_uris is required'",
+      "POST https://mcp.basecamp.com/mcp unauthenticated: 401 with resource_metadata and scope=\"mcp full\""
+    ],
+    "openQuestions": [
+      "Whether third-party web apps are meant to use app.basecamp.com (DCR, read scope) or stay on Launchpad, since the written guide covers only Launchpad",
+      "Refresh token lifetime",
+      "Whether Basecamp's terms restrict commercial AI use of API data",
+      "How the 'Agent' person type's client-credentials tokens are issued and what endpoints they reach"
+    ]
+  }
+}

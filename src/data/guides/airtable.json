@@ -1,0 +1,270 @@
+{
+  "app": {
+    "name": "Airtable",
+    "slug": "airtable",
+    "website": "https://airtable.com",
+    "developerPortal": "https://airtable.com/developers/web",
+    "category": "Database"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth integrations guide", "url": "https://airtable.com/developers/web/guides/oauth-integrations" },
+    { "kind": "oauth", "label": "OAuth reference", "url": "https://airtable.com/developers/web/api/oauth-reference" },
+    { "kind": "scopes", "label": "Scopes reference", "url": "https://airtable.com/developers/web/api/scopes" },
+    { "kind": "console", "label": "Register an OAuth integration", "url": "https://airtable.com/create/oauth" },
+    { "kind": "api", "label": "Rate limits", "url": "https://airtable.com/developers/web/api/rate-limits" }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Registering an OAuth integration is self-serve with no review, but other users can't authorize it until you add a privacy policy URL and a terms of service URL. In production the real limits are the customer's plan, not Airtable approval: Free workspaces get 1,000 API calls a month shared across all integrations, and every base allows only 5 requests per second.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": { "min": 0.25, "max": 1 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s2"],
+        "note": "Register at airtable.com/create/oauth, use an http://localhost redirect, run the PKCE code flow, then grant your own bases."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "A public integration that reads and writes records with data.records:* and schema.bases:read, once privacy policy and terms URLs are on the integration.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3"],
+        "note": "Airtable's docs describe no review step. The only stated gate for sharing is the privacy policy and terms URLs."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "An Airtable account (any plan)",
+      "why": "Integrations are registered at airtable.com/create/oauth, and third-party OAuth is available on all plan types.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": null }
+    },
+    {
+      "item": "Public privacy policy and terms of service URLs",
+      "why": "Without them 'other users will not be able to authorize your integration.'",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "An HTTPS redirect URI (http://localhost is fine for development)",
+      "why": "HTTPS is required except for localhost. Raw IPs other than localhost, fragments, wildcards and open redirects aren't allowed.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "item": "PKCE (S256) support in your OAuth client",
+      "why": "The authorize request carries code_challenge with code_challenge_method=S256, and the verifier is 43–128 characters.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Basic scopes (any user)",
+      "examples": ["data.records:read", "data.records:write", "schema.bases:read", "data.recordComments:read", "webhook:manage", "user.email:read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Covers reading and writing records, reading schema, comments and webhooks: everything a typical agent needs. Access is limited to the bases the user picks during consent.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "tier": "Schema writes and base listing",
+      "examples": ["schema.bases:write", "workspacesAndBases:read", "block:manage"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Lets the agent create tables and fields and list the workspaces and bases it can reach. Still self-serve.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "tier": "Enterprise member scopes",
+      "examples": ["enterprise.groups:read", "workspacesAndBases:write", "workspacesAndBases.shares:manage"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "These only work for users on enterprise accounts.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "tier": "Enterprise admin scopes",
+      "examples": ["enterprise.auditLogs:read", "enterprise.user:read", "enterprise.scim.usersAndGroups:manage", "hyperDB.records:read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "These only work when an enterprise admin authorizes. Useful for governance or admin agents, not general data access.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to Airtable",
+      "owner": "human",
+      "detail": "Use any Airtable account. A Free account is fine for development.",
+      "url": "https://airtable.com/create/oauth",
+      "duration": "2 min",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "https://airtable.com/create/oauth redirected to the login page (HTTP 302) on 2026-10-20." }
+    },
+    {
+      "title": "Register the OAuth integration",
+      "owner": "human",
+      "detail": "Click Register new OAuth integration, give it a unique name, and add the redirect URL.",
+      "url": "https://airtable.com/create/oauth",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Choose scopes",
+      "owner": "agent",
+      "detail": "Pick least-privilege scopes, for example data.records:read, data.records:write and schema.bases:read, and tick them on the integration.",
+      "url": "https://airtable.com/developers/web/api/scopes",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Generate a client secret",
+      "owner": "human",
+      "detail": "Generate one if token requests run on a server. Copy it right away: it can't be recovered, only regenerated, and adding one breaks in-flight requests that don't send it.",
+      "url": "https://airtable.com/create/oauth",
+      "duration": "2 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "title": "Implement the PKCE code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://airtable.com/oauth2/v1/authorize with client_id, redirect_uri, response_type=code, scope, state and an S256 code_challenge. Within 10 minutes POST to https://airtable.com/oauth2/v1/token with the code_verifier, using Basic auth if you have a secret.",
+      "url": "https://airtable.com/developers/web/api/oauth-reference",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Handle refresh and base discovery",
+      "owner": "agent",
+      "detail": "Refresh within 60 minutes, store both rotated tokens, and treat 409 as a recent duplicate refresh. Call the list-bases endpoint on each run, since users can change which bases are granted.",
+      "url": "https://airtable.com/developers/web/api/oauth-reference",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "title": "Write privacy policy and terms",
+      "owner": "agent",
+      "detail": "Draft and publish both pages, including how the agent uses Airtable data and any AI model processing.",
+      "url": null,
+      "duration": "1–2 h",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Add the URLs to the integration",
+      "owner": "human",
+      "detail": "Enter the privacy policy and terms URLs on the integration so other users can authorize it.",
+      "url": "https://airtable.com/create/oauth",
+      "duration": "2 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Test with another account",
+      "owner": "human",
+      "detail": "Authorize from a second Airtable account, pick a base with Add a base, and confirm reads and writes work.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose minimal scopes for the agent's features",
+    "Implement PKCE, token exchange and rotating refresh",
+    "Throttle to 5 requests/sec per base and back off 30 seconds on 429",
+    "Draft the privacy policy and terms pages",
+    "Check the OAuth metadata endpoint for scope changes"
+  ],
+  "humanMustDo": [
+    "Sign in and register the integration",
+    "Generate and store the client secret",
+    "Publish and enter the privacy policy and terms URLs",
+    "Test authorization from a second account"
+  ],
+  "blockers": [
+    {
+      "symptom": "Other users can't authorize the integration",
+      "cause": "The integration has no privacy policy URL or terms of service URL.",
+      "fix": "Add both URLs to the integration.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact error screen wasn't described." }
+    },
+    {
+      "symptom": "Token endpoint returns {\"error\":\"invalid_client\",\"error_description\":\"Invalid client credentials.\"} (HTTP 401)",
+      "cause": "Wrong client_id, or a secret exists but no Basic auth header was sent (or one was sent without a secret).",
+      "fix": "Send Authorization: Basic only when the integration has a secret; otherwise put client_id in the body.",
+      "evidence": { "label": "tested", "sourceIds": ["s2"], "note": "Observed by POSTing a dummy client_id to https://airtable.com/oauth2/v1/token on 2026-10-20." }
+    },
+    {
+      "symptom": "HTTP 429, and later requests also fail for about 30 seconds",
+      "cause": "More than 5 requests per second to one base, or 50 per second per user.",
+      "fix": "Queue requests per base and wait 30 seconds after a 429.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "symptom": "API calls blocked or slowed partway through the month",
+      "cause": "The workspace hit its monthly call limit: 1,000 on Free (blocked after a one-time 30-day grace) or 100,000 on Team (slowed to 2 requests/sec).",
+      "fix": "Cache aggressively, use webhooks, and tell Free-plan customers about the cap.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "symptom": "Users get sent back through consent after a quiet period",
+      "cause": "Refresh tokens expire after 60 days unused.",
+      "fix": "Refresh idle connections on a schedule well inside 60 days.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "Refresh returns HTTP 409",
+      "cause": "The token was recently refreshed, so the request conflicted. Each refresh invalidates the previous pair.",
+      "fix": "Serialize refreshes per connection and use the most recent tokens.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 60 minutes and refresh tokens 60 days. Refresh rotates both, and you can keep refreshing indefinitely as long as each refresh happens within the window.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Users pick the bases or workspaces a token can reach, and can grant 'All current and future bases in all current and future workspaces'. Grants can change at any time, so re-list bases instead of caching the list.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": null }
+    },
+    {
+      "text": "Monthly API quotas apply per workspace and are shared with every other integration in that workspace. Business and Enterprise have unlimited monthly calls.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s8"], "note": "Free and Team figures are from Airtable support. Business/Enterprise 'unlimited' and the shared pool come from third-party docs." }
+    },
+    {
+      "text": "Enterprise admins can see and revoke users' OAuth grants from the Admin Panel's Third-party integrations tab.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "text": "Airtable's OAuth metadata advertises a dynamic client registration endpoint (/oauth2/v1/register), likely meant for MCP clients. Production apps should still register at airtable.com/create/oauth.",
+      "evidence": { "label": "tested", "sourceIds": ["s7"], "note": "Seen in https://airtable.com/.well-known/oauth-authorization-server on 2026-10-20. The recommendation is our inference." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Airtable developers: OAuth integrations guide", "url": "https://airtable.com/developers/web/guides/oauth-integrations" },
+    { "id": "s2", "title": "Airtable developers: OAuth reference", "url": "https://airtable.com/developers/web/api/oauth-reference" },
+    { "id": "s3", "title": "Airtable developers: Scopes", "url": "https://airtable.com/developers/web/api/scopes" },
+    { "id": "s4", "title": "Airtable developers: Rate limits", "url": "https://airtable.com/developers/web/api/rate-limits" },
+    { "id": "s5", "title": "Airtable support: Managing API call limits", "url": "https://support.airtable.com/managing-api-call-limits-in-airtable" },
+    { "id": "s6", "title": "Airtable support: Third-party integrations via OAuth overview", "url": "https://support.airtable.com/docs/third-party-integrations-via-oauth-overview" },
+    { "id": "s7", "title": "Airtable OAuth authorization server metadata", "url": "https://airtable.com/.well-known/oauth-authorization-server" },
+    { "id": "s8", "title": "Whalesync: Airtable API quota", "url": "https://docs.whalesync.com/connectors/airtable/airtable-api-quota" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://airtable.com/oauth2/v1/authorize: 302 to airtable.com/login",
+      "GET https://airtable.com/create/oauth: 302 to airtable.com/login",
+      "POST https://airtable.com/oauth2/v1/token with dummy client_id: {\"error\":\"invalid_client\",\"error_description\":\"Invalid client credentials.\"}",
+      "GET https://airtable.com/.well-known/oauth-authorization-server: issuer https://airtable.com/oauth2/v1, registration_endpoint present, scopes listed"
+    ],
+    "openQuestions": [
+      "Whether enterprise admins can block specific third-party OAuth integrations ahead of time, not just revoke grants",
+      "Whether Airtable shows any warning screen for integrations it hasn't reviewed",
+      "Whether OAuth tokens share the 50 requests/sec per-user limit documented for personal access tokens",
+      "Whether there is any install cap or abuse review for high-volume public integrations"
+    ]
+  }
+}

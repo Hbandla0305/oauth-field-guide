@@ -1,0 +1,636 @@
+{
+  "app": {
+    "name": "Shopify",
+    "slug": "shopify",
+    "website": "https://www.shopify.com",
+    "developerPortal": "https://dev.shopify.com/dashboard/",
+    "category": "E-commerce"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authorization code grant (standalone apps)",
+      "url": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps"
+    },
+    {
+      "kind": "scopes",
+      "label": "Access scopes reference",
+      "url": "https://shopify.dev/docs/api/usage/access-scopes"
+    },
+    {
+      "kind": "review",
+      "label": "App Store requirements",
+      "url": "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements"
+    },
+    {
+      "kind": "review",
+      "label": "Protected customer data",
+      "url": "https://shopify.dev/docs/apps/launch/protected-customer-data"
+    },
+    {
+      "kind": "console",
+      "label": "Dev Dashboard",
+      "url": "https://dev.shopify.com/dashboard/"
+    },
+    {
+      "kind": "changelog",
+      "label": "Developer changelog",
+      "url": "https://shopify.dev/changelog"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "A custom-distribution app on a development store works within an hour, but a public app that any merchant can install needs App Store review, and there's no unlisted public option (unpublished apps were removed in 2019). Agents that read customer names, emails, phones or addresses also need protected customer data (Level 2) approval, and in 2026 Shopify staff acknowledged a review backlog, with developers reporting waits well past the 'up to 2 weeks' in the confirmation email.",
+    "timeToDev": {
+      "range": "30 min–2 hours",
+      "hours": {
+        "min": 0.5,
+        "max": 2
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s10",
+          "s1",
+          "s12"
+        ],
+        "note": "Create the app in the Dev Dashboard or with Shopify CLI, install it on a development store, and select protected fields in the dashboard. Development stores don't need review submission."
+      }
+    },
+    "timeToProd": {
+      "range": "3–10 weeks",
+      "hours": {
+        "min": 504,
+        "max": 1680
+      },
+      "assumes": "A public App Store app that reads orders and customer PII (protected customer data Level 2); custom distribution to a single store or one Plus organization skips review and works the same day.",
+      "waitingOn": "Protected customer data access request approval, then App Store review (submitted, possibly paused for fixes, then published). Shopify publishes no SLA.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s2",
+          "s7",
+          "s13",
+          "s14"
+        ],
+        "note": "Shopify's review-process page gives no timeframe. The submission email says 'up to 2 weeks', but a February 2026 staff post acknowledges a backlog, and April 2026 forum threads discuss 30+ day waits (a staff reply confirmed this for resubmissions). Allow extra for each 'Paused' round."
+      }
+    },
+    "cost": "One-time $19 USD App Store registration fee (waived for accounts created before 2021-08-01 or partners who only build custom apps). App charges have to go through Shopify Billing, with Shopify's revenue share."
+  },
+  "prerequisites": [
+    {
+      "item": "A Shopify Partner / Dev Dashboard account and a development store",
+      "why": "Apps are created and client credentials live in the Dev Dashboard. Testing happens on development stores, which don't need review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A distribution choice made up front (public or custom)",
+      "why": "You must select a distribution method before requesting protected data access, and Shopify says you can't change it after you select it.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An HTTPS app URL and redirect URI that exactly match the app configuration",
+      "why": "redirect_uri has to exactly match a URI configured in the Dev Dashboard or in the [auth] section of shopify.app.toml.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s12"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A GraphQL Admin API integration (not REST)",
+      "why": "Since 2025-04-01, new public apps have to be built exclusively with the GraphQL Admin API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Privacy policy, data-protection practices, and a screencast with test credentials",
+      "why": "The App Store checklist asks for a complete English screencast of setup and functionality, and test credentials for any third-party platform. Protected customer data Level 2 adds encryption, access logging, and incident response policy requirements.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Standard Admin API scopes (no customer PII)",
+      "examples": [
+        "read_products",
+        "read_orders",
+        "read_inventory",
+        "write_products"
+      ],
+      "reviewRequired": true,
+      "time": "3–8 weeks (App Store review)",
+      "impact": "Declared in shopify.app.toml [access_scopes], approved by the merchant on install. Any public app needs App Store review before non-development stores can install it. read_orders only returns the last 60 days of orders.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s3"
+        ],
+        "note": "The time is our estimate from forum reports, not Shopify's."
+      }
+    },
+    {
+      "tier": "Protected customer data Level 1 (customer data without name, email, phone or address)",
+      "examples": [
+        "read_customers",
+        "read_orders (customer object fields)"
+      ],
+      "reviewRequired": true,
+      "time": "Adds an access request before App Store review",
+      "impact": "Request access in the Partner Dashboard (API access requests) and meet 9 Level 1 requirements, such as data minimization, retention periods and encryption at rest and in transit.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The example scopes are illustrative. Protected data is gated by field and level, not by a single scope string."
+      }
+    },
+    {
+      "tier": "Protected customer data Level 2 (name, email, phone, address fields)",
+      "examples": [
+        "read_customers + Name field",
+        "read_customers + Email field",
+        "read_orders + Address field",
+        "read_customers + Phone field"
+      ],
+      "reviewRequired": true,
+      "time": "Same review path, plus possible later data protection review",
+      "impact": "Each field is requested individually. You meet 7 extra requirements (encrypted backups, separate test/prod data, access logs, incident response policy and more), and Shopify may run a data protection review later, more likely for apps with many installs or long retention.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Approval-required scopes",
+      "examples": [
+        "read_all_orders",
+        "read_customer_payment_methods",
+        "read_payment_mandate",
+        "write_payment_mandate",
+        "read_users"
+      ],
+      "reviewRequired": true,
+      "time": "Separate approval; no SLA published",
+      "impact": "Shopify has to approve these before you can declare them. Otherwise creating an app version fails with an app_access validation error on scopes. read_all_orders lifts the 60-day order window, which an agent doing order history analysis probably needs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to the Dev Dashboard and create a development store",
+      "owner": "human",
+      "detail": "Create a Shopify Partner account and a development store for testing. The Dev Dashboard is where apps, stores and client credentials are managed.",
+      "url": "https://dev.shopify.com/dashboard/",
+      "duration": "10–20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Choose public distribution and create the app",
+      "owner": "human",
+      "detail": "Create the app with Shopify CLI (recommended for embedded apps) or the Dev Dashboard (API-only apps), and select Public distribution. The choice can't be changed later. If you keep separate dev and prod apps, set distribution on the prod app.",
+      "url": "https://shopify.dev/docs/apps/launch/distribution",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s10"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Generate shopify.app.toml with scopes and redirect URLs",
+      "owner": "agent",
+      "detail": "Write [access_scopes] with least-privilege scopes, set [auth] redirect_urls, and deploy with the CLI. Use --allow-updates in CI (--force is deprecated).",
+      "url": "https://shopify.dev/docs/api/usage/access-scopes",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s12"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement OAuth with HMAC, state and shop validation, plus expiring tokens",
+      "owner": "agent",
+      "detail": "Redirect to https://{shop}/admin/oauth/authorize, verify HMAC and state, validate shop against an anchored *.myshopify.com pattern, then POST to /admin/oauth/access_token with expiring=1. Store the refresh token and refresh before the 1-hour expiry. OAuth has to run immediately on install and reinstall.",
+      "url": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps",
+      "duration": "1–3 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s12",
+          "s11",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Install on the development store and test",
+      "owner": "human",
+      "detail": "Install the app on your dev store, approve scopes, and confirm the GraphQL Admin API calls work. Select protected customer data fields in the dashboard for dev use.",
+      "url": "https://dev.shopify.com/dashboard/",
+      "duration": "15–30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft protected customer data justifications and policies",
+      "owner": "agent",
+      "detail": "For each field (name, email, phone, address), write the reason it's needed, plus a retention policy, encryption description, access logging, and incident response policy covering the Level 1 and Level 2 requirements.",
+      "url": "https://shopify.dev/docs/apps/launch/protected-customer-data",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit API access requests (protected data, read_all_orders)",
+      "owner": "human",
+      "detail": "In the Partner Dashboard, open the app, go to API access requests, and request protected customer data fields and any approval-required scopes such as read_all_orders.",
+      "url": "https://shopify.dev/docs/apps/launch/protected-customer-data",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Pay the registration fee and prepare the listing",
+      "owner": "human",
+      "detail": "Pay the one-time $19 App Store registration fee if your account needs it. Set up Shopify Billing for any charges. Record an English screencast of setup and each feature, and provide test credentials for any third-party service, such as your agent backend.",
+      "url": "https://shopify.dev/docs/apps/launch/app-requirements-checklist",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft listing copy and run a pre-check",
+      "owner": "agent",
+      "detail": "Write listing content and setup instructions. Check against the App Store requirements (OAuth first, no off-platform billing, GraphQL only, no APIs deprecated within 90 days). Shopify staff suggest using the Dev MCP to catch common issues.",
+      "url": "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s5",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit for App Store review",
+      "owner": "human",
+      "detail": "Submit from the App Store review page once all checks pass. Don't resubmit while waiting, because Shopify staff say it moves you to the back of the queue.",
+      "url": "https://shopify.dev/docs/apps/launch/app-store-review/review-process",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for review (and fix any Paused feedback)",
+      "owner": "wait",
+      "detail": "Status goes Submitted, then Paused or Reviewed if fixes are needed, then Published. Reply to reviewer emails and use 'Submit fixes'.",
+      "url": "https://shopify.dev/docs/apps/launch/app-store-review/review-process",
+      "duration": "3–8 weeks",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s2",
+          "s7",
+          "s13"
+        ],
+        "note": "Shopify gives no timeline. The duration comes from 2026 forum reports."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Generate shopify.app.toml (scopes, redirect URLs, webhooks)",
+    "Implement OAuth with HMAC/state/shop checks and expiring-token refresh",
+    "Draft protected customer data justifications and security policies",
+    "Write App Store listing copy, setup instructions and test case scripts",
+    "Audit the app against the App Store requirements checklist"
+  ],
+  "humanMustDo": [
+    "Create the Partner/Dev Dashboard account and development store",
+    "Choose distribution (irreversible) and submit API access requests",
+    "Pay the $19 registration fee and configure Shopify Billing",
+    "Record the review screencast and supply test credentials",
+    "Submit for review and respond to reviewer emails"
+  ],
+  "blockers": [
+    {
+      "symptom": "Creating an app version fails with an app_access validation error on scopes",
+      "cause": "The configuration declares an approval-required scope (such as read_all_orders) that Shopify hasn't approved yet.",
+      "fix": "Request the scope under API access requests in the Partner Dashboard and remove it from [access_scopes] until it's approved.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Orders query returns nothing older than about two months",
+      "cause": "Without read_all_orders, apps can only access the last 60 days of orders.",
+      "fix": "Request read_all_orders approval, then declare it alongside read_orders.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Customer name/email/phone/address fields come back null or the query is denied on a merchant's store",
+      "cause": "Protected customer data access for those fields hasn't been requested and approved for a public app. Dev stores work because fields can be selected without review.",
+      "fix": "Request each field (Level 2) in the Partner Dashboard and meet the Level 1 and Level 2 requirements before App Store submission.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The exact error or null behaviour wasn't documented on the pages we read."
+      }
+    },
+    {
+      "symptom": "App stuck in 'Submitted' for weeks past the 'up to 2 weeks' confirmation email",
+      "cause": "A 2026 review backlog that Shopify staff acknowledged.",
+      "fix": "Don't resubmit (it resets your queue position). Make sure the screencast, test credentials and privacy policy are complete so you aren't paused after the wait.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7",
+          "s13",
+          "s14"
+        ],
+        "note": "Backlog acknowledged by staff. Durations are developer reports."
+      }
+    },
+    {
+      "symptom": "GraphQL Admin API calls rejected for a new public app using a long-lived offline token",
+      "cause": "New public apps can't use non-expiring offline tokens for the GraphQL Admin API. Existing public apps have until 2027-01-01.",
+      "fix": "Pass expiring=1 at token exchange, store the refresh token (90 days), and refresh on 401 once before forcing reauthorization.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11",
+          "s12"
+        ],
+        "note": "The exact error string wasn't documented."
+      }
+    },
+    {
+      "symptom": "Want to share with a few merchants without review, but custom distribution won't install on a second unrelated store",
+      "cause": "Custom distribution is limited to one store, or several stores in the same Plus organization. Unpublished public apps were deprecated in 2019.",
+      "fix": "Create one custom-distribution app per pilot merchant, or go through App Store review for public distribution.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Expiring offline tokens last 1 hour (expires_in 3600), with a refresh token valid for 90 days that can be shortened on refresh. A refresh that returns 401 is terminal, so delete the token and reauthorize. Keep online (per-user) tokens in separate records because they have no refresh token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11",
+          "s12"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Merchants can change requested scopes during approval, and write_* implies read_*, so check the granted scope string before storing a token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s12"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "There's no unlisted public path. The 'limited visibility' option still goes through the same App Store review requirements as fully visible apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Custom-distribution apps can't charge merchants through Shopify's app billing. App Store apps have to use Shopify Billing for all charges, and off-platform billing is excluded.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Admin-created (legacy) custom apps with pre-generated tokens are no longer available for new apps. New single-merchant integrations use custom distribution from the Dev Dashboard.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Shopify may run a data protection review after approval, more likely for apps with many installs, high customer record volume, more approved fields or long retention. Plan for audit-ready access logs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Apps that don't use or need any Shopify APIs aren't permitted on the App Store, and apps that drift from their submitted core functionality have to be resubmitted for full review. Keep the agent's Shopify-facing feature set stable after approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Shopify: Protected customer data",
+      "url": "https://shopify.dev/docs/apps/launch/protected-customer-data"
+    },
+    {
+      "id": "s2",
+      "title": "Shopify: App Store review process",
+      "url": "https://shopify.dev/docs/apps/launch/app-store-review/review-process"
+    },
+    {
+      "id": "s3",
+      "title": "Shopify: Select a distribution method",
+      "url": "https://shopify.dev/docs/apps/launch/distribution"
+    },
+    {
+      "id": "s4",
+      "title": "Shopify: Access scopes",
+      "url": "https://shopify.dev/docs/api/usage/access-scopes"
+    },
+    {
+      "id": "s5",
+      "title": "Shopify: App requirements checklist",
+      "url": "https://shopify.dev/docs/apps/launch/app-requirements-checklist"
+    },
+    {
+      "id": "s6",
+      "title": "Shopify: App Store requirements",
+      "url": "https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements"
+    },
+    {
+      "id": "s7",
+      "title": "Shopify Developer Community: Longer App Store review times (staff post, Feb 2026)",
+      "url": "https://community.shopify.dev/t/longer-app-store-review-times-what-you-need-to-know/31728"
+    },
+    {
+      "id": "s9",
+      "title": "Shopify Partners glossary (App Store registration fee)",
+      "url": "https://help.shopify.com/partners/partner-program/glossary"
+    },
+    {
+      "id": "s10",
+      "title": "Shopify: Dev Dashboard",
+      "url": "https://shopify.dev/docs/apps/build/dev-dashboard"
+    },
+    {
+      "id": "s11",
+      "title": "Shopify: Offline access tokens",
+      "url": "https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/offline-access-tokens"
+    },
+    {
+      "id": "s12",
+      "title": "Shopify: Authenticate standalone apps (authorization code grant)",
+      "url": "https://shopify.dev/docs/apps/build/authentication-authorization/authenticate-standalone-apps"
+    },
+    {
+      "id": "s13",
+      "title": "Shopify Developer Community: App review taking longer than 2 weeks",
+      "url": "https://community.shopify.dev/t/shopify-app-review-taking-more-than-2-weeks-is-this-normal/29646"
+    },
+    {
+      "id": "s14",
+      "title": "Shopify Developer Community: What's the current timeframe for app reviews",
+      "url": "https://community.shopify.dev/t/whats-the-current-timeframe-for-app-reviews/32649"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://example.myshopify.com/admin/oauth/authorize: 303 to /admin/auth/login (store-scoped authorize endpoint resolves, needs merchant login)",
+      "GET https://dev.shopify.com/dashboard/: HTTP 406 to curl (bot-filtered; did not sign in)",
+      "GET https://partners.shopify.com/: 301 to https://www.shopify.com/partners",
+      "GET old authorization-code-grant doc URL: 301 to /docs/apps/build/authentication-authorization/authenticate-standalone-apps"
+    ],
+    "openQuestions": [
+      "Official current App Store review SLA (none published; the backlog figures come from forum reports)",
+      "Typical turnaround for protected customer data Level 2 and read_all_orders requests",
+      "Exact error returned when a public app queries unapproved protected customer fields on a merchant store",
+      "Whether the Partner Dashboard's 'API access requests' screen has fully moved into the Dev Dashboard"
+    ]
+  }
+}

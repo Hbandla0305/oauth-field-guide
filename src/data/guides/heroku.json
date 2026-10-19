@@ -1,0 +1,259 @@
+{
+  "app": {
+    "name": "Heroku",
+    "slug": "heroku",
+    "website": "https://www.heroku.com",
+    "developerPortal": "https://dashboard.heroku.com/account/applications#api_clients",
+    "category": "Cloud hosting"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth guide (Dev Center)", "url": "https://devcenter.heroku.com/articles/oauth" },
+    { "kind": "scopes", "label": "OAuth scopes", "url": "https://devcenter.heroku.com/articles/oauth#scopes" },
+    { "kind": "console", "label": "API clients (account settings)", "url": "https://dashboard.heroku.com/account/applications#api_clients" },
+    { "kind": "api", "label": "Platform API reference", "url": "https://devcenter.heroku.com/articles/platform-api-reference" },
+    { "kind": "changelog", "label": "API compatibility policy update", "url": "https://devcenter.heroku.com/changelog-items/3601" }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Register an API client in your Heroku account settings (name plus callback URL) and any Heroku user can authorize it immediately, with no review and clear read/write scopes. Watch for team admins who turn off third-party OAuth for team-owned apps, and for Heroku's February 2026 move to a 'sustaining engineering' model.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": { "min": 0.25, "max": 0.75 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1"],
+        "note": "Client registration is a name and callback URL; the flow is standard authorization code with a refresh token."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "An agent using the read or write scopes to inspect or manage apps, dynos and add-ons; read-protected is needed if it must see config vars.",
+      "waitingOn": "Nothing — no review. Separately, a team admin must not have disabled third-party OAuth for that team's apps.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1"],
+        "note": "The OAuth article mentions no review, approval or client limit."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Heroku account (with MFA, which Heroku requires for dashboard access)",
+      "why": "API clients are registered under an account; the account owns the client ID and secret.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1", "s6"], "note": "MFA requirement comes from Heroku's 2023 move away from password API auth; the OAuth article doesn't state it." }
+    },
+    {
+      "item": "A callback (redirect) URL",
+      "why": "Users are redirected to the client's redirect URI with code and state after consent.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The article doesn't say whether HTTPS is required." }
+    },
+    {
+      "item": "Server-side storage for the client secret and refresh tokens",
+      "why": "The token and refresh requests send client_secret, and refresh tokens don't expire.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity",
+      "examples": ["identity"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read-only access to account information. Enough for 'Sign in with Heroku', nothing else.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Apps and resources, no secrets",
+      "examples": ["read", "write"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read or write all of the user's apps and resources, excluding account info and config vars. Note: some readable resources, such as log drain URLs, can embed credentials.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Apps including config vars",
+      "examples": ["read-protected", "write-protected"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Adds runtime secrets such as database connection strings. Needed for an agent that debugs config, but a much bigger trust ask.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Everything",
+      "examples": ["global"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read and write all of the account, apps and resources, the same as the CLI's default authorization. Team-owned authorizations still can't do user-only actions.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to the Heroku dashboard",
+      "owner": "human",
+      "detail": "Use the account (preferably a shared company account) that should own the OAuth client.",
+      "url": "https://dashboard.heroku.com",
+      "duration": "2 min",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Register an API client",
+      "owner": "human",
+      "detail": "Account settings → Applications → API Clients → Register New API Client. Enter a name (shown to users on consent) and the callback URL. Alternatively use the CLI oauth plugin or POST /oauth/clients.",
+      "url": "https://dashboard.heroku.com/account/applications#api_clients",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "The page returned HTTP 200 on 2026-10-20 (not signed in)." }
+    },
+    {
+      "title": "Store client ID and secret",
+      "owner": "human",
+      "detail": "Copy the ID and secret into your secret manager.",
+      "url": null,
+      "duration": "2 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Choose minimal scopes",
+      "owner": "agent",
+      "detail": "Map agent features to scopes: read for inspection, write for scaling/restarts, read-protected only if config vars are needed.",
+      "url": "https://devcenter.heroku.com/articles/oauth#scopes",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Implement authorize redirect",
+      "owner": "agent",
+      "detail": "Redirect to https://id.heroku.com/oauth/authorize?client_id=...&response_type=code&scope=read&state=<csrf>. 'code' is the only supported response_type.",
+      "url": "https://devcenter.heroku.com/articles/oauth#web-application-authorization",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Implement token exchange and refresh",
+      "owner": "agent",
+      "detail": "POST grant_type=authorization_code&code=...&client_secret=... to https://id.heroku.com/oauth/token. Store refresh_token; refresh with grant_type=refresh_token before the 8-hour access token expires.",
+      "url": "https://devcenter.heroku.com/articles/oauth#token-exchange",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Call the Platform API",
+      "owner": "agent",
+      "detail": "Send Authorization: Bearer HRKU-... and Accept: application/vnd.heroku+json; version=3 to https://api.heroku.com (for example GET /apps). Track RateLimit-Remaining.",
+      "url": "https://devcenter.heroku.com/articles/platform-api-reference",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "title": "Test with a team-owned app",
+      "owner": "human",
+      "detail": "Authorize from a second account that belongs to a Heroku team, and confirm team apps are visible. If not, the team admin may have turned off third-party OAuth in the team's Settings tab.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Pick the least-privilege scope set",
+    "Write the authorize, callback and refresh code",
+    "Register the client via POST /oauth/clients once given a token",
+    "Add rate-limit handling using RateLimit-Remaining",
+    "Write help text for team admins about third-party OAuth settings"
+  ],
+  "humanMustDo": [
+    "Sign in (with MFA) and register the API client",
+    "Store the client secret",
+    "Test with a team-owned app",
+    "Ask customers' team admins to allow third-party OAuth if needed"
+  ],
+  "blockers": [
+    {
+      "symptom": "Token endpoint returns {\"id\":\"unauthorized\",\"message\":\"OAuth authorization invalid.\"}",
+      "cause": "Invalid, expired or reused code, or wrong client_secret.",
+      "fix": "Exchange the code once, promptly, with the matching client's secret.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed with dummy values on 2026-10-20; we couldn't separate the causes." }
+    },
+    {
+      "symptom": "API calls start failing about 8 hours after connect",
+      "cause": "Access tokens expire 8 hours after issue (expires_in 28799).",
+      "fix": "Refresh with the stored refresh_token, which doesn't expire.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "User authorizes successfully but team-owned apps are missing or forbidden",
+      "cause": "Team admins can deny OAuth access to team-owned resources from all non-Heroku products in the team's Settings tab.",
+      "fix": "Ask the team admin to re-enable third-party OAuth access to the Platform API.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact error returned in this case wasn't documented." }
+    },
+    {
+      "symptom": "HTTP 429 Too Many Requests with id rate_limit",
+      "cause": "Each account has a 4,500-token pool refilled at about 75/min; your agent shares it with the user's other tools.",
+      "fix": "Back off, check RateLimit-Remaining or GET /account/rate-limits (free), and cache reads.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "Config vars come back empty or forbidden",
+      "cause": "The read and write scopes exclude configuration variables.",
+      "fix": "Request read-protected or write-protected, and explain why on your consent copy.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire after 8 hours; refresh tokens don't expire. Tokens are 65 characters and prefixed HRKU-, which helps secret scanners.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Rate limits are per account, not per OAuth client, so heavy use by your agent eats into the user's own CLI and tool budget.",
+      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "The reference describes a per-account pool and doesn't mention per-client pools." }
+    },
+    {
+      "text": "Even read and read-protected tokens can expose write credentials embedded in metadata, such as log drain URLs. Treat stored tokens as highly sensitive.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Users and admins can revoke an authorization (DELETE /oauth/authorizations/{id}), which blocks its tokens immediately; build reconnect handling.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Since 16 February 2026, Heroku may make breaking changes to production API resources with three months' notice in the Changelog instead of a new API version. Watch the changelog.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "On 6 February 2026 Heroku announced a move to a 'sustaining engineering model' focused on stability rather than new features, and stopped offering new enterprise contracts. Weigh this if Heroku is core to your product.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "Read via Simon Willison's link post, which quotes Heroku's own announcement." }
+    },
+    {
+      "text": "No OIDC discovery document is published at id.heroku.com, so use the identity scope and GET /account for user info.",
+      "evidence": { "label": "tested", "sourceIds": ["s5"], "note": "https://id.heroku.com/.well-known/openid-configuration returned a 'Page Not Found' HTML page on 2026-10-20." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Heroku Dev Center: OAuth (updated 2026-09-29)", "url": "https://devcenter.heroku.com/articles/oauth" },
+    { "id": "s2", "title": "Heroku Dev Center: Platform API Reference", "url": "https://devcenter.heroku.com/articles/platform-api-reference" },
+    { "id": "s3", "title": "Heroku changelog: Updates to Heroku API Compatibility Policy", "url": "https://devcenter.heroku.com/changelog-items/3601" },
+    { "id": "s4", "title": "Simon Willison: An update on Heroku (2026-02-06)", "url": "https://simonwillison.net/b/9274" },
+    { "id": "s5", "title": "Heroku identity server (live check)", "url": "https://id.heroku.com/.well-known/openid-configuration" },
+    { "id": "s6", "title": "Heroku changelog: Username and password authentication for Heroku API is deprecated", "url": "https://devcenter.heroku.com/changelog-items/2516" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://dashboard.heroku.com/account/applications: HTTP 200 (not signed in)",
+      "GET https://id.heroku.com/oauth/authorize?client_id=x&response_type=code&scope=read: 302 to https://id.heroku.com/login",
+      "POST https://id.heroku.com/oauth/token with dummy values: {\"id\":\"unauthorized\",\"message\":\"OAuth authorization invalid.\"}",
+      "GET https://id.heroku.com/.well-known/openid-configuration: Heroku 'Page Not Found' HTML",
+      "HEAD https://api.heroku.com/account without a token: HTTP 401"
+    ],
+    "openQuestions": [
+      "Whether callback URLs must be HTTPS or can be http://localhost",
+      "Whether Heroku limits the number of API clients per account or the number of users per client",
+      "The exact error a token gets when a team has disabled third-party OAuth",
+      "Whether PKCE is supported (not mentioned in the OAuth article)",
+      "What 'sustaining engineering' means for the Platform API's long-term roadmap"
+    ]
+  }
+}

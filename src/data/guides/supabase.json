@@ -1,0 +1,382 @@
+{
+  "app": {
+    "name": "Supabase",
+    "slug": "supabase",
+    "website": "https://supabase.com",
+    "developerPortal": "https://supabase.com/dashboard",
+    "category": "Database platform"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Build a Supabase OAuth integration",
+      "url": "https://supabase.com/docs/guides/integrations/build-a-supabase-integration"
+    },
+    {
+      "kind": "scopes",
+      "label": "OAuth scopes reference",
+      "url": "https://supabase.com/docs/guides/integrations/build-a-supabase-oauth-integration/oauth-scopes"
+    },
+    {
+      "kind": "console",
+      "label": "Publish an OAuth app (org settings)",
+      "url": "https://supabase.com/docs/guides/platform/oauth-apps/publish-an-oauth-app"
+    },
+    {
+      "kind": "api",
+      "label": "Management API reference",
+      "url": "https://supabase.com/docs/reference/api/introduction"
+    },
+    {
+      "kind": "review",
+      "label": "Partner Catalog (optional listing)",
+      "url": "https://supabase.com/docs/guides/integrations/partner-catalog"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Any organization owner can add an OAuth app under Organization settings > OAuth Apps and start authorizing users of other organizations right away, with no review step documented. The catches are that you can't fetch a project's database password through the Management API, and the OAuth app's rate limit is shared by everyone calling through it.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3"],
+        "note": "Add the app in org settings, copy the client ID and secret, and run the code + PKCE flow against api.supabase.com."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
+      "assumes": "A self-published OAuth app that manages projects or runs SQL via the Management API. A Partner Catalog listing is optional and only adds visibility (Supabase's partner review is a separate track).",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3", "s5"],
+        "note": "Neither the integration guide nor the publish page mentions a review. The Partner Catalog docs list listing criteria but don't link them to OAuth access."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Supabase account and an organization you can administer",
+      "why": "OAuth apps are created from the organization's settings, on the OAuth Apps tab.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s3"],
+        "note": "The docs don't say which org role is needed; owner/admin is our assumption."
+      }
+    },
+    {
+      "item": "An HTTPS redirect URI and a server that can keep the client secret",
+      "why": "The token exchange authenticates with the client ID and secret through a Basic auth header.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "item": "A way to collect the user's database password if your agent needs direct Postgres access",
+      "why": "The docs say you 'cannot retrieve the database password via the management API'.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read-only project metadata",
+      "examples": ["organizations:read", "projects:read", "environment:read", "edge_functions:read", "storage:read", "analytics:read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enough for an agent that inspects projects, branches, functions and logs. Scopes are fixed on the app, not per request.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["s6", "s2"],
+        "note": "Scope strings from scopes_supported in api.supabase.com/.well-known/oauth-authorization-server on 2026-10-20."
+      }
+    },
+    {
+      "tier": "Database and secrets",
+      "examples": ["database:read", "database:write", "secrets:read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "database:write covers running SQL through the Management API. secrets:read returns project API keys. Powerful, but no extra review is documented.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s6"],
+        "note": null
+      }
+    },
+    {
+      "tier": "Project and infrastructure writes",
+      "examples": ["projects:write", "edge_functions:write", "environment:write", "storage:write"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Lets the agent create projects, deploy functions and manage branches. Creating projects can incur cost on the user's org.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s6"],
+        "note": "The billing remark is inferred."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in and pick the organization",
+      "owner": "human",
+      "detail": "Sign in to the Supabase dashboard and open the organization that will own the OAuth app.",
+      "url": "https://supabase.com/dashboard",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Choose the minimal scope set",
+      "owner": "agent",
+      "detail": "Map the agent's features to Management API endpoints and pick read/write scopes. Changing scopes later forces existing users to re-authorize.",
+      "url": "https://supabase.com/docs/guides/integrations/build-a-supabase-oauth-integration/oauth-scopes",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2"],
+        "note": null
+      }
+    },
+    {
+      "title": "Add the OAuth app",
+      "owner": "human",
+      "detail": "Organization settings > OAuth Apps > Add application. Enter name, website, redirect URIs and scopes, click Confirm, and copy the client ID and secret.",
+      "url": "https://supabase.com/docs/guides/platform/oauth-apps/publish-an-oauth-app",
+      "duration": "5–10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3", "s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement authorize + PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://api.supabase.com/v1/oauth/authorize with client_id, redirect_uri, response_type=code, state, code_challenge (S256), and optionally organization_slug. Keep redirect_uri + state under 4 kB.",
+      "url": "https://supabase.com/docs/guides/integrations/build-a-supabase-integration",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Exchange the code and store tokens",
+      "owner": "agent",
+      "detail": "POST https://api.supabase.com/v1/oauth/token (form-urlencoded, Basic auth) with grant_type=authorization_code, code, redirect_uri and code_verifier. Store access and refresh tokens; refresh with grant_type=refresh_token.",
+      "url": "https://supabase.com/docs/guides/integrations/build-a-supabase-integration",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Wire Management API calls with 429 handling",
+      "owner": "agent",
+      "detail": "Use supabase-management-js or raw calls. Back off on 429; some endpoints are limited to 30 or 10 requests/min.",
+      "url": "https://supabase.com/docs/reference/api/introduction",
+      "duration": "1–3 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4"],
+        "note": null
+      }
+    },
+    {
+      "title": "Add the Connect Supabase button",
+      "owner": "agent",
+      "detail": "Add a Connect Supabase button following Supabase's brand asset guidelines.",
+      "url": "https://supabase.com/docs/guides/integrations/build-a-supabase-integration",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Test with a second organization",
+      "owner": "human",
+      "detail": "Authorize from an account in a different org to confirm the app works for outside users and that the org picker appears.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Optionally apply for a Partner Catalog listing",
+      "owner": "human",
+      "detail": "Apply to the Partners program for visibility. Listing criteria: business viability, no 'Supabase' in your name, your own Terms, Privacy and Acceptable Use policies, and long-term maintenance.",
+      "url": "https://supabase.com/docs/guides/integrations/partner-catalog",
+      "duration": null,
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s5"],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Pick the minimal Management API scopes",
+    "Implement the authorize, PKCE, token and refresh flow",
+    "Build Management API calls with 429 backoff",
+    "Read OAuth metadata from /.well-known/oauth-authorization-server",
+    "Draft partner listing copy and policies if you want a listing"
+  ],
+  "humanMustDo": [
+    "Sign in and add the OAuth app in organization settings",
+    "Copy and store the client secret",
+    "Test authorization from a second organization",
+    "Ask users for their database password when direct Postgres access is needed"
+  ],
+  "blockers": [
+    {
+      "symptom": "{\"message\":\"Unrecognized client_id\"} from /v1/oauth/authorize",
+      "cause": "The client_id is wrong or the app was deleted.",
+      "fix": "Copy the client ID from Organization settings > OAuth Apps.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["s6"],
+        "note": "Seen with a dummy UUID on 2026-10-20 (HTTP 422)."
+      }
+    },
+    {
+      "symptom": "Agent can't connect to Postgres directly after OAuth",
+      "cause": "The database password can't be retrieved via the Management API.",
+      "fix": "Run SQL through the Management API with database:write, or prompt the user for the password.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Calls start returning 429 Too Many Requests at moderate traffic",
+      "cause": "For OAuth apps, the rate limit applies to the app and is shared by everyone calling through it.",
+      "fix": "Cache reads, queue writes, and back off until the window resets.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "403 or missing permission on an endpoint after adding a feature",
+      "cause": "Scopes are set on the app and new scopes only apply after users re-authorize.",
+      "fix": "Add the scope in the app settings and send existing users through the authorize flow again.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2"],
+        "note": "The exact status code is inferred."
+      }
+    },
+    {
+      "symptom": "Refresh fails or calls return 401 for a previously working user",
+      "cause": "The user revoked access to your app.",
+      "fix": "Handle 401 by sending the user back through authorization.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "OAuth tokens are short-lived and tied to specific scopes. The docs don't give the access token lifetime.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4", "s1"],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limit is 120 requests/min per user, per project or org, per endpoint, with some endpoints at 30 or 10/min. For OAuth apps the limit is shared by everyone calling through the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4"],
+        "note": null
+      }
+    },
+    {
+      "text": "The scope query parameter is deprecated. Scopes come from the app config, and changing them forces existing users to re-authorize.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s2"],
+        "note": null
+      }
+    },
+    {
+      "text": "The live OAuth metadata advertises a dynamic client registration endpoint (/platform/oauth/apps/register) and a jwt-bearer grant, which the integration guide doesn't document.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["s6"],
+        "note": "Observed on 2026-10-20. Likely used by MCP clients; we didn't call it."
+      }
+    },
+    {
+      "text": "The docs scope table also lists Auth, Domains, Rest and Secrets write scopes that don't appear in the live scopes_supported list, so the docs and live config may differ.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s2", "s6"],
+        "note": null
+      }
+    },
+    {
+      "text": "For single-user agents, scoped personal access tokens are an alternative to OAuth; the docs say 'Prefer scoped PATs' over legacy PATs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4"],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Supabase docs: Build a Supabase OAuth integration", "url": "https://supabase.com/docs/guides/integrations/build-a-supabase-integration" },
+    { "id": "s2", "title": "Supabase docs: OAuth scopes", "url": "https://supabase.com/docs/guides/integrations/build-a-supabase-oauth-integration/oauth-scopes" },
+    { "id": "s3", "title": "Supabase docs: Publish an OAuth app", "url": "https://supabase.com/docs/guides/platform/oauth-apps/publish-an-oauth-app" },
+    { "id": "s4", "title": "Supabase Management API reference: Introduction (auth and rate limits)", "url": "https://supabase.com/docs/reference/api/introduction" },
+    { "id": "s5", "title": "Supabase docs: Partner Catalog", "url": "https://supabase.com/docs/guides/integrations/partner-catalog" },
+    { "id": "s6", "title": "Supabase OAuth authorization server metadata (live)", "url": "https://api.supabase.com/.well-known/oauth-authorization-server" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://api.supabase.com/.well-known/oauth-authorization-server: issuer https://api.supabase.com, authorize /v1/oauth/authorize, token /v1/oauth/token, registration_endpoint /platform/oauth/apps/register, PKCE S256 and plain, 13 scopes_supported",
+      "GET /v1/oauth/authorize with a dummy client_id: HTTP 422 {\"message\":\"Unrecognized client_id\"}",
+      "POST /v1/oauth/token with only grant_type: {\"message\":\"Required parameter: client_id\"}"
+    ],
+    "openQuestions": [
+      "Access and refresh token lifetimes for Management API OAuth tokens",
+      "Which org role is needed to create an OAuth app, and whether users must be org owners to authorize",
+      "Whether Supabase reviews or can restrict high-volume third-party OAuth apps",
+      "Why the docs scope table and live scopes_supported list differ"
+    ]
+  }
+}

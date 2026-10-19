@@ -1,0 +1,574 @@
+{
+  "app": {
+    "name": "Ramp",
+    "slug": "ramp",
+    "website": "https://ramp.com",
+    "developerPortal": "https://docs.ramp.com/developer-api/v1/introduction",
+    "category": "Finance"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authorization guide",
+      "url": "https://docs.ramp.com/developer-api/v1/authorization"
+    },
+    {
+      "kind": "review",
+      "label": "Partner integrations (production access and listing)",
+      "url": "https://docs.ramp.com/developer-api/v1/build-with-ramp"
+    },
+    {
+      "kind": "console",
+      "label": "Sandbox (demo) app",
+      "url": "https://demo.ramp.com"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits and timeouts",
+      "url": "https://docs.ramp.com/developer-api/v1/rate-limiting"
+    },
+    {
+      "kind": "changelog",
+      "label": "Developer API changelog",
+      "url": "https://docs.ramp.com/developer-api/v1/changelog"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "Building against a Ramp sandbox is quick and self-serve, but an OAuth app that other Ramp businesses can authorize needs Ramp to approve your production access application, which is framed as a partnership with security disclosures (SOC 2, ISO 27001 or a third-party pen test). Only Admin or Business Owner users at each customer can authorize the app.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6",
+          "s3",
+          "s1"
+        ],
+        "note": "Ramp's support article says a requested sandbox is ready in about one minute. Creating an app with the Authorization Code grant and scopes in Company → Developer is a few console clicks."
+      }
+    },
+    "timeToProd": {
+      "range": "2–8 weeks",
+      "hours": {
+        "min": 336,
+        "max": 1344
+      },
+      "assumes": "A multi-tenant agent that other Ramp businesses connect via Authorization Code; an internal tool for your own Ramp business can use Client Credentials the same day with no review.",
+      "waitingOn": "Ramp's review of your production access application (integration flows plus security disclosures), then an optional beta phase and separate public listing review.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": "Ramp says approval is required before production access but publishes no timeline. The range is our estimate for a partner review that includes security documentation."
+      }
+    },
+    "cost": "No fees or revenue share per Ramp's partner guide. Security attestations (SOC 2 Type II, ISO 27001, or a third-party pen test) are expected, which cost money if you don't already have them."
+  },
+  "prerequisites": [
+    {
+      "item": "A Ramp sandbox (requested through Ramp's sandbox access form) or a Ramp business where you are an Admin",
+      "why": "Developer apps are created inside a Ramp account under Company → Developer, and admin access is required.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "HTTPS redirect URI that exactly matches one configured on the app",
+      "why": "The Authorization Code flow requires HTTPS redirect URIs and an exact match.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Separate sandbox and production apps",
+      "why": "Each environment requires its own app configuration; tokens only work in the environment that issued them.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Security package: SOC 2 Type II, ISO 27001, PCI or a recent third-party pen test report, a public security policy URL and a monitored security contact",
+      "why": "Partners must complete security disclosures. Early-stage companies may substitute a recent pen test, subject to Ramp's review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Public support email and public setup documentation",
+      "why": "Ramp routes customer questions to you and expects hosted docs and an internal support guide for Ramp teams.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read-only spend data (own business)",
+      "examples": [
+        "transactions:read",
+        "bills:read",
+        "reimbursements:read",
+        "users:read",
+        "business:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "With Client Credentials, your own Ramp business can read its data immediately. Enough for an internal agent; not for connecting other companies.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": "The quickstart uses Client Credentials with transactions:read on your own account."
+      }
+    },
+    {
+      "tier": "Read/write scopes for other businesses (OAuth)",
+      "examples": [
+        "transactions:read",
+        "transactions:write",
+        "bills:write",
+        "memos:write",
+        "receipts:write",
+        "vendors:read"
+      ],
+      "reviewRequired": true,
+      "time": "2–8 weeks",
+      "impact": "Needs approved production access before customers outside your own business can authorize the app. Scopes must be pre-configured on the app or Ramp returns invalid_scope.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Review is tied to production access for multi-business apps, not to specific scopes. Timeline is an estimate."
+      }
+    },
+    {
+      "tier": "Sensitive card data",
+      "examples": [
+        "cards:read_vault",
+        "limits:write",
+        "cards:write"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks (separate review)",
+      "impact": "Ramp says cards:read_vault requires additional security review, and Vault API docs say production access review is needed before retrieving full PANs and CVVs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s8"
+        ],
+        "note": "Time is our estimate; no published SLA."
+      }
+    },
+    {
+      "tier": "Partner-only application endpoints",
+      "examples": [
+        "applications:write",
+        "applications:read"
+      ],
+      "reviewRequired": true,
+      "time": "Partnership",
+      "impact": "Creating financing applications needs a client permitted to access businesses other than its own; restricted clients cannot use the create endpoint.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Request a sandbox",
+      "owner": "human",
+      "detail": "Submit Ramp's sandbox access form. You get an access email for a pre-populated demo business at demo.ramp.com.",
+      "url": "https://docs.ramp.com/developer-api/v1/sandbox",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s5"
+        ],
+        "note": "Support article says the sandbox should be ready in about one minute."
+      }
+    },
+    {
+      "title": "Pick scopes and draft the integration design",
+      "owner": "agent",
+      "detail": "Map each endpoint the agent calls to its required scope (start read-only, e.g. transactions:read business:read), and plan sync: synced_after only catches accounting-sync events, so use webhooks or periodic re-pulls for other changes.",
+      "url": "https://docs.ramp.com/developer-api/v1/authorization",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the sandbox developer app",
+      "owner": "human",
+      "detail": "In the sandbox go to Settings → Company → Developer → Create New App, accept terms, add the Authorization Code and Refresh Token grant types, configure allowed scopes and HTTPS redirect URIs, and copy the client ID and secret.",
+      "url": "https://demo.ramp.com",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the OAuth flow",
+      "owner": "agent",
+      "detail": "Redirect to https://demo.ramp.com/v1/authorize (prod: https://app.ramp.com/v1/authorize) with response_type=code, client_id, redirect_uri, scope and a random state. Exchange the code at {api}/developer/v1/token using HTTP Basic auth; API hosts are demo-api.ramp.com and api.ramp.com.",
+      "url": "https://docs.ramp.com/developer-api/v1/authorization",
+      "duration": "1–3 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test with sandbox demo actions",
+      "owner": "human",
+      "detail": "Use the ⌘J demo actions panel to create transactions, pay bills and mark reimbursements paid, then verify your agent reads them.",
+      "url": "https://docs.ramp.com/developer-api/v1/sandbox",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Prepare the security and support package",
+      "owner": "agent",
+      "detail": "Draft data-processing, storage, retention and employee-access descriptions, the public setup docs, and an internal support guide for Ramp teams.",
+      "url": "https://docs.ramp.com/developer-api/v1/build-with-ramp",
+      "duration": "1–2 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Attach certifications and apply for production access",
+      "owner": "human",
+      "detail": "Provide full SOC 2 / ISO 27001 / pen test reports (not summary letters), security policy URL and security contact, and submit the production access application.",
+      "url": "https://docs.ramp.com/developer-api/v1/build-with-ramp",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for Ramp's review",
+      "owner": "wait",
+      "detail": "Ramp reviews your integration flows and gives feedback; approval is required before production access.",
+      "url": null,
+      "duration": "2–8 weeks (estimate)",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "No published timeline."
+      }
+    },
+    {
+      "title": "Create the production app and run beta",
+      "owner": "human",
+      "detail": "Recreate the app in production (separate credentials), point to app.ramp.com/api.ramp.com, and onboard beta customers through OAuth with an Admin or Business Owner at each.",
+      "url": "https://app.ramp.com",
+      "duration": "1–4 weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Beta testing is Phase 3 of Ramp's partner checklist; duration is our estimate."
+      }
+    },
+    {
+      "title": "Optionally apply for a public listing",
+      "owner": "human",
+      "detail": "Supply logo, descriptions, screenshots and video for the ramp.com/integrations page.",
+      "url": "https://ramp.com/integrations",
+      "duration": null,
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Map endpoints to the minimum scopes",
+    "Generate the authorize URL and token exchange code",
+    "Build pagination, webhook and 429 backoff handling",
+    "Draft security disclosures and data-retention text",
+    "Write public setup docs and the Ramp support guide"
+  ],
+  "humanMustDo": [
+    "Request the sandbox and create apps in the console",
+    "Obtain SOC 2, ISO 27001 or pen test reports",
+    "Submit the production access application",
+    "Recruit beta customers whose Admin authorizes the app"
+  ],
+  "blockers": [
+    {
+      "symptom": "\"Business not authorized to use this application\" on the consent screen",
+      "cause": "The person authorizing lacks Developer API authorization permission, typically limited to Admin and Business Owner roles.",
+      "fix": "Have an Admin or Business Owner at the customer complete the flow; they can check roles in Settings → Team.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_scope from the authorize or token endpoint",
+      "cause": "A requested scope isn't configured on the app.",
+      "fix": "Add the scope under Configure allowed scopes, then re-authorize; existing tokens can't gain scopes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "unauthorized_client when refreshing",
+      "cause": "The Refresh Token grant type isn't enabled on the app.",
+      "fix": "Add the Refresh Token grant type in app settings.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Tokens or credentials rejected after moving to production",
+      "cause": "Sandbox and production are isolated; apps, credentials and tokens don't carry over, and API hosts differ from app hosts.",
+      "fix": "Create a separate production app and call api.ramp.com, not app.ramp.com.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "DEVELOPER_7100 errors on reimbursements or spend request endpoints",
+      "cause": "Token was issued without the needed scope (reported for a third-party shared OAuth client missing reimbursements:read).",
+      "fix": "Request every scope each endpoint needs and re-authorize.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s11"
+        ],
+        "note": "Pipedream community thread, not Ramp docs."
+      }
+    },
+    {
+      "symptom": "Custom MCP client's OAuth flow fails against Ramp MCP",
+      "cause": "Custom MCP clients and third-party gateways must have their exact redirect URI allowlisted by Ramp.",
+      "fix": "Submit Ramp's redirect URI allowlist request form, or use the REST API with your own approved app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Authorization Code access tokens default to 1 hour (can vary per app; use expires_in). Refreshing returns a new access token but not a new refresh token, so keep the original and track refresh_token_expires_in if present.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Client Credentials tokens last about 10 days, return no refresh token, and act with no user context — suitable only for your own business.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limit is 200 requests per 10-second rolling window per source IP; requests over 60 seconds return 504. Higher limits via support ticket.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Authorization codes expire after 10 minutes, and state is required for new integrations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Ramp also offers an official Ramp MCP server and CLI that act with the signed-in user's permissions; off-the-shelf clients like Claude and ChatGPT work without allowlisting, which may be faster than building your own OAuth app for some agent use cases.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Ramp's docs pages render via JavaScript; the machine-readable text export at docs.ramp.com/llms-guides.txt is the reliable source for agents.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "Docs HTML returned a JS shell pointing to /llms*.txt; llms-guides.txt returned the full guide text on 2026-10-20."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Ramp Developer API: Authorization",
+      "url": "https://docs.ramp.com/developer-api/v1/authorization"
+    },
+    {
+      "id": "s2",
+      "title": "Ramp Developer API: Partner Integrations",
+      "url": "https://docs.ramp.com/developer-api/v1/build-with-ramp"
+    },
+    {
+      "id": "s3",
+      "title": "Ramp Developer API: Quickstart",
+      "url": "https://docs.ramp.com/developer-api/v1/getting-started"
+    },
+    {
+      "id": "s4",
+      "title": "Ramp Developer API: Rate Limits and Timeouts",
+      "url": "https://docs.ramp.com/developer-api/v1/rate-limiting"
+    },
+    {
+      "id": "s5",
+      "title": "Ramp Developer API: Sandbox",
+      "url": "https://docs.ramp.com/developer-api/v1/sandbox"
+    },
+    {
+      "id": "s6",
+      "title": "Ramp Help Center: Developer API overview",
+      "url": "https://support.ramp.com/hc/en-us/articles/46681939909907-Accessing-the-Developer-API"
+    },
+    {
+      "id": "s7",
+      "title": "Ramp Developer API: Ramp MCP",
+      "url": "https://docs.ramp.com/developer-api/v1/ramp-mcp"
+    },
+    {
+      "id": "s8",
+      "title": "Ramp Developer API guides (plain-text export)",
+      "url": "https://docs.ramp.com/llms-guides.txt"
+    },
+    {
+      "id": "s11",
+      "title": "Pipedream community: Ramp reimbursements:read scope and DEVELOPER_7100",
+      "url": "https://pipedream.com/community/t/can-the-reimbursements-read-and-spend-requests-read-scopes-be-added-to-the-shared-clients-scope-sets-on-pipedream-connect-to-solve-the-developer-7100-error/14472"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://app.ramp.com/v1/authorize returned HTTP 200 (no login attempted)",
+      "https://api.ramp.com/.well-known/openid-configuration returned 'Not Authorized' — no public OIDC discovery document found",
+      "docs.ramp.com guide pages return a JS shell; https://docs.ramp.com/llms-guides.txt returned full guide text"
+    ],
+    "openQuestions": [
+      "How long Ramp's production access review takes in practice",
+      "Whether a non-Ramp-customer company can get production access without an existing Ramp business account",
+      "Whether the SOC 2 / pen test requirement applies at production access or only at public listing",
+      "Default refresh token lifetime for Authorization Code apps"
+    ]
+  }
+}

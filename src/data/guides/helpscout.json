@@ -1,0 +1,234 @@
+{
+  "app": {
+    "name": "Help Scout",
+    "slug": "helpscout",
+    "website": "https://www.helpscout.com",
+    "developerPortal": "https://developer.helpscout.com",
+    "category": "Customer support"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "Inbox API authentication (OAuth 2.0)", "url": "https://developer.helpscout.com/mailbox-api/overview/authentication/" },
+    { "kind": "api", "label": "Inbox API rate limiting", "url": "https://developer.helpscout.com/mailbox-api/overview/rate-limiting/" },
+    { "kind": "api", "label": "API access by plan", "url": "https://docs.helpscout.com/article/1140-mailbox-api" },
+    { "kind": "console", "label": "Developer documentation home", "url": "https://developer.helpscout.com" }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Any Help Scout user can create an OAuth app under Your Profile > My apps and any other Help Scout account can authorize it right away, with no review, marketplace or scopes. The catch is on the customer side: the Free plan has no API access, Standard can't reach reporting endpoints, and the rate limit (200–800 calls/min) is shared across the whole account.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": { "min": 0.25, "max": 0.75 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3"],
+        "note": "Create the app in My apps, add a redirect URL, run the authorization code flow. You need a paid plan or trial on your own account because Free has no API access."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 2, "max": 24 },
+      "assumes": "A server-side agent reading and replying to conversations across customers' Help Scout accounts via the authorization code flow.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3"],
+        "note": "Help Scout's docs describe no review, approval or listing step for OAuth apps used by other accounts. Absence of a review step is our reading of the docs, not an explicit statement."
+      }
+    },
+    "cost": "No developer fee. Your test account and each connecting customer need a paid Help Scout plan (Standard, Plus or Pro), because the Free plan excludes API access."
+  },
+  "prerequisites": [
+    {
+      "item": "A Help Scout account on a paid plan or trial, with a user who can create apps",
+      "why": "The Free plan doesn't include API access, and OAuth credentials must belong to an active, invited user.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": "Whether a trial includes API access wasn't confirmed." }
+    },
+    {
+      "item": "An HTTPS redirect URL for the authorization code flow",
+      "why": "A redirect URL is required for the authorization code flow.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs don't say whether http://localhost is accepted." }
+    },
+    {
+      "item": "Customers on Standard, Plus or Pro",
+      "why": "Free-plan accounts can't use the API, and Standard has no reporting endpoints.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Inbox API on Standard plan (no scopes in OAuth)",
+      "examples": ["conversations", "customers", "mailboxes", "threads"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "The authorize URL takes no scope parameter, so the token gets the API access the account's plan allows. Standard covers conversations and customers but not reporting.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1", "s3"], "note": "Examples are API resource areas, not scope strings, because Help Scout doesn't document OAuth scopes. That the token mirrors the authorizing user's permissions is not stated." }
+    },
+    {
+      "tier": "Reporting endpoints (Plus or Pro only)",
+      "examples": ["reports"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Available only when the customer is on Plus or Pro. Analytics features of an agent won't work for Standard customers.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "tier": "Client credentials (internal only)",
+      "examples": ["grant_type=client_credentials"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Intended for internal integrations with your own account, not apps used by other Help Scout users.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Get a paid or trial Help Scout account",
+      "owner": "human",
+      "detail": "Sign up or sign in. Make sure your plan includes API access (not Free).",
+      "url": "https://www.helpscout.com/pricing/",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "title": "Create the OAuth app",
+      "owner": "human",
+      "detail": "Go to Your Profile > My apps > Create My App, enter a name and redirect URL, and copy the App ID and App Secret. Create it under a user who will stay on the account.",
+      "url": "https://secure.helpscout.net/",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "We didn't sign in, so the exact My apps URL wasn't observed." }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect users to https://secure.helpscout.net/authentication/authorizeClientApplication?client_id=...&state=.... On callback, verify state and POST grant_type=authorization_code, code, client_id, client_secret to https://api.helpscout.net/v2/oauth2/token.",
+      "url": "https://developer.helpscout.com/mailbox-api/overview/authentication/",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Store tokens and refresh on 401",
+      "owner": "agent",
+      "detail": "Access tokens last 2 days (expires_in 172800). On HTTP 401, POST grant_type=refresh_token to the same token endpoint. Store tokens in variable-length fields and save any new refresh token returned.",
+      "url": "https://developer.helpscout.com/mailbox-api/overview/authentication/",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Whether refresh tokens rotate on use isn't documented; saving the newest one is a precaution." }
+    },
+    {
+      "title": "Build plan-aware rate limiting",
+      "owner": "agent",
+      "detail": "Read X-RateLimit-Limit-Minute and X-RateLimit-Remaining-Minute, count writes double, and back off on 429 using X-RateLimit-Retry-After.",
+      "url": "https://developer.helpscout.com/mailbox-api/overview/rate-limiting/",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Detect plan limits per customer",
+      "owner": "agent",
+      "detail": "Handle Free-plan accounts (no API) and Standard accounts (no reports) gracefully in the connect flow and feature gating.",
+      "url": "https://docs.helpscout.com/article/1140-mailbox-api",
+      "duration": "1 h",
+      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": "The exact error returned to a Free-plan account wasn't documented." }
+    },
+    {
+      "title": "Test with a second Help Scout account",
+      "owner": "human",
+      "detail": "Authorize the app from a different account to confirm cross-account install works before launch.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the authorize redirect, state check and code exchange",
+    "Build refresh-on-401 with safe token persistence",
+    "Add rate-limit handling that counts writes as two requests",
+    "Gate reporting features by the customer's plan",
+    "Check the token endpoint and authorize URL respond as expected"
+  ],
+  "humanMustDo": [
+    "Sign in to Help Scout on a plan with API access",
+    "Create the app in My apps and copy the secret",
+    "Keep the owning user active on the account",
+    "Customer side: a Help Scout user authorizes the app on a paid plan"
+  ],
+  "blockers": [
+    {
+      "symptom": "A customer can authorize but API calls fail",
+      "cause": "The customer is on the Free plan, which doesn't include API access.",
+      "fix": "Tell the customer they need Standard, Plus or Pro before connecting.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The exact error response for Free-plan accounts wasn't documented." }
+    },
+    {
+      "symptom": "Reporting endpoints fail for some customers",
+      "cause": "Standard plan accounts have no access to reporting endpoints.",
+      "fix": "Hide reporting features for Standard accounts, or ask them to upgrade to Plus or Pro.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "symptom": "HTTP 429 with X-RateLimit-Retry-After",
+      "cause": "The account-wide limit (200, 400 or 800 calls/min by plan) is shared by all users and integrations, and writes count double.",
+      "fix": "Throttle per account, batch reads, and wait the indicated seconds.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "symptom": "invalid_client from /v2/oauth2/token",
+      "cause": "Wrong client_id or client_secret, or the app owner is no longer an active user.",
+      "fix": "Check credentials, and re-create the app under an active user if the owner left.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "We observed {\"error\":\"invalid_client\",\"error_description\":\"Invalid client authentication\"} with fake credentials. The link to an inactive owner is our inference from the active-user requirement." }
+    },
+    {
+      "symptom": "API calls start returning 401 after about two days",
+      "cause": "Access tokens expire after 172800 seconds.",
+      "fix": "Refresh with grant_type=refresh_token when you get a 401.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "OAuth credentials must belong to an active, invited user in the Help Scout account; create the app under a durable account, not a personal one that might be removed.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "There are no OAuth scopes: the authorize URL takes only client_id and state, so you can't request least-privilege access, and customers can't grant partial access.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "Help Scout's docs list no scope parameter; we infer the token has the full API access the plan allows." }
+    },
+    {
+      "text": "Rate limits are per customer account and shared across all users and integrations, with writes counting as two requests.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Token length may change, so store access and refresh tokens in variable-length columns.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "The API was renamed from Mailbox API to Inbox API; developer URLs still use /mailbox-api/.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed in the URL of the authentication page we read." }
+    },
+    {
+      "text": "Docs API (knowledge base) is separate from the Inbox API and uses its own API key, so an agent that reads help articles needs a second credential.",
+      "evidence": { "label": "unverified", "sourceIds": ["s3"], "note": "Based on the Docs API being listed separately; we didn't open the Docs API auth page." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Help Scout developer docs: Inbox API authentication", "url": "https://developer.helpscout.com/mailbox-api/overview/authentication/" },
+    { "id": "s2", "title": "Help Scout developer docs: Rate limiting", "url": "https://developer.helpscout.com/mailbox-api/overview/rate-limiting/" },
+    { "id": "s3", "title": "Help Scout Help: Mailbox API, Docs API, Beacon JavaScript, Apps (API access by plan)", "url": "https://docs.helpscout.com/article/1140-mailbox-api" },
+    { "id": "s4", "title": "Help Scout pricing", "url": "https://www.helpscout.com/pricing/" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://secure.helpscout.net/authentication/authorizeClientApplication?client_id=x&state=y: 307 to /members/login (authorize endpoint live, needs login)",
+      "POST https://api.helpscout.net/v2/oauth2/token with fake credentials: {\"error\":\"invalid_client\",\"error_description\":\"Invalid client authentication\"}",
+      "GET https://developer.helpscout.com/: HTTP 200"
+    ],
+    "openQuestions": [
+      "Refresh token lifetime and whether refresh tokens rotate on use",
+      "Whether the token is limited by the authorizing user's role or mailbox permissions",
+      "Whether free trials include API access for development",
+      "Whether Help Scout has developer terms restricting AI/LLM use of customer data",
+      "Whether http://localhost redirect URLs are accepted"
+    ]
+  }
+}

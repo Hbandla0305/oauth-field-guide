@@ -1,0 +1,266 @@
+{
+  "app": {
+    "name": "Cal.com",
+    "slug": "cal-com",
+    "website": "https://cal.com",
+    "developerPortal": "https://app.cal.com/settings/developer/oauth",
+    "category": "Scheduling"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth 2.0 guide (API v2)", "url": "https://cal.com/docs/api-reference/v2/oauth" },
+    { "kind": "scopes", "label": "Scopes reference (help center)", "url": "https://cal.com/help/apps-and-integrations/oauth" },
+    { "kind": "api", "label": "API v2 introduction", "url": "https://cal.com/docs/api-reference/v2/introduction" },
+    { "kind": "console", "label": "Developer console (OAuth clients)", "url": "https://app.cal.com/settings/developer/oauth" }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Creating an OAuth client is self-serve, but every new client starts as \"pending\" and only its owner can use it until a Cal.com admin approves it by email, with no published review timeline. Scopes are granular (BOOKING_READ, EVENT_TYPE_WRITE and so on) and access tokens last only 30 minutes, so refresh handling is mandatory.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": { "min": 0.5, "max": 1.5 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s2"],
+        "note": "While pending, the client owner can use the client for testing, so a dev loop against your own Cal.com account works before approval."
+      }
+    },
+    "timeToProd": {
+      "range": "1 day–3 weeks",
+      "hours": { "min": 24, "max": 504 },
+      "assumes": "A confidential OAuth client with user scopes such as BOOKING_READ/WRITE and EVENT_TYPE_READ, approved by a Cal.com admin; there is no faster path for other users.",
+      "waitingOn": "Cal.com admin review of the OAuth client (accept/reject email). Re-review is triggered again by later changes to name, logo, website, redirect URIs or new scopes.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1"],
+        "note": "The docs confirm manual admin review but give no timeline; the range is our estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Cal.com account (to own the OAuth client)",
+      "why": "Clients are created in the logged-in settings page at app.cal.com/settings/developer/oauth.",
+      "evidence": { "label": "tested", "sourceIds": ["s1", "s4"], "note": "The console URL returned 307 to app.cal.com/auth/login on 2026-10-20, so it needs a session. We did not sign in." }
+    },
+    {
+      "item": "Exact HTTPS callback URLs (up to 10, no wildcards)",
+      "why": "redirect_uri must exactly match a registered URI; wildcards in host or path are rejected on save.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "A name, logo, website URL and purpose description for the client",
+      "why": "These are part of the client record a Cal.com admin reviews; changing name, logo or website later sends the client back to pending.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs list these as re-approval triggers; that they are all mandatory at creation is our reading." }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "User read scopes",
+      "examples": ["PROFILE_READ", "BOOKING_READ", "EVENT_TYPE_READ", "SCHEDULE_READ", "APPS_READ"],
+      "reviewRequired": true,
+      "time": "1 day–3 weeks",
+      "impact": "Read a user's bookings, event types, availability and connected calendars. Every client needs admin approval regardless of which scopes it holds.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "The time column is inferred; no SLA is published." }
+    },
+    {
+      "tier": "User write scopes",
+      "examples": ["BOOKING_WRITE", "EVENT_TYPE_WRITE", "SCHEDULE_WRITE", "WEBHOOK_WRITE"],
+      "reviewRequired": true,
+      "time": "Same review as read",
+      "impact": "Confirm, decline and reschedule bookings, edit event types and schedules, register webhooks. Adding a _READ scope when the matching _WRITE is already granted does not trigger re-approval.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Team and organization scopes",
+      "examples": ["TEAM_BOOKING_READ", "TEAM_MEMBERSHIP_READ", "ORG_BOOKING_READ", "ORG_MEMBERSHIP_WRITE"],
+      "reviewRequired": true,
+      "time": "Re-review if added later",
+      "impact": "Needed for /v2/teams/:teamId and /v2/organizations/:orgId endpoints. An ORG_ scope also grants the matching TEAM_ scope. Adding TEAM_ or ORG_ scopes to a legacy client triggers re-approval.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "tier": "Platform managed users (closed to new signups)",
+      "examples": ["x-cal-client-id / x-cal-secret-key headers"],
+      "reviewRequired": true,
+      "time": "Unavailable",
+      "impact": "Platform OAuth clients (managed users, OAuth client webhooks) are deprecated; Cal.com stopped new signups for Platform plans as of 15 December 2025. Use the standard OAuth flow instead.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to Cal.com",
+      "owner": "human",
+      "detail": "Create or sign in to the Cal.com account that will own the OAuth client.",
+      "url": "https://app.cal.com/auth/login",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s4"], "note": "Observed the redirect from the developer page to /auth/login." }
+    },
+    {
+      "title": "Decide scopes and redirect URIs",
+      "owner": "agent",
+      "detail": "Pick the least-privilege scope set (e.g. PROFILE_READ BOOKING_READ BOOKING_WRITE EVENT_TYPE_READ). Add TEAM_/ORG_ scopes now if you'll need them, because adding scopes later sends the client back to pending. List every exact HTTPS callback (max 10).",
+      "url": "https://cal.com/help/apps-and-integrations/oauth",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "title": "Draft the client name, description and website copy",
+      "owner": "agent",
+      "detail": "Write a clear purpose description explaining what the agent does with each scope. Changing the description later does not trigger re-approval, but name, logo and website do.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Create the OAuth client",
+      "owner": "human",
+      "detail": "In Settings > Developer > OAuth, create the client with at least one scope and the redirect URIs. Copy the client ID and secret (secrets are shown only once).",
+      "url": "https://app.cal.com/settings/developer/oauth",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Implement authorize + token exchange",
+      "owner": "agent",
+      "detail": "Redirect to https://app.cal.com/auth/oauth2/authorize?client_id=...&redirect_uri=...&scope=BOOKING_READ%20PROFILE_READ&state=... (PKCE S256 for public clients). Exchange the code with POST https://api.cal.com/v2/auth/oauth2/token (JSON or form) and verify with GET https://api.cal.com/v2/me.",
+      "url": "https://cal.com/docs/api-reference/v2/oauth",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Add refresh handling",
+      "owner": "agent",
+      "detail": "Access tokens expire after 1800 s. Refresh with grant_type=refresh_token at the same endpoint; on invalid_grant / invalid_refresh_token send the user back through authorization.",
+      "url": "https://cal.com/docs/api-reference/v2/oauth",
+      "duration": "30–60 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Test as the client owner while pending",
+      "owner": "human",
+      "detail": "Run the flow with your own Cal.com account. Other users see a 'client not approved' error on the Cal.com page until approval.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Wait for Cal.com admin review",
+      "owner": "wait",
+      "detail": "A Cal.com admin reviews the client and emails you whether it was accepted or rejected.",
+      "url": null,
+      "duration": "Unknown (no SLA)",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "Duration not published." }
+    },
+    {
+      "title": "Go live and freeze client metadata",
+      "owner": "human",
+      "detail": "Once approved, any Cal.com user can connect. Avoid editing name, logo, website, redirect URIs or adding new scopes without planning for another review window.",
+      "url": "https://app.cal.com/settings/developer/oauth",
+      "duration": "minutes",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose a least-privilege scope set, including TEAM_/ORG_ scopes up front",
+    "Draft the client description and per-scope purpose text",
+    "Implement authorize, token exchange, PKCE and 30-minute refresh handling",
+    "Map Cal.com OAuth error codes (invalid_scope, invalid_grant) to user-facing messages",
+    "Check endpoints such as /v2/me and the token endpoint"
+  ],
+  "humanMustDo": [
+    "Sign in to Cal.com and create the OAuth client",
+    "Store the client secret when it is shown (only once)",
+    "Test the flow with the owner account while pending",
+    "Watch for and act on the approval or rejection email"
+  ],
+  "blockers": [
+    {
+      "symptom": "Cal.com shows a 'client not approved' error page instead of the consent screen for other users",
+      "cause": "The client is still pending admin review; only the owner can use a pending client.",
+      "fix": "Test with the owner account and wait for the approval email.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact on-page wording was not observed." }
+    },
+    {
+      "symptom": "A working production client suddenly fails for users after a settings edit",
+      "cause": "Changing name, logo, website URL, redirect URI or adding a new scope returns the client to pending.",
+      "fix": "Batch metadata changes, add scopes up front, and plan for a re-review window.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "The docs say these edits return the client to pending; that existing users then can't authorize is our inference." }
+    },
+    {
+      "symptom": "Redirect to your app with error=invalid_request and 'Requested scope exceeds the client's registered scopes'",
+      "cause": "The scope parameter asks for a scope not selected on the client.",
+      "fix": "Request only a subset of the client's scopes, or add the scope (triggers re-approval).",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Mismatched redirect URI error shown on the Cal.com page (no redirect back)",
+      "cause": "redirect_uri doesn't exactly match a registered URI, or a wildcard was used.",
+      "fix": "Register the full exact callback URL; wildcards aren't supported.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "invalid_grant with code_invalid_or_expired (400) on token exchange",
+      "cause": "The authorization code was reused, expired or is invalid.",
+      "fix": "Exchange each code once, promptly, with the same redirect_uri.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Users authorized through an old URL break after you select scopes on a legacy client",
+      "cause": "Legacy clients (no scopes, or only READ_BOOKING/READ_PROFILE) aren't scope-enforced; changing scopes before adding the scope parameter breaks the flow.",
+      "fix": "First add scope= to the authorization URL, then select matching scopes in client settings.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire after 30 minutes (expires_in 1800). Refresh token lifetime isn't stated in the OAuth docs; scopes are preserved on refresh.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Up to 2 client secrets can be active at once for rotation; revoking one takes effect immediately and existing tokens stay valid.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Official docs give 120 requests/min for API keys and unauthenticated calls; an OAuth-token figure isn't stated on the official page. A third-party mirror cites 500/min for OAuth access tokens.",
+      "evidence": { "label": "unverified", "sourceIds": ["s3", "s5"], "note": "The 500/min OAuth figure only appears on a non-cal.com mirror." }
+    },
+    {
+      "text": "The older 'Platform' offering (managed users, x-cal-client-id headers) is deprecated and closed to new signups since 15 December 2025, so building on it isn't an option for new agents.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "Listing on the Cal.com App Store requires a verified OAuth client, which is a separate optional step from just letting users connect.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "Cal.com does not expose an OIDC discovery document on app.cal.com, so 'Sign in with Cal.com' identity comes from GET /v2/me rather than an ID token.",
+      "evidence": { "label": "tested", "sourceIds": ["s4"], "note": "app.cal.com/.well-known/openid-configuration returned 404 on 2026-10-20." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Cal.com docs: OAuth (API v2)", "url": "https://cal.com/docs/api-reference/v2/oauth" },
+    { "id": "s2", "title": "Cal.com help: OAuth (scopes)", "url": "https://cal.com/help/apps-and-integrations/oauth" },
+    { "id": "s3", "title": "Cal.com docs: API v2 introduction (auth methods, rate limits, Platform restructuring)", "url": "https://cal.com/docs/api-reference/v2/introduction" },
+    { "id": "s4", "title": "Cal.com developer console: OAuth clients", "url": "https://app.cal.com/settings/developer/oauth" },
+    { "id": "s5", "title": "Third-party mirror of Cal.com docs: rate limits (mintlify.com)", "url": "https://www.mintlify.com/calcom/cal.com/api/rate-limits" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://app.cal.com/settings/developer/oauth: 307 to /auth/login",
+      "GET https://app.cal.com/auth/oauth2/authorize?client_id=x: HTTP 200",
+      "GET https://api.cal.com/v2/me without token: HTTP 401",
+      "POST https://api.cal.com/v2/auth/oauth2/token with {}: {\"error\":\"invalid_request\",\"error_description\":\"client_id is required\"}",
+      "GET https://app.cal.com/.well-known/openid-configuration: HTTP 404"
+    ],
+    "openQuestions": [
+      "How long Cal.com admin review of an OAuth client typically takes",
+      "Refresh token lifetime for standard (non-Platform) OAuth clients",
+      "The official rate limit for OAuth access tokens",
+      "What criteria lead Cal.com admins to reject a client"
+    ]
+  }
+}

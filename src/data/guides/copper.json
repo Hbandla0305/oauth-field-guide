@@ -1,0 +1,258 @@
+{
+  "app": {
+    "name": "Copper CRM",
+    "slug": "copper",
+    "website": "https://www.copper.com",
+    "developerPortal": "https://developer.copper.com",
+    "category": "CRM"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth 2.0 overview and registration", "url": "https://developer.copper.com/introduction/oauth/index.html" },
+    { "kind": "oauth", "label": "OAuth 2.0 flow reference", "url": "https://developer.copper.com/introduction/oauth/flow.html" },
+    { "kind": "api", "label": "API requests, headers and rate limits", "url": "https://developer.copper.com/introduction/requests.html" },
+    { "kind": "api", "label": "Authentication (API keys vs OAuth)", "url": "https://developer.copper.com/introduction/authentication.html" },
+    { "kind": "changelog", "label": "Developer API changelog", "url": "https://developer.copper.com/introduction/changelog.html" }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "There is no self-serve developer console: you get a client_id and client_secret by emailing partners@copper.com with your app name, purpose and HTTPS callback, and after that there is no app review and a single all-access scope. The catch on the customer side is that third-party guides report the Developer API only works on Copper's Professional and Business plans, so Basic and trial accounts can't connect.",
+    "timeToDev": {
+      "range": "Days–2 weeks",
+      "hours": { "min": 24, "max": 336 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3"],
+        "note": "The coding work is a few hours (authorization code flow, non-expiring token). The wait is for Copper's partners team to reply with credentials, and Copper publishes no turnaround time. Testing also needs a Copper account on a plan with API access."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 weeks",
+      "hours": { "min": 48, "max": 504 },
+      "assumes": "A multi-tenant agent that reads and writes CRM records via OAuth; there's no separate production review, so production is ready once the partners team issues credentials.",
+      "waitingOn": "Copper's partners team issuing OAuth credentials (no published SLA). No app review afterwards, but each customer needs a Professional or Business plan.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3", "s9"],
+        "note": "The docs describe no approval step after registration. The range is our estimate of a manual email-based registration."
+      }
+    },
+    "cost": "No developer fee mentioned. End users reportedly need Copper Professional ($59/seat/mo annual) or Business ($99/seat/mo annual) for API access; Basic is excluded per third-party integration docs."
+  },
+  "prerequisites": [
+    {
+      "item": "OAuth credentials issued by Copper (email partners@copper.com)",
+      "why": "Copper's docs say to register your application by contacting them with its name, purpose and an HTTPS callback URL. They then issue the client_id and client_secret.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "item": "An HTTPS redirect_uri that accepts POST requests",
+      "why": "Copper sends the user back to your redirect_uri with a POST (form-encoded) rather than the usual GET with query parameters.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "item": "A Copper account on a plan with Developer API access for testing (reportedly Professional or Business)",
+      "why": "Third-party integration docs report that Basic and trial accounts get 'Developer API is not enabled for this account'.",
+      "evidence": { "label": "unverified", "sourceIds": ["s9", "s10"], "note": "Copper's pricing page lists 'API & Embedded integration SDK' in the feature table, but the per-plan checkmarks weren't readable. The plan restriction comes from JustCall and n8n docs." }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Full developer access (the only scope)",
+      "examples": ["developer/v1/all"],
+      "reviewRequired": false,
+      "time": "Once credentials are issued",
+      "impact": "Grants read and modify access to the authenticated user's records (leads, people, companies, opportunities, tasks, activities, webhooks). It's backward compatible with legacy API keys. You can't request read-only access.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "Copper says more granular scopes will be added in the future." }
+    },
+    {
+      "tier": "Single-user API key (alternative, not OAuth)",
+      "examples": ["X-PW-AccessToken", "X-PW-Application: developer_api", "X-PW-UserEmail"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "A Copper Admin generates a key in Settings and pastes it into your agent. No partner registration is needed, but it's a per-customer manual setup that Copper positions for individual users, while OAuth is preferred for partner integrations.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5", "s8"], "note": "Only Admin users can generate API keys." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Get a Copper account with API access",
+      "owner": "human",
+      "detail": "Sign up for or use a Copper account on a plan that includes the Developer API (reportedly Professional or Business), so you can test end to end.",
+      "url": "https://www.copper.com/pricing",
+      "duration": "15 min",
+      "evidence": { "label": "unverified", "sourceIds": ["s7", "s9"], "note": "The plan requirement comes from third-party docs." }
+    },
+    {
+      "title": "Draft the registration request",
+      "owner": "agent",
+      "detail": "Write the email to partners@copper.com with the app name, what the agent does with Copper data, and the HTTPS callback URL (production, plus a staging URL if you want one).",
+      "url": "https://developer.copper.com/introduction/oauth/index.html",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Send the request to Copper's partners team",
+      "owner": "human",
+      "detail": "Email partners@copper.com from your company address and answer any follow-up questions.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "title": "Wait for client_id and client_secret",
+      "owner": "wait",
+      "detail": "Copper issues the credentials manually. No turnaround time is published.",
+      "url": null,
+      "duration": "days–2 weeks (estimate)",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "No SLA is documented." }
+    },
+    {
+      "title": "Build the authorize redirect",
+      "owner": "agent",
+      "detail": "Send users to GET https://app.copper.com/oauth/authorize?response_type=code&client_id=...&redirect_uri=...&scope=developer/v1/all&state=<csrf>.",
+      "url": "https://developer.copper.com/introduction/oauth/flow.html",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Handle the POST callback",
+      "owner": "agent",
+      "detail": "Accept a form-encoded POST at the redirect_uri. Read code (or error) and state from the body, not the query string. Exempt this route from CSRF middleware that blocks cross-site POSTs, and verify state yourself.",
+      "url": "https://developer.copper.com/introduction/oauth/quickstart.html",
+      "duration": "30–60 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "The CSRF-middleware advice is our inference from the POST redirect." }
+    },
+    {
+      "title": "Exchange the code for a token",
+      "owner": "agent",
+      "detail": "POST https://app.copper.com/oauth/token (form-encoded) with grant_type=authorization_code, code, redirect_uri, client_id and client_secret. Store the Bearer access_token encrypted per user. There's no refresh token.",
+      "url": "https://developer.copper.com/introduction/oauth/flow.html",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Call the API and respect limits",
+      "owner": "agent",
+      "detail": "Call https://api.copper.com/developer_api/v1/... with Authorization: Bearer <token>. Throttle to 180 requests/min overall and 3 requests/sec on bulk endpoints, and back off on 429. Use webhooks subscriptions instead of polling where possible.",
+      "url": "https://developer.copper.com/introduction/requests.html",
+      "duration": "1–3 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s6"], "note": "The OAuth flow page shows the Bearer header. The base URL comes from the 2021 domain-change changelog entry." }
+    },
+    {
+      "title": "Handle revocation",
+      "owner": "agent",
+      "detail": "Users and admins can revoke your app under Settings > Integrations > Active Integrations. Treat a 401 as revoked and prompt the user to reconnect.",
+      "url": "https://developer.copper.com/introduction/oauth/index.html",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Mapping 401 to a revoked token is our inference." }
+    },
+    {
+      "title": "Go live",
+      "owner": "human",
+      "detail": "Turn on the Connect Copper button for customers. No Copper review is documented. If you want a listing in Copper's integrations directory, ask the partners team; that's optional for OAuth to work.",
+      "url": null,
+      "duration": "minutes",
+      "evidence": { "label": "inferred", "sourceIds": ["s1", "s3"], "note": "The docs don't mention a marketplace listing process." }
+    }
+  ],
+  "agentCanDo": [
+    "Draft the registration email to partners@copper.com",
+    "Implement the authorize redirect, POST callback and token exchange",
+    "Build rate limiting for 180 req/min and 3 req/sec on bulk endpoints",
+    "Set up webhook subscriptions and revocation handling",
+    "Probe the authorize and token endpoints to confirm configuration"
+  ],
+  "humanMustDo": [
+    "Email Copper's partners team and wait for credentials",
+    "Hold a Copper account on a plan with API access for testing",
+    "Supply the production HTTPS callback domain",
+    "Customer side: be on a Copper plan that includes the Developer API"
+  ],
+  "blockers": [
+    {
+      "symptom": "No developer console exists to create an OAuth app",
+      "cause": "Copper registers OAuth clients manually through its partners team.",
+      "fix": "Email partners@copper.com with your app name, purpose and HTTPS callback URL.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "\"Developer API is not enabled for this account\"",
+      "cause": "The customer's Copper account is on Basic or a trial plan without Developer API access.",
+      "fix": "The customer upgrades to Professional or Business. Show a clear message before the OAuth step.",
+      "evidence": { "label": "unverified", "sourceIds": ["s9"], "note": "The error string and plan mapping come from JustCall's troubleshooting guide, not Copper's docs." }
+    },
+    {
+      "symptom": "Callback receives no code in the query string, or returns 403/419 from your framework",
+      "cause": "Copper redirects with a POST and puts code in the form body. CSRF protection on the route can reject the cross-site POST.",
+      "fix": "Read code and state from the POST body, and exempt the callback route from CSRF middleware while still checking state.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "The framework rejection is our inference." }
+    },
+    {
+      "symptom": "HTTP 429 from the API",
+      "cause": "More than 180 requests per minute, or more than 3 requests per second on bulk APIs.",
+      "fix": "Queue and pace requests, and use bulk endpoints and webhooks to cut the number of calls.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "The 429 status comes from third-party reports. Copper's page only states the limits." }
+    },
+    {
+      "symptom": "{\"error\":\"invalid_request\",\"error_description\":\"Missing required parameter: code.\"} from /oauth/token",
+      "cause": "The token request lacks code, or was sent as JSON rather than form-encoded.",
+      "fix": "Send application/x-www-form-urlencoded with grant_type, code, redirect_uri, client_id and client_secret.",
+      "evidence": { "label": "tested", "sourceIds": ["s2"], "note": "We observed this exact response from an empty POST to https://app.copper.com/oauth/token on 2026-10-20." }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Copper says access tokens currently don't expire and don't need refreshing, and the flow returns no refresh token. Store tokens as long-lived secrets and handle revocation, because a leaked token stays valid until revoked.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "There's a single scope, developer/v1/all, so your agent always gets read and write access to everything the user can see. Customers' security teams can't be offered read-only access.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Rate limits are 180 requests per minute for all API calls, plus 3 requests per second on bulk APIs. The docs don't say whether the limit is per user, per token or per account.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "text": "API keys are generated only by Copper Admins and are sent with three X-PW-* headers including the owner's email. They're a fallback for a single customer, not a scalable connection flow.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s8"], "note": null }
+    },
+    {
+      "text": "Copper has no OpenID Connect discovery document, so OAuth gives you API access, not Sign in with Copper. Fetch the current user via the API instead.",
+      "evidence": { "label": "tested", "sourceIds": ["s6"], "note": "https://app.copper.com/.well-known/openid-configuration returned 404 on 2026-10-20. The changelog notes a 'fetch current API user' endpoint added 2024-06-19." }
+    },
+    {
+      "text": "The API moved to api.copper.com/developer_api/ in 2021. Older tutorials using api.prosperworks.com are out of date.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Copper developer docs: OAuth 2.0", "url": "https://developer.copper.com/introduction/oauth/index.html" },
+    { "id": "s2", "title": "Copper developer docs: OAuth 2.0 flow", "url": "https://developer.copper.com/introduction/oauth/flow.html" },
+    { "id": "s3", "title": "Copper developer docs: OAuth 2.0 quickstart", "url": "https://developer.copper.com/introduction/oauth/quickstart.html" },
+    { "id": "s4", "title": "Copper developer docs: Requests (headers and rate limits)", "url": "https://developer.copper.com/introduction/requests.html" },
+    { "id": "s5", "title": "Copper developer docs: Authentication", "url": "https://developer.copper.com/introduction/authentication.html" },
+    { "id": "s6", "title": "Copper developer docs: Changelog", "url": "https://developer.copper.com/introduction/changelog.html" },
+    { "id": "s7", "title": "Copper pricing", "url": "https://www.copper.com/pricing" },
+    { "id": "s8", "title": "Copper Help Center: Generating an API Key", "url": "https://intercom.help/copper-help-center/en/articles/8823347" },
+    { "id": "s9", "title": "Third-party: JustCall troubleshooting guide for Copper CRM integration", "url": "https://help.justcall.io/en/articles/11325233-troubleshooting-guide-copper-crm-integration-with-justcall" },
+    { "id": "s10", "title": "Third-party: n8n Copper credentials docs", "url": "https://n8n-docs.teamlab.info/integrations/builtin/credentials/copper/" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://app.copper.com/oauth/authorize?response_type=code&client_id=test&...: 302 to https://app.copper.com/users/sign_in",
+      "POST https://app.copper.com/oauth/token with only grant_type: 400 {\"error\":\"invalid_request\",\"error_description\":\"Missing required parameter: code.\"}",
+      "GET https://app.copper.com/.well-known/openid-configuration: 404",
+      "GET https://api.copper.com/developer_api/v1/account without auth: 401 {\"error\":\"authentication error\"}"
+    ],
+    "openQuestions": [
+      "How long Copper's partners team takes to issue OAuth credentials, and whether they vet the use case",
+      "Which Copper plans officially include Developer API access (only third-party sources say Professional and Business)",
+      "Whether the 180 req/min limit is per user, per token or per account",
+      "Whether http://localhost redirect URIs are accepted for development",
+      "Whether Copper requires a listing or partnership agreement for commercial OAuth apps"
+    ]
+  }
+}

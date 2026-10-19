@@ -1,0 +1,275 @@
+{
+  "app": {
+    "name": "Vercel",
+    "slug": "vercel",
+    "website": "https://vercel.com",
+    "developerPortal": "https://vercel.com/dashboard/integrations/console",
+    "category": "Developer platform"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "Integration OAuth and REST API guide", "url": "https://vercel.com/docs/integrations/create-integration/vercel-api-integrations" },
+    { "kind": "console", "label": "Create an integration (Integrations Console)", "url": "https://vercel.com/docs/integrations/create-integration" },
+    { "kind": "review", "label": "Integration approval checklist", "url": "https://vercel.com/docs/integrations/create-integration/approval-checklist" },
+    { "kind": "scopes", "label": "Sign in with Vercel scopes and permissions", "url": "https://vercel.com/docs/sign-in-with-vercel/scopes-and-permissions" },
+    { "kind": "oauth", "label": "Sign in with Vercel (OIDC) guide", "url": "https://vercel.com/docs/sign-in-with-vercel" }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Third-party API access to a user's Vercel account goes through a connectable-account Integration: you fill a long listing-style form (logo, EULA, privacy policy, gallery image) in the Integrations Console, and it can then be installed by anyone via its URL with a Community badge, with no review. Marketplace listing needs 500 active installs plus a manual review, and the newer Sign in with Vercel OAuth app only gives identity scopes unless you are in the private beta for API permissions.",
+    "timeToDev": {
+      "range": "1–3 hours",
+      "hours": { "min": 1, "max": 3 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s2", "s3"],
+        "note": "The Create Integration form requires listing assets (logo, 1–8 16:9 gallery images, EULA and privacy URLs) even for a test integration. Redirect URL can be on localhost for development."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 2, "max": 24 },
+      "assumes": "A connectable-account (Community) integration shared via https://vercel.com/integrations/<slug>/new, which is what an agent reading projects or deployments needs; a Marketplace listing is optional and takes far longer.",
+      "waitingOn": "Nothing — no review for Community integrations. Marketplace listing waits on 500 active installs, then a manual review by integrations@vercel.com.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s4"],
+        "note": "Docs say a created connectable-account integration gets the Community badge and is 'available for external users to download'. The same page's overview list also says 'once your integration is approved', so a light check may exist; we could not confirm one."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Vercel account or team to own the integration",
+      "why": "Integrations are created from the Integrations Console of a team, and the team's owners manage it.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "Public EULA URL, privacy policy URL, website, documentation URL and support email",
+      "why": "All are required fields in the Create Integration form; the support email is publicly listed.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "item": "A square logo (non-transparent PNG, min 256px) and 1–8 gallery images at 1920x1080",
+      "why": "Logo and feature media are required form fields, even for Community integrations.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "item": "A Redirect URL endpoint that serves a popup UI and exchanges the code",
+      "why": "Vercel opens your Redirect URL in a popup during installation; it must exchange the code, let the user map projects, and then redirect to the 'next' URL.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "If you send Cross-Origin-Opener-Policy, it must be unsafe-none so the Vercel dashboard can watch the popup." }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity only (Sign in with Vercel)",
+      "examples": ["openid", "email", "profile", "offline_access"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "OIDC login with an ID token and a refresh token. Good for 'log in with Vercel', not for reading projects or deployments.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s6"], "note": null }
+    },
+    {
+      "tier": "Integration read scopes",
+      "examples": ["user (Read)", "team (Read)", "project (Read)", "deployment (Read)", "domain (Read)"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "List projects, deployments, deployment events and files, domains. Each scope is set to None, Read or Read/Write in the console; the user accepts them at install.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "Vercel scope names are resource names with an access level, not OAuth scope strings sent at authorize time." }
+    },
+    {
+      "tier": "Integration write and sensitive scopes",
+      "examples": ["deployment (Read/Write)", "project (Read/Write)", "global-project-env-vars", "drains", "billing (Read)"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Create deployments, edit projects, and read or write all of an account's env vars. billing is limited to Pro and Enterprise teams. Adding or upgrading a scope later emails every installing user and team owner, who must re-confirm.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "tier": "Sign in with Vercel API permissions (private beta)",
+      "examples": ["Projects (Read Only)", "Deployments (Read and Write)", "Production Environment Variables", "AI Gateway (Use)"],
+      "reviewRequired": true,
+      "time": "Unknown — private beta",
+      "impact": "Fine-grained team and project permissions for 1-hour OAuth access tokens. Not generally available; you need Vercel to admit you to the beta.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": "'Permissions for issuing API requests and interacting with team resources are currently in private beta.' How to join wasn't documented." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in and open the Integrations Console",
+      "owner": "human",
+      "detail": "Pick the team that will own the integration from the team switcher, open Integrations in the sidebar, then Integrations Console, then Create.",
+      "url": "https://vercel.com/dashboard/integrations/console",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "The console URL returned HTTP 200 on 2026-10-20 without following a login. We did not sign in." }
+    },
+    {
+      "title": "Draft listing copy and policies",
+      "owner": "agent",
+      "detail": "Write the name (64 chars), slug (32), 40-char short description, 768-char Markdown overview, additional info listing every env var the integration sets, plus EULA and privacy policy text.",
+      "url": "https://vercel.com/docs/integrations/create-integration/submit-integration",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Pick least-privilege API scopes",
+      "owner": "agent",
+      "detail": "Map the REST endpoints your agent will call to scopes (for example GET /v6/deployments needs deployment Read, GET /v9/projects needs project Read) and choose None/Read/Read-Write for each.",
+      "url": "https://vercel.com/docs/integrations/create-integration/vercel-api-integrations#scopes",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Build the Redirect URL handler",
+      "owner": "agent",
+      "detail": "Read code, teamId, configurationId, next and state from the query; POST client_id, client_secret, code and redirect_uri (form-encoded) to https://api.vercel.com/v2/oauth/access_token within 30 minutes; store access_token keyed by configurationId; then redirect to next.",
+      "url": "https://vercel.com/docs/integrations/create-integration/vercel-api-integrations#exchange-code-for-access-token",
+      "duration": "1 hour",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "title": "Fill and submit the Create Integration form",
+      "owner": "human",
+      "detail": "Upload the logo and gallery images, paste URLs and copy, set the Redirect URL (localhost is allowed for testing), optional Webhook and Configuration URLs, and accept the Vercel Integrations Marketplace Agreement.",
+      "url": "https://vercel.com/dashboard/integrations/console",
+      "duration": "20–40 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "title": "Copy client ID and secret",
+      "owner": "human",
+      "detail": "The client (integration) ID and secret are at the bottom of the integration's settings page, under Credentials, where you can also rotate the secret. The secret also signs webhooks.",
+      "url": "https://vercel.com/dashboard/integrations/console",
+      "duration": "2 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Install it on your own account and test",
+      "owner": "human",
+      "detail": "Open https://vercel.com/integrations/<slug>/new, pick a scope (personal or team, all or selected projects) and finish the popup. Then call /v2/user or /v9/projects with the token, adding ?teamId= for team installs.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "title": "Share the install link",
+      "owner": "human",
+      "detail": "The Community-badged integration is installable by any Vercel user through its URL or a Deploy Button. Put the /integrations/<slug>/new link in your product's connect flow.",
+      "url": null,
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Optional: apply for a Marketplace listing",
+      "owner": "wait",
+      "detail": "After 500 active installations, work through the connectable-account approval checklist and email integrations@vercel.com. Vercel reviews and may request changes.",
+      "url": "https://vercel.com/docs/integrations/create-integration/approval-checklist",
+      "duration": "Unknown",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": "No review time is published." }
+    }
+  ],
+  "agentCanDo": [
+    "Draft listing copy, EULA, privacy policy and env var docs",
+    "Map needed REST endpoints to the smallest scope set",
+    "Write the Redirect URL popup handler and code exchange",
+    "Implement teamId handling and configurationId-keyed token storage",
+    "Verify webhook signatures with the client secret"
+  ],
+  "humanMustDo": [
+    "Sign in and fill the Create Integration form",
+    "Upload logo and gallery images",
+    "Accept the Integrations Marketplace Agreement",
+    "Copy the client ID and secret into your secret store",
+    "Run a test install on a real account"
+  ],
+  "blockers": [
+    {
+      "symptom": "API calls return 403 Forbidden after a successful install",
+      "cause": "The integration was installed on a team and the request omits the teamId query parameter, or the scope isn't granted.",
+      "fix": "Store team_id from the token response and append ?teamId=<id> to every request; check the scope's access level in the console.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "403 with code integration_configuration_disabled",
+      "cause": "The integration's owner left the owning team, so the integration is flagged disabled; it is deleted after 30 days if ownership isn't transferred.",
+      "fix": "Transfer integration ownership within 30 days; own it from a shared team, not a person.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "Code exchange fails on a retry or after a delay",
+      "cause": "The code is valid for 30 minutes and can be exchanged only once.",
+      "fix": "Exchange immediately in the redirect handler and never replay it; restart the install if it expired.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "The install popup never closes or Vercel doesn't notice completion",
+      "cause": "Your Redirect URL sends Cross-Origin-Opener-Policy other than unsafe-none, or you don't redirect to the next URL.",
+      "fix": "Serve the popup with COOP unsafe-none and redirect to the decoded next parameter when done.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "symptom": "New features break for existing users after you add a scope",
+      "cause": "Scope additions and upgrades are pending until each user or team owner confirms them by email.",
+      "fix": "Handle missing scopes gracefully and listen for integration-configuration.scope-change-confirmed before using new endpoints.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "Sign in with Vercel tokens can't call project or deployment APIs",
+      "cause": "API permissions for Sign in with Vercel apps are in private beta; GA apps get only identity scopes.",
+      "fix": "Use a connectable-account Integration for API access, or ask Vercel for beta access.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Integration access tokens are described as 'long-lived' and the response includes no refresh_token or expires_in. Sign in with Vercel is different: 1-hour access tokens and 30-day refresh tokens that rotate on every use.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s5"], "note": "Exact integration token lifetime isn't documented." }
+    },
+    {
+      "text": "Each install is a configuration (icfg_...) with its own token. The user picks personal or team scope and all or selected projects at install, so your agent may see only some projects.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "text": "Integration scopes are configured in the console, not passed as a scope parameter. Scope removals apply immediately; additions need every user's re-confirmation.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Only call the REST API server-side. The token grants access to a whole team or personal account, and browser calls hit CORS errors.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "You must support installers at least at the level of Vercel's own support terms, per the Integrations Marketplace Agreement; your support email is public.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "text": "Sign in with Vercel uses PKCE S256 and a popup-friendly response mode (web_message.opener) and supports OIDC-token client authentication, so a Vercel-hosted backend can authenticate without a stored secret.",
+      "evidence": { "label": "tested", "sourceIds": ["s7"], "note": "Seen in the live openid-configuration on 2026-10-20." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Vercel docs: Create an Integration", "url": "https://vercel.com/docs/integrations/create-integration" },
+    { "id": "s2", "title": "Vercel docs: Building Integrations with Vercel REST API", "url": "https://vercel.com/docs/integrations/create-integration/vercel-api-integrations" },
+    { "id": "s3", "title": "Vercel docs: Requirements for listing an Integration", "url": "https://vercel.com/docs/integrations/create-integration/submit-integration" },
+    { "id": "s4", "title": "Vercel docs: Integration Approval Checklist", "url": "https://vercel.com/docs/integrations/create-integration/approval-checklist" },
+    { "id": "s5", "title": "Vercel docs: Sign in with Vercel", "url": "https://vercel.com/docs/sign-in-with-vercel" },
+    { "id": "s6", "title": "Vercel docs: Sign in with Vercel scopes and permissions", "url": "https://vercel.com/docs/sign-in-with-vercel/scopes-and-permissions" },
+    { "id": "s7", "title": "Vercel OpenID configuration", "url": "https://vercel.com/.well-known/openid-configuration" },
+    { "id": "s8", "title": "Vercel docs: Getting started with Sign in with Vercel", "url": "https://vercel.com/docs/sign-in-with-vercel/getting-started" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://vercel.com/.well-known/openid-configuration: issuer https://vercel.com, authorize https://vercel.com/oauth/authorize, token https://api.vercel.com/login/oauth/token, scopes openid/email/profile/offline_access, PKCE S256",
+      "GET https://vercel.com/dashboard/integrations/console: HTTP 200 (not signed in)",
+      "POST https://api.vercel.com/v2/oauth/access_token with dummy values: {\"error\":{\"code\":\"invalid_client\",\"message\":\"Invalid client_id\"}}"
+    ],
+    "openQuestions": [
+      "Whether Vercel does any check before a new connectable-account integration is installable by others (one overview line says 'once your integration is approved')",
+      "The actual lifetime of integration access tokens and whether they ever expire",
+      "How to join the Sign in with Vercel API permissions private beta",
+      "Typical Marketplace listing review time after reaching 500 installs",
+      "REST API rate limits that apply per integration token"
+    ]
+  }
+}

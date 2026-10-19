@@ -1,0 +1,503 @@
+{
+  "app": {
+    "name": "Webex",
+    "slug": "webex",
+    "website": "https://www.webex.com",
+    "developerPortal": "https://developer.webex.com/my-apps",
+    "category": "Video meetings"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authentication (OAuth 2.0 flow)",
+      "url": "https://developer.webex.com/admin/docs/authentication"
+    },
+    {
+      "kind": "console",
+      "label": "Create an integration",
+      "url": "https://developer.webex.com/admin/docs/integrations"
+    },
+    {
+      "kind": "scopes",
+      "label": "Integration scopes reference",
+      "url": "https://developer.webex.com/admin/docs/integration-scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Control Hub: user access to integrations",
+      "url": "https://help.webex.com/en-us/article/igy96e/Configure-user-access-to-integrations-in-Control-Hub"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "A Webex integration is a self-serve OAuth client: register it in My Webex Apps and any Webex user can authorize it right away, with no review (App Hub listing is optional). What you can actually reach depends on the user: spark-admin scopes need an org admin, spark-compliance scopes need a compliance officer, and customer admins can block integrations in Control Hub.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Register the integration, copy ID and secret, run the code flow. A 12-hour personal access token is available for quick API testing."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
+      "assumes": "A user-level integration reading the user's own messages, rooms and meetings (spark:messages_read, meeting:schedules_read); admin or compliance scopes work the same day but only for users who hold those roles.",
+      "waitingOn": "Nothing — no review. Customer side, a Control Hub admin may need to allow the integration if their org blocks integrations.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s4"
+        ],
+        "note": "Neither the integration nor authentication docs describe any review step before other users can authorize."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Webex account to sign in to developer.webex.com",
+      "why": "Integrations are created under My Webex Apps; each user account is limited to 20 integrations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Exact redirect URIs and a server to hold the client secret",
+      "why": "redirect_uri must exactly match a registered URI, and the token exchange requires the client secret, which is shown only once.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A name, description and icon for the grant dialog",
+      "why": "These are entered when creating the integration and shown to users on the consent screen.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "User-level scopes",
+      "examples": [
+        "spark:people_read",
+        "spark:rooms_read",
+        "spark:messages_read",
+        "spark:messages_write",
+        "meeting:schedules_read",
+        "meeting:recordings_read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read and write the authorizing user's own spaces, messages and meetings. spark:kms is added automatically so encrypted message content can be decrypted.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Example scope names are from the developer portal's scope list; meeting scope names are our recollection of that list, not re-verified."
+      }
+    },
+    {
+      "tier": "Broad user scope",
+      "examples": [
+        "spark:all"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Covers account features not in narrower scopes and is needed by some SDK calling features; the docs advise most integrations to request narrower scopes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Admin scopes (org admin must authorize)",
+      "examples": [
+        "spark-admin:people_read",
+        "spark-admin:recordings_read",
+        "spark-admin:calling_cdr_read",
+        "audit:events_read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day, admin users only",
+      "impact": "Org-wide data, but only when an org admin authorizes; requesting the scope doesn't elevate a normal user.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Compliance scopes (compliance officer must authorize)",
+      "examples": [
+        "spark-compliance:messages_read",
+        "spark-compliance:events_read",
+        "spark-compliance:messages_write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day, compliance officers only",
+      "impact": "Read every message in the org, for eDiscovery/DLP-style agents. The older spark-admin:messages_read is superseded by spark-compliance:messages_read for new integrations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to the Webex developer portal",
+      "owner": "human",
+      "detail": "Sign in with a Webex account (a free account works for development).",
+      "url": "https://developer.webex.com/my-apps",
+      "duration": "5 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "my-apps/new/integration redirected to the portal's /auth login on 2026-10-20."
+      }
+    },
+    {
+      "title": "Pick minimal scopes",
+      "owner": "agent",
+      "detail": "Choose user-level scopes for a per-user agent; add spark-admin or spark-compliance only if your users will be admins or compliance officers. Avoid spark:all unless an SDK feature needs it.",
+      "url": "https://developer.webex.com/admin/docs/integration-scopes",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the integration",
+      "owner": "human",
+      "detail": "Create a New App > Create an Integration: enter name, description, icon, redirect URIs and scopes, then save and copy the client ID and secret (secret shown only once).",
+      "url": "https://developer.webex.com/my-apps/new/integration",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://webexapis.com/v1/authorize?response_type=code&client_id=...&redirect_uri=...&scope=spark:kms%20spark:messages_read&state=.... Exchange the code (single use, short-lived) with a form-encoded POST to https://webexapis.com/v1/access_token. Verify with GET /v1/people/me.",
+      "url": "https://developer.webex.com/admin/docs/authentication",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Add refresh handling",
+      "owner": "agent",
+      "detail": "Refresh with grant_type=refresh_token at the same endpoint and store any replacement refresh token. Use the returned expires_in / refresh_token_expires_in values rather than hardcoding lifetimes.",
+      "url": "https://developer.webex.com/admin/docs/authentication",
+      "duration": "30–60 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle 429s",
+      "owner": "agent",
+      "detail": "Back off on HTTP 429 using Retry-After, and log the trackingId from error bodies for Webex support.",
+      "url": "https://developer.webex.com/admin/docs/troubleshooting",
+      "duration": "30 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "trackingId is from the troubleshooting guide; Retry-After handling is general practice, not confirmed in pages we read."
+      }
+    },
+    {
+      "title": "Test with a second account and an org that restricts integrations",
+      "owner": "human",
+      "detail": "Authorize with a non-owner account; if possible, test in an org whose Control Hub blocks integrations to see the failure path.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Write admin allow-list instructions",
+      "owner": "agent",
+      "detail": "Document for customer admins how to allow your integration (by App ID) under Control Hub > Management > Apps > Integrations.",
+      "url": "https://help.webex.com/en-us/article/igy96e/Configure-user-access-to-integrations-in-Control-Hub",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Optional: submit to Webex App Hub",
+      "owner": "human",
+      "detail": "Listing on App Hub is optional for integrations and goes through a manual review by the App Hub team (testing instructions, landing and support pages, videos).",
+      "url": "https://apphub.webex.com",
+      "duration": "Unknown review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "The manual App Hub review is described for Service Apps; applying it to integration listings is our inference."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Select minimal scopes and build the authorize URL (including spark:kms)",
+    "Implement the code exchange, refresh and token storage",
+    "Add 429 back-off and trackingId logging",
+    "Draft Control Hub allow-list instructions for customer admins",
+    "Check endpoints such as /v1/people/me and the idbroker OIDC document"
+  ],
+  "humanMustDo": [
+    "Sign in to developer.webex.com and create the integration",
+    "Save the client secret when it's shown (only once)",
+    "Test authorization with a second Webex account",
+    "Customer side: a Control Hub admin allows the integration if their org blocks integrations"
+  ],
+  "blockers": [
+    {
+      "symptom": "Users in a customer org get an error saying they don't have access to the integration",
+      "cause": "Their Control Hub admin has blocked user access to all or specific integrations.",
+      "fix": "Ask the admin to allow your integration (by App ID) in Control Hub > Management > Apps > Integrations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "The help article says access is allowed for all users by default; it doesn't say what blocked users see."
+      }
+    },
+    {
+      "symptom": "Admin API calls return 403 even though spark-admin scopes were granted",
+      "cause": "The authorizing user isn't an org admin; scopes don't elevate a user's role.",
+      "fix": "Have a full admin authorize the integration, or use a Service App for org-wide automation.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The 403 status is our inference; the docs only say scopes don't elevate the role."
+      }
+    },
+    {
+      "symptom": "Message text comes back unreadable or calls about encrypted content fail",
+      "cause": "spark:kms was left out of a hand-built authorization URL.",
+      "fix": "Include spark:kms in the scope list.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The docs say to include spark:kms when APIs need encrypted content; the exact symptom is our inference."
+      }
+    },
+    {
+      "symptom": "Token exchange returns {\"message\":\"client_id cannot be null or empty\"}",
+      "cause": "Missing or wrongly encoded parameters (the endpoint expects application/x-www-form-urlencoded).",
+      "fix": "Send all parameters form-encoded.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed with an empty POST to webexapis.com/v1/access_token on 2026-10-20."
+      }
+    },
+    {
+      "symptom": "Can't create another integration",
+      "cause": "Each Webex user account is limited to 20 integrations.",
+      "fix": "Delete unused integrations or register under a different (team) account.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Token lifetimes are 'typically 14 days for the access token and 90 days for the refresh token' (from the Service Apps guide, which says the same policies apply to integrations); the API reference example shows refresh_token_expires_in 7776000 s (90 days). The authentication page says to use returned values rather than assume a fixed lifetime.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Personal access tokens last 12 hours after you sign in to the portal and shouldn't be used in production.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "For unattended org-wide automation that shouldn't depend on one user, Webex offers Service Apps, which need a Control Hub full admin to authorize in their own org and App Hub review to be authorized by other orgs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "PKCE, device grant and OIDC behaviour are documented under 'Login with Webex'; the OIDC issuer is https://idbroker.webex.com/idb.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1",
+          "s8"
+        ],
+        "note": "Fetched the idbroker OIDC discovery document on 2026-10-20."
+      }
+    },
+    {
+      "text": "Per-integration access control in Control Hub needs the customer's Pro Pack; without it, admins can only allow or block all integrations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "authorize requests on webexapis.com redirect to a regional identity broker (we saw idbroker-eu.webex.com), so don't hardcode the idbroker host.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed a 302 to idbroker-eu.webex.com on 2026-10-20 from our location."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Webex for Developers: Authentication",
+      "url": "https://developer.webex.com/admin/docs/authentication"
+    },
+    {
+      "id": "s2",
+      "title": "Webex for Developers: Integrations",
+      "url": "https://developer.webex.com/admin/docs/integrations"
+    },
+    {
+      "id": "s3",
+      "title": "Webex for Developers: Integration scopes",
+      "url": "https://developer.webex.com/admin/docs/integration-scopes"
+    },
+    {
+      "id": "s4",
+      "title": "Webex Help: Configure user access to integrations in Control Hub",
+      "url": "https://help.webex.com/en-us/article/igy96e/Configure-user-access-to-integrations-in-Control-Hub"
+    },
+    {
+      "id": "s5",
+      "title": "Webex for Developers: Service Apps guide",
+      "url": "https://developer.webex.com/admin/docs/service-apps"
+    },
+    {
+      "id": "s6",
+      "title": "Webex for Developers: Troubleshooting",
+      "url": "https://developer.webex.com/admin/docs/troubleshooting"
+    },
+    {
+      "id": "s8",
+      "title": "Webex identity broker OIDC discovery document",
+      "url": "https://idbroker.webex.com/idb/oauth2/v1/.well-known/openid-configuration"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://developer.webex.com/my-apps/new/integration: 302 to the portal login",
+      "GET https://webexapis.com/v1/authorize?client_id=x&response_type=code: 302 to idbroker-eu.webex.com/idb/oauth2/v1/authorize",
+      "GET https://webexapis.com/v1/people/me without token: HTTP 401",
+      "POST https://webexapis.com/v1/access_token with only grant_type: {\"message\":\"client_id cannot be null or empty\"}",
+      "GET https://idbroker.webex.com/idb/oauth2/v1/.well-known/openid-configuration: issuer https://idbroker.webex.com/idb, RS256"
+    ],
+    "openQuestions": [
+      "Current published REST rate limits for the Webex Suite APIs (the rate-limiting URL redirected to the Contact Center page)",
+      "Whether App Hub review applies to integration listings the same way it does to Service Apps, and how long it takes",
+      "The exact error string users see when Control Hub blocks an integration",
+      "Whether Webex has any AI-specific data-use restrictions for integrations"
+    ]
+  }
+}

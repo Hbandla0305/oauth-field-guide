@@ -1,0 +1,501 @@
+{
+  "app": {
+    "name": "ServiceNow",
+    "slug": "servicenow",
+    "website": "https://www.servicenow.com",
+    "developerPortal": "https://developer.servicenow.com",
+    "category": "ITSM"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Create an OAuth endpoint for external clients",
+      "url": "https://www.servicenow.com/docs/r/oL66E_cwDD_tnWQYzYPRdA/LJrt0YB3UXGmaq35AnY1kQ"
+    },
+    {
+      "kind": "console",
+      "label": "Inbound integrations (Machine Identity Console)",
+      "url": "https://www.servicenow.com/docs/r/platform-security/authentication/new-inbound-integrations.html"
+    },
+    {
+      "kind": "api",
+      "label": "Inbound REST API rate limiting",
+      "url": "https://www.servicenow.com/docs/r/api-reference/rest-api-explorer/inbound-REST-API-rate-limiting.html"
+    },
+    {
+      "kind": "review",
+      "label": "ServiceNow Store (certified apps)",
+      "url": "https://www.servicenow.com/docs/r/VbEA8DxUy61CFZ25mbYrcQ/07dcDLenBndualYLPey4Jw"
+    },
+    {
+      "kind": "console",
+      "label": "Developer site (Personal Developer Instances)",
+      "url": "https://developer.servicenow.com"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "There's no central developer console or app review for an external OAuth client: every ServiceNow customer runs its own instance, and an admin on that instance creates the OAuth client (Application Registry or the newer Inbound integrations page) and hands you a client ID for your redirect URL. Dev is fast on a free Personal Developer Instance; production is gated only by each customer's admin doing that setup, unless you choose to ship a certified ServiceNow Store app.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": "Request a PDI, create an OAuth client with your redirect URL, run the auth code flow against https://<instance>.service-now.com/oauth_auth.do."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day–2 weeks",
+      "hours": {
+        "min": 4,
+        "max": 336
+      },
+      "assumes": "Each customer's admin creates an authorization-code OAuth client for your agent in their instance; a certified ServiceNow Store app is a much longer, optional path.",
+      "waitingOn": "Each customer's ServiceNow admin (oauth_admin or admin role) registering your app and sharing the client ID; often a change-approval process on their side.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s6"
+        ],
+        "note": "No ServiceNow-side review applies to per-instance OAuth clients. The upper bound reflects typical enterprise change control and is our estimate."
+      }
+    },
+    "cost": "Free for development (Personal Developer Instance). Customers pay for their own ServiceNow licenses; Store publishing requires being a ServiceNow partner (fees not found)."
+  },
+  "prerequisites": [
+    {
+      "item": "A ServiceNow Developer account and Personal Developer Instance (PDI)",
+      "why": "You need an instance to register OAuth clients and test against. PDIs are free.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A public HTTPS redirect URL for your agent",
+      "why": "Each OAuth client record lists the full callback URLs it will redirect to.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A way to collect each customer's instance URL and client ID (and secret, for confidential clients)",
+      "why": "Client IDs are generated per instance, so your app must store per-tenant OAuth configuration.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "The docs describe client IDs as auto-generated on the instance; no cross-instance client exists."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Default user-equivalent access",
+      "examples": [
+        "useraccount"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (per customer)",
+      "impact": "The token can do whatever the signed-in user's roles and ACLs allow across REST APIs. Simplest to set up, broadest access.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Described in a third-party integration guide; we didn't find an official page defining useraccount."
+      }
+    },
+    {
+      "tier": "Custom auth scopes (restricted API access)",
+      "examples": [
+        "incident_read",
+        "incident_write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (per customer)",
+      "impact": "The customer admin defines scopes and enables 'Enforce Token Restrictions' so tokens only reach APIs whose authentication profile allows them. Security teams often prefer this for AI agents.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": "Scope names are customer-defined; the examples come from ServiceNow's authorization code parameter table."
+      }
+    },
+    {
+      "tier": "Client credentials / JWT bearer (no user)",
+      "examples": [
+        "grant_type=client_credentials",
+        "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (per customer)",
+      "impact": "For background agents; the token represents the application (Integration as a Service), so the admin must map it to a user or roles.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Certified ServiceNow Store app",
+      "examples": [
+        "scoped app that ships its own OAuth/integration records"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks to months (unconfirmed)",
+      "impact": "Optional. Store apps go through certification and a content/marketing review and need recertification when code changes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "No official timeline was found."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Get a Personal Developer Instance",
+      "owner": "human",
+      "detail": "Sign up on the ServiceNow Developer site and request a PDI. Sign in to the instance itself regularly or it may be reclaimed.",
+      "url": "https://developer.servicenow.com",
+      "duration": "10-30 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "developer.servicenow.com returned 302 to /dev.do on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Create an OAuth client on the instance",
+      "owner": "human",
+      "detail": "All > System OAuth > Application Registry > New > 'Create an OAuth API endpoint for external clients' (or Machine Identity Console > Inbound integrations > New integration > OAuth - Authorization code grant on newer releases). Add your redirect URL, set token lifespans, and tick 'This is a public client' if you use PKCE without a secret.",
+      "url": "https://www.servicenow.com/docs/r/oL66E_cwDD_tnWQYzYPRdA/LJrt0YB3UXGmaq35AnY1kQ",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s6"
+        ],
+        "note": "The public-client checkbox is from a third-party guide."
+      }
+    },
+    {
+      "title": "Implement the authorization code flow per instance",
+      "owner": "agent",
+      "detail": "Redirect to https://<instance>.service-now.com/oauth_auth.do?response_type=code&client_id=...&redirect_uri=...&scope=...&state=...&code_challenge=...&code_challenge_method=S256, then POST (form-urlencoded) to https://<instance>.service-now.com/oauth_token.do with grant_type=authorization_code plus code_verifier (public client) or client_secret (confidential client). Store instance URL, client ID and tokens per tenant.",
+      "url": "https://www.servicenow.com/docs/r/hX5GtoLUEU58KgyL7CW5Ag/DnlJhu7zLAFshDc8KydH2g",
+      "duration": "2-4 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle refresh and rate-limit responses",
+      "owner": "agent",
+      "detail": "Access tokens default to 30 minutes and refresh tokens to 100 days (customer-configurable). Honour 429 + Retry-After and X-RateLimit-* headers from customer-defined rate limit rules.",
+      "url": "https://www.servicenow.com/docs/r/api-reference/rest-api-explorer/inbound-REST-API-rate-limiting.html",
+      "duration": "1-2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Write the customer admin setup guide",
+      "owner": "agent",
+      "detail": "Step-by-step for the customer's admin: create the inbound integration, paste your redirect URL, choose public client or secret, define a least-privilege auth scope and enable token restrictions, and send you the instance URL and client ID.",
+      "url": null,
+      "duration": "1-2 h",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test as a non-admin user with limited roles",
+      "owner": "human",
+      "detail": "Create a test user on the PDI with only itil (or similar) roles and confirm the agent sees what that user's ACLs permit and nothing more.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Customer admin registers your app",
+      "owner": "wait",
+      "detail": "A user with oauth_admin (or admin, depending on release) creates the client in their instance, often after an internal security or change review.",
+      "url": null,
+      "duration": "same day to 2 weeks",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Role names vary by release per ServiceNow docs."
+      }
+    },
+    {
+      "title": "(Optional) Pursue a certified ServiceNow Store app",
+      "owner": "human",
+      "detail": "Join the ServiceNow partner program, build a scoped app that packages the integration, and submit it for certification and listing review.",
+      "url": "https://store.servicenow.com",
+      "duration": "weeks to months",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Duration not stated by ServiceNow."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement per-instance auth code + PKCE and token refresh",
+    "Store per-tenant instance URL, client ID and tokens",
+    "Write the customer admin setup guide and least-privilege scope recommendations",
+    "Build Table API / REST clients with 429 and Retry-After handling",
+    "Validate a customer's instance URL and OAuth endpoints before onboarding"
+  ],
+  "humanMustDo": [
+    "Create a ServiceNow Developer account and PDI",
+    "Click through the OAuth client setup on the instance",
+    "Get each customer's ServiceNow admin to register the app",
+    "Join the partner program if you want a Store listing"
+  ],
+  "blockers": [
+    {
+      "symptom": "Your PDI is gone or reset to a clean state",
+      "cause": "PDIs unused for ten days are returned to the pool; newer policy posts describe reclaiming PDIs older than 90 days with no direct login in ten days.",
+      "fix": "Sign in to the instance itself regularly and keep your config in an update set or source control.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "The 90-day rule comes from ServiceNow community blog snippets we didn't open."
+      }
+    },
+    {
+      "symptom": "Redirect fails or 'invalid redirect' after login",
+      "cause": "The redirect URL you send isn't one of the URLs listed on that instance's OAuth client.",
+      "fix": "Have the customer admin add your exact callback URL to the client record.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Exact error string not documented in the pages we read."
+      }
+    },
+    {
+      "symptom": "HTTP 429 'Rate limit exceeded' with a Retry-After header",
+      "cause": "The customer created inbound REST rate limit rules for your user, its roles, or all users.",
+      "fix": "Honour Retry-After, read X-RateLimit-Limit, and ask the admin to adjust the rule.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Token works but some API calls return 401/403",
+      "cause": "Enforce Token Restrictions is on and the API's authentication profile doesn't allow your scope, or the user's ACLs block the table.",
+      "fix": "Ask the admin to add your auth scope to the relevant API or grant the user the needed roles.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Agent needs to re-authenticate every 30 minutes or after a customer change",
+      "cause": "Access tokens default to 30 minutes, refresh tokens to 100 days, and admins can shorten both.",
+      "fix": "Use the refresh_token grant and handle refresh failure by re-prompting the user.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "OAuth is per instance: there's no ServiceNow-wide client ID, so onboarding a new customer always involves their admin. Plan a self-serve form where the admin pastes instance URL and client ID.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Newer releases move inbound OAuth setup to the Machine Identity Console (Inbound integrations), which offers authorization code, client credentials, JWT bearer and other grants. Older instances use the classic Application Registry form; write setup docs for both.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "OAuth client 'Client Type' options are Iframe Embedded, Integration as a User and Integration as a Service; pick Integration as a User for delegated agents.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits are customer-defined per hour (per user, role or all users) and can take up to 30 seconds to apply; we found no documented platform default.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The 30-second propagation detail comes from a search snippet of an older release page."
+      }
+    },
+    {
+      "text": "Roles needed to create OAuth clients differ by release: current docs list oauth_admin, mi_admin or admin, while older pages mention admin or security_admin. Tell customers which role their release needs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "ServiceNow's authorization code page documents the refresh_token request only for private (confidential) clients, so if you need long-lived background access, use a client secret rather than a public PKCE client.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "The page doesn't say outright that public clients get no refresh token."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "ServiceNow docs: Create an endpoint for clients to access the instance (Australia)",
+      "url": "https://www.servicenow.com/docs/r/oL66E_cwDD_tnWQYzYPRdA/LJrt0YB3UXGmaq35AnY1kQ"
+    },
+    {
+      "id": "s2",
+      "title": "ServiceNow docs: New inbound integrations (Brazil)",
+      "url": "https://www.servicenow.com/docs/r/platform-security/authentication/new-inbound-integrations.html"
+    },
+    {
+      "id": "s3",
+      "title": "ServiceNow docs: Inbound REST API rate limiting",
+      "url": "https://www.servicenow.com/docs/r/api-reference/rest-api-explorer/inbound-REST-API-rate-limiting.html"
+    },
+    {
+      "id": "s4",
+      "title": "ServiceNow docs: Exploring the ServiceNow Store",
+      "url": "https://www.servicenow.com/docs/r/VbEA8DxUy61CFZ25mbYrcQ/07dcDLenBndualYLPey4Jw"
+    },
+    {
+      "id": "s5",
+      "title": "ServiceNow docs: Understanding PDIs",
+      "url": "https://www.servicenow.com/docs/r/SmYvGPN0OygSQs53fsexIQ/yG_RdLKb649OcfnDiGEkwQ"
+    },
+    {
+      "id": "s6",
+      "title": "Third-party: Merge help center, ServiceNow partner OAuth credentials setup",
+      "url": "https://help.ah.merge.dev/articles/4651816093-servicenow-how-do-i-set-up-my-partner-credentials-for-oauth"
+    },
+    {
+      "id": "s7",
+      "title": "ServiceNow docs: Authorization code grant workflow (Australia)",
+      "url": "https://www.servicenow.com/docs/r/hX5GtoLUEU58KgyL7CW5Ag/DnlJhu7zLAFshDc8KydH2g"
+    },
+    {
+      "id": "s8",
+      "title": "ServiceNow Developer site",
+      "url": "https://developer.servicenow.com"
+    },
+    {
+      "id": "s9",
+      "title": "ServiceNow docs: OAuth inbound",
+      "url": "https://www.servicenow.com/docs/r/platform-security/authentication/oauth-inbound.html"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://developer.servicenow.com/: HTTP 302 to /dev.do",
+      "GET https://store.servicenow.com/: HTTP 302 to /store"
+    ],
+    "openQuestions": [
+      "Official definition of the default useraccount scope (only a third-party guide describes it)",
+      "Whether any platform-default inbound REST rate limit exists when customers define no rules",
+      "Store certification timeline and partner program fees",
+      "Which PDI reclamation rule is current (10 days idle vs. 90 days old plus 10 days idle)",
+      "Whether public (PKCE) clients receive refresh tokens; the docs only show refresh for private clients"
+    ]
+  }
+}

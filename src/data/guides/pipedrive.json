@@ -1,0 +1,534 @@
+{
+  "app": {
+    "name": "Pipedrive",
+    "slug": "pipedrive",
+    "website": "https://www.pipedrive.com",
+    "developerPortal": "https://developers.pipedrive.com",
+    "category": "CRM"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth authorization guide",
+      "url": "https://pipedrive.readme.io/docs/marketplace-oauth-authorization"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes and permissions",
+      "url": "https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations"
+    },
+    {
+      "kind": "review",
+      "label": "App approval process",
+      "url": "https://pipedrive.readme.io/docs/marketplace-app-approval-process"
+    },
+    {
+      "kind": "console",
+      "label": "Creating an app (public vs private)",
+      "url": "https://pipedrive.readme.io/docs/marketplace-creating-a-proper-app"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limiting",
+      "url": "https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "A Private app needs no approval and can be shared with any Pipedrive company through a direct install link, so a working multi-customer OAuth app is a same-day job once you have a developer sandbox. A Marketplace listing (Public app) is optional but takes up to 21 business days of review, and the app type can't be changed after creation.",
+    "timeToDev": {
+      "range": "1–4 hours",
+      "hours": {
+        "min": 1,
+        "max": 4
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": "Assumes the sandbox request form is processed quickly; the docs don't state a turnaround."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 4,
+        "max": 24
+      },
+      "assumes": "A Private app shared via its unlisted install link, which is enough for an agent reading and writing CRM data; a Marketplace (Public) listing adds up to 21 business days of review.",
+      "waitingOn": "Nothing — no review for Private apps",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Pipedrive developer sandbox account",
+      "why": "The Developer Hub, where you register the app and get client_id/client_secret, is reached through a sandbox. It's limited to 5 seats and deleted if inactive (no app within 45 days, or no live app within 6 months).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A server-side OAuth callback URL",
+      "why": "Apps must use OAuth 2.0 with server-side code; redirect_uri must match the callback URL registered for the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "For a Public (Marketplace) app: Terms of Service, Privacy Policy, pricing page, demo video and test accounts",
+      "why": "Required by the pre-submission checklist, along with membership in the Pipedrive Developers' Community and acceptance of the Developer Partner Agreement.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read-only CRM data",
+      "examples": [
+        "base",
+        "deals:read",
+        "contacts:read",
+        "activities:read",
+        "leads:read",
+        "search:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enough for an agent that answers questions about deals, people and activities. No scope-specific approval is documented.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": "base is always on."
+      }
+    },
+    {
+      "tier": "Read/write CRM data",
+      "examples": [
+        "deals:full",
+        "contacts:full",
+        "activities:full",
+        "leads:full",
+        "projects:full"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Create and update records. Users must accept or deny all scopes together, so ask only for what you need.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Mail and sensitive data",
+      "examples": [
+        "mail:read",
+        "mail:full",
+        "recents:read",
+        "users:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (Private) / up to 21 business days (Public)",
+      "impact": "No special approval documented, but Marketplace reviewers check that you request only needed scopes, and mail access is likely to draw scrutiny.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4",
+          "s3"
+        ],
+        "note": "The scrutiny claim is our inference."
+      }
+    },
+    {
+      "tier": "Admin scope",
+      "examples": [
+        "admin"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Manage pipelines, fields, users and webhooks. The installing user needs admin rights, but the Marketplace doesn't block non-admin installs, so your app has to handle that case (check GET /users/{id}/permissions).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Request a developer sandbox",
+      "owner": "human",
+      "detail": "Fill in the sandbox form on the developers site and sign in to the sandbox company.",
+      "url": "https://developers.pipedrive.com",
+      "duration": "minutes to a day",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Turnaround isn't stated in the docs."
+      }
+    },
+    {
+      "title": "Choose Private vs Public carefully",
+      "owner": "agent",
+      "detail": "Private: shared via direct install link, no review, no listing. Public: Marketplace listing after approval. The app type can't be changed later in Developer Hub.",
+      "url": "https://pipedrive.readme.io/docs/marketplace-creating-a-proper-app",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Register the app in Developer Hub",
+      "owner": "human",
+      "detail": "In the sandbox, open Developer Hub, create the app, set the callback URL and scopes, and copy client_id and client_secret.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the OAuth flow",
+      "owner": "agent",
+      "detail": "Redirect to https://oauth.pipedrive.com/oauth/authorize?client_id=...&redirect_uri=...&state=...; exchange the code (valid 5 min) at POST https://oauth.pipedrive.com/oauth/token with HTTP Basic auth and form encoding. Send API calls to the api_domain returned in the token response.",
+      "url": "https://pipedrive.readme.io/docs/marketplace-oauth-authorization",
+      "duration": "1–3 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement refresh and uninstall handling",
+      "owner": "agent",
+      "detail": "Refresh when the 60-minute access token expires; the refresh token lasts 60 days from last use. Handle user_denied and uninstall, and clean up stored tokens.",
+      "url": "https://pipedrive.readme.io/docs/marketplace-oauth-authorization",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Design for the token-based rate budget",
+      "owner": "agent",
+      "detail": "Prefer webhooks and API v2 (cheaper per call) over polling, cache lookups, and back off on 429s. Search is capped at 10 requests per 2 seconds.",
+      "url": "https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Make the Private app live and share the install link",
+      "owner": "human",
+      "detail": "Set the Private app live in Developer Hub and give customers the direct installation link. Each user in a company installs it themselves.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": "The exact console button label wasn't observed."
+      }
+    },
+    {
+      "title": "Optional: prepare Marketplace listing materials",
+      "owner": "agent",
+      "detail": "Draft the description, install instructions, pricing page, ToS, privacy policy, and scope rationale; plan the demo video covering permissions and key features.",
+      "url": "https://pipedrive.readme.io/docs/marketplace-app-approval-process",
+      "duration": "1–2 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Optional: record demo, provide test accounts, send to review",
+      "owner": "human",
+      "detail": "Record the demo video, create working test accounts, preview the listing and click 'Send to review'.",
+      "url": null,
+      "duration": "2–4 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Optional: Marketplace review",
+      "owner": "wait",
+      "detail": "Public app reviews may take up to 21 business days. After approval the app is unlisted by default; click Publish in Developer Hub to list it.",
+      "url": null,
+      "duration": "up to 21 business days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the authorize/token/refresh flow and api_domain routing",
+    "Build install, uninstall and permission-check flows",
+    "Design webhook-based sync within the token budget",
+    "Draft Marketplace listing copy, ToS, privacy policy and scope rationale",
+    "Probe the OAuth endpoints and handle error responses"
+  ],
+  "humanMustDo": [
+    "Request the developer sandbox and sign in",
+    "Create the app in Developer Hub and pick Private or Public",
+    "Copy client credentials and make the app live",
+    "Record the demo video and submit for review (Public only)",
+    "Customer side: each user installs the app for their company"
+  ],
+  "blockers": [
+    {
+      "symptom": "Need to switch an app from Private to Public (or back)",
+      "cause": "The app type can't be changed after creation in Developer Hub.",
+      "fix": "Create a new app of the right type and migrate users to its install link.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 for every call until midnight",
+      "cause": "The company's shared daily token budget (30,000 × plan multiplier × seats) is used up, shared with all other integrations.",
+      "fix": "Cut polling, use webhooks and cheaper v2 endpoints, or have the customer buy API token top-ups.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "The reset happens at midnight in the server's timezone."
+      }
+    },
+    {
+      "symptom": "Connection dies and refresh returns an error after a long idle period",
+      "cause": "The refresh token expires if unused for 60 days.",
+      "fix": "Refresh periodically even when idle, or prompt the user to reinstall the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Admin-only calls fail for some installs",
+      "cause": "The admin scope needs an admin installer, but non-admins can still install.",
+      "fix": "Check GET /users/{id}/permissions after install and degrade gracefully.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Sandbox account disappears",
+      "cause": "Sandboxes are deleted if no app is created within 45 days, or no app goes live within 6 months.",
+      "fix": "Create an app early and make the Private app live, or sign in and keep it active.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "{\"error\":\"invalid_request\",\"message\":\"Invalid request: content must be application/x-www-form-urlencoded\"} from the token endpoint",
+      "cause": "The token request was sent as JSON or without a body.",
+      "fix": "POST form-encoded with HTTP Basic client credentials.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Observed with an empty POST on 2026-10-20."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 60 minutes (use expires_in). Refresh tokens expire after 60 days unused; each refresh resets that window and returns the same refresh token. Auth codes last 5 minutes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Installs are per user and per company: each user installs the app themselves, and a user in several companies installs it for each one.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "OAuth apps get four times the burst limit of API-token integrations (e.g. 80 vs 20 requests per 2 s on Lite), but share the same company daily token budget. Search costs 40 tokens and is limited to 10 requests per 2 s.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The approval checklist forbids storing or unnecessarily using user API tokens, so an agent should rely on OAuth, not ask users for personal API tokens.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Pipedrive's docs describe Private apps both as shareable with 'any Pipedrive company' and as the route for apps 'used only internally'. Whether broad commercial distribution via Private apps is acceptable under the Developer Partner Agreement isn't spelled out.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "There's no OIDC discovery document at oauth.pipedrive.com; this is plain OAuth 2.0, not OpenID Connect.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [],
+        "note": "GET https://oauth.pipedrive.com/.well-known/openid-configuration returned HTTP 401 on 2026-10-20."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Pipedrive docs: Creating an app (public vs private)",
+      "url": "https://pipedrive.readme.io/docs/marketplace-creating-a-proper-app"
+    },
+    {
+      "id": "s2",
+      "title": "Pipedrive docs: OAuth authorization",
+      "url": "https://pipedrive.readme.io/docs/marketplace-oauth-authorization"
+    },
+    {
+      "id": "s3",
+      "title": "Pipedrive docs: App approval process",
+      "url": "https://pipedrive.readme.io/docs/marketplace-app-approval-process"
+    },
+    {
+      "id": "s4",
+      "title": "Pipedrive docs: Scopes and permissions explanations",
+      "url": "https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations"
+    },
+    {
+      "id": "s5",
+      "title": "Pipedrive docs: Developer sandbox account",
+      "url": "https://pipedrive.readme.io/docs/developer-sandbox-account"
+    },
+    {
+      "id": "s6",
+      "title": "Pipedrive docs: Rate limiting",
+      "url": "https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://oauth.pipedrive.com/oauth/authorize with a bogus client_id: HTTP 401",
+      "POST https://oauth.pipedrive.com/oauth/token with no body: HTTP 400 {\"error\":\"invalid_request\",\"message\":\"Invalid request: content must be application/x-www-form-urlencoded\"}",
+      "GET https://developers.pipedrive.com: HTTP 200",
+      "GET https://oauth.pipedrive.com/.well-known/openid-configuration: HTTP 401 (no OIDC discovery)"
+    ],
+    "openQuestions": [
+      "How fast sandbox requests are approved, and whether a paid plan is needed (one community guide claims so)",
+      "Whether the Developer Partner Agreement allows commercial distribution of Private apps at scale",
+      "Typical real-world Marketplace review time versus the stated 21-business-day maximum",
+      "Whether Private apps have any install-count cap (none found)"
+    ]
+  }
+}

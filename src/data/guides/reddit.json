@@ -1,0 +1,531 @@
+{
+  "app": {
+    "name": "Reddit",
+    "slug": "reddit",
+    "website": "https://www.reddit.com",
+    "developerPortal": "https://www.reddit.com/prefs/apps",
+    "category": "Social media"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 guide (archived wiki)",
+      "url": "https://github.com/reddit-archive/reddit/wiki/OAuth2"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference (live JSON)",
+      "url": "https://www.reddit.com/api/v1/scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Data API Terms",
+      "url": "https://redditinc.com/policies/data-api-terms"
+    },
+    {
+      "kind": "changelog",
+      "label": "App registration and 2027 shutdown notice",
+      "url": "https://developers.reddit.com/app-registration"
+    },
+    {
+      "kind": "console",
+      "label": "Your apps",
+      "url": "https://www.reddit.com/prefs/apps"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "Since the November 2025 Responsible Builder Policy, new Data API OAuth apps need Reddit's prior approval, Reddit stops taking new public API access requests on October 31, 2026, and remaining public API access ends in March 2027. An AI agent that reads or posts for its users realistically needs a separate written (commercial) agreement with Reddit, because the Data API Terms bar commercial use without one and bar using content to train AI models.",
+    "timeToDev": {
+      "range": "Weeks, if approved",
+      "hours": {
+        "min": 168,
+        "max": 1440
+      },
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": "The OAuth flow itself takes under an hour once you have a client ID, but new client IDs need approval under the Responsible Builder Policy. Reddit publishes no review SLA; third-party write-ups describe waits of weeks and frequent non-responses. After 2026-10-31 the free request path is reported closed entirely."
+      }
+    },
+    "timeToProd": {
+      "range": "Commercial deal only",
+      "hours": {
+        "min": 720,
+        "max": 4320
+      },
+      "assumes": "A commercial AI agent that reads or writes Reddit data for its users, which needs a separate written agreement with Reddit; there is no faster self-serve path after the public API closes in March 2027.",
+      "waitingOn": "Reddit agreeing to a written data agreement (no published process or timeline). The free access request form closes 2026-10-31.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s4",
+          "s6",
+          "s7"
+        ],
+        "note": "The commercial-agreement requirement and the March 2027 end date are sourced; the 1–6 month range is our guess because Reddit publishes no timeline and may simply decline."
+      }
+    },
+    "cost": "Commercial use needs a separate paid agreement; Reddit sets fees at its sole discretion and publishes no rate card."
+  },
+  "prerequisites": [
+    {
+      "item": "A personal (human) Reddit account",
+      "why": "Apps are created at reddit.com/prefs/apps under a user account, and Reddit's app registration page says a human account is needed to register apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Prior approval of your use case under the Responsible Builder Policy",
+      "why": "Self-service Data API access was closed in November 2025; new OAuth tokens need Reddit's sign-off.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Reddit's own policy page and announcement post blocked automated fetches; this comes from a third-party summary quoting the r/redditdev announcement."
+      }
+    },
+    {
+      "item": "A separate written agreement with Reddit for commercial use",
+      "why": "The Data API Terms (rev. 2026-07-20) say commercial purposes, research beyond rate limits, or any use not expressly permitted needs a separate agreement.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A descriptive, unique User-Agent string",
+      "why": "The Data API Terms forbid masking or misrepresenting the user agent or OAuth identity.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The exact format Reddit recommends (platform:app-id:version (by /u/name)) is from older docs we couldn't fetch."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity only",
+      "examples": [
+        "identity"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks, if approved",
+      "impact": "Sign-in with Reddit username. Still needs an approved client ID; there is no OIDC discovery document (/.well-known/openid-configuration returns 404).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": "Reddit doesn't tier approval by scope; approval is per app and use case."
+      }
+    },
+    {
+      "tier": "Read user and community data",
+      "examples": [
+        "read",
+        "history",
+        "mysubreddits",
+        "privatemessages",
+        "wikiread",
+        "save"
+      ],
+      "reviewRequired": true,
+      "time": "Commercial deal only",
+      "impact": "What an agent that summarizes or searches a user's Reddit needs. Using this data commercially, or for AI model training, is barred without Reddit's written permission.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "Scope strings observed live at /api/v1/scopes."
+      }
+    },
+    {
+      "tier": "Write and act as the user",
+      "examples": [
+        "submit",
+        "edit",
+        "vote",
+        "subscribe",
+        "report"
+      ],
+      "reviewRequired": true,
+      "time": "Commercial deal only",
+      "impact": "Posting, commenting and voting on a user's behalf. The terms bar using the API to spam or incentivize users, and Reddit now labels permitted automation as 'App'.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Moderator scopes",
+      "examples": [
+        "modposts",
+        "modconfig",
+        "modmail",
+        "modlog",
+        "modflair"
+      ],
+      "reviewRequired": true,
+      "time": "Migrate to Devvit",
+      "impact": "Moderator tooling is the use case Reddit is actively steering to its Developer Platform (Devvit), with a $1,000 porting bounty for eligible existing apps registered by 2026-11-30.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s7"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Decide whether Devvit fits instead",
+      "owner": "agent",
+      "detail": "Check whether the use case can run inside Reddit's Developer Platform (Devvit, TypeScript). Reddit points builders there first and asks for Data API requests only when Devvit doesn't support the use case. An off-platform AI agent usually won't fit.",
+      "url": "https://developers.reddit.com/app-registration",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": "From third-party summaries of Reddit's announcements, which block automated fetches."
+      }
+    },
+    {
+      "title": "Draft the access request",
+      "owner": "agent",
+      "detail": "Write a use-case description: what data, which scopes, retention and deletion, no AI training, expected request volume, commercial or not. Reddit's Data API Wiki links to the request form (developer, researcher or moderator category).",
+      "url": null,
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "The Help Center pages hosting the wiki and form returned a Cloudflare challenge (HTTP 403) to us."
+      }
+    },
+    {
+      "title": "Submit the request before 2026-10-31",
+      "owner": "human",
+      "detail": "Sign in and submit the request form. Reports say new public API access requests stop being accepted on October 31, 2026.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6",
+          "s7"
+        ],
+        "note": "Date reported consistently by several outlets citing Reddit's 2026-09-30 posts; we couldn't open Reddit's posts directly."
+      }
+    },
+    {
+      "title": "Wait for Reddit's decision",
+      "owner": "wait",
+      "detail": "No published SLA or rejection criteria. Moderator use cases are reported as most likely to be approved; commercial and personal use as much harder.",
+      "url": null,
+      "duration": "Weeks, or no reply",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Third-party vendor blog with a commercial interest in alternatives."
+      }
+    },
+    {
+      "title": "Negotiate a commercial data agreement",
+      "owner": "human",
+      "detail": "For a paid product or AI assistant, contact Reddit for a separate written agreement. Fees are set at Reddit's discretion.",
+      "url": "https://redditinc.com/policies/data-api-terms",
+      "duration": "Months",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the web app",
+      "owner": "human",
+      "detail": "At reddit.com/prefs/apps choose type 'web app' (server-side, gets a secret), set the exact redirect URI. 'script' apps only access the developer's own account; 'installed' apps get no secret.",
+      "url": "https://www.reddit.com/prefs/apps",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "prefs/apps redirected us to login (HTTP 302) on 2026-10-20."
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://www.reddit.com/api/v1/authorize with client_id, response_type=code, state, redirect_uri, duration=permanent, scope (space-separated). Exchange at https://www.reddit.com/api/v1/access_token with HTTP Basic (client_id:secret), form-encoded body. Call APIs on https://oauth.reddit.com.",
+      "url": "https://github.com/reddit-archive/reddit/wiki/OAuth2",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Register the app with Reddit",
+      "owner": "human",
+      "detail": "Register existing Data API apps at developers.reddit.com/app-registration. From 2027-01-12 Reddit begins removing access for apps that haven't registered or engaged with the Developer Platform team.",
+      "url": "https://developers.reddit.com/app-registration",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Fetched the page (HTTP 200) on 2026-10-20; it states the 2027-01-12 removal and March 2027 end of public API access."
+      }
+    },
+    {
+      "title": "Build rate-limit and deletion handling",
+      "owner": "agent",
+      "detail": "Honor X-Ratelimit-Used/Remaining/Reset headers, refresh tokens hourly, and delete any data not needed for the approved use case.",
+      "url": null,
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Assess whether the use case fits Devvit instead of the Data API",
+    "Draft the access request and data-use description",
+    "Implement the OAuth code flow, refresh and revocation",
+    "Build rate-limit backoff from X-Ratelimit headers",
+    "Draft retention and deletion policies matching the approved use case"
+  ],
+  "humanMustDo": [
+    "Sign in and submit the access request before 2026-10-31",
+    "Negotiate a commercial agreement with Reddit",
+    "Create the web app at reddit.com/prefs/apps",
+    "Register the app at developers.reddit.com/app-registration",
+    "Plan for public API access ending in March 2027"
+  ],
+  "blockers": [
+    {
+      "symptom": "You can't get a working client ID for a new app, or your request gets no reply",
+      "cause": "Self-service Data API access closed in November 2025; new tokens need Responsible Builder Policy approval, which has no SLA.",
+      "fix": "Try Devvit if the use case fits; otherwise pursue a written agreement with Reddit or drop Reddit as a source.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Third-party report; Reddit's policy page blocked our fetch."
+      }
+    },
+    {
+      "symptom": "The access request form is no longer accepting submissions",
+      "cause": "Reddit stops accepting new public API access requests on 2026-10-31.",
+      "fix": "Commercial agreement or Devvit; there is no free path for new apps after that date.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6",
+          "s7"
+        ],
+        "note": "Reported by multiple outlets citing Reddit's 2026-09-30 announcements."
+      }
+    },
+    {
+      "symptom": "A previously working app starts losing API access in January 2027",
+      "cause": "Reddit begins removing access for unregistered apps from 2027-01-12, and remaining public API access ends in March 2027.",
+      "fix": "Register at developers.reddit.com/app-registration now, and secure a written agreement for continued access.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Stated on the registration page we fetched on 2026-10-20."
+      }
+    },
+    {
+      "symptom": "Authorization fails with a 403 error in the browser",
+      "cause": "redirect_uri doesn't exactly match the one registered on the app.",
+      "fix": "Make the registered and requested redirect URIs byte-identical, including scheme and trailing slash.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The wiki says a redirect_uri mismatch fails with a 403; the exact message text wasn't verified."
+      }
+    },
+    {
+      "symptom": "Access stops working after about an hour and no refresh token was issued",
+      "cause": "The authorize request used duration=temporary (or the implicit grant), which issues no refresh token.",
+      "fix": "Request duration=permanent with the code grant, then refresh with grant_type=refresh_token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire after 1 hour; only duration=permanent code grants return a refresh token. Revoking a refresh token also revokes its access tokens.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The Data API Terms grant no right to use User Content to train machine learning or AI models without rightsholders' express permission, and require deleting data not needed for your approved use case.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Free approved clients are reported to get 100 queries per minute per OAuth client ID, averaged over 10 minutes. The terms let Reddit cap requests or the number of app users at its discretion.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5",
+          "s3"
+        ],
+        "note": "The 100 QPM figure is from a third-party summary of Reddit's Data API Wiki, which we couldn't fetch; the discretion clause is sourced."
+      }
+    },
+    {
+      "text": "Script apps can only act as the developer's own account; to act for end users you need a web app (confidential) or installed app (no secret).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Reddit is not an OpenID Connect provider: there's no discovery document, and identity comes from GET /api/v1/me with the identity scope.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "https://www.reddit.com/.well-known/openid-configuration returned HTTP 404 on 2026-10-20."
+      }
+    },
+    {
+      "text": "Partners with written agreements (e.g. accessibility apps and some mobile clients) are reported as exempt from the March 2027 shutdown; AI assistants using Reddit data are expected to need commercial agreements.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Trade-press summary of Reddit's posts."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Reddit archived wiki: OAuth2",
+      "url": "https://github.com/reddit-archive/reddit/wiki/OAuth2"
+    },
+    {
+      "id": "s2",
+      "title": "Reddit API: live scopes list",
+      "url": "https://www.reddit.com/api/v1/scopes"
+    },
+    {
+      "id": "s3",
+      "title": "Reddit Data API Terms (last revised 2026-07-20)",
+      "url": "https://redditinc.com/policies/data-api-terms"
+    },
+    {
+      "id": "s4",
+      "title": "Reddit for Developers: App Registration",
+      "url": "https://developers.reddit.com/app-registration"
+    },
+    {
+      "id": "s5",
+      "title": "redditapis.com: Reddit Data API in 2026 (third-party)",
+      "url": "https://www.redditapis.com/blogs/reddit-data-api-2026"
+    },
+    {
+      "id": "s6",
+      "title": "PPC Land: Reddit to halt public Data API access in March 2027",
+      "url": "https://ppc.land/reddit-to-halt-public-data-api-access-in-march-2027-as-14-000-apps-register/"
+    },
+    {
+      "id": "s7",
+      "title": "Digital Applied: Reddit API and RSS shutdown deadlines",
+      "url": "https://www.digitalapplied.com/blog/reddit-api-rss-shutdown-ai-tools-deadlines"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://www.reddit.com/api/v1/scopes: HTTP 200, JSON with 30 scopes incl. identity, read, history, submit, privatemessages, mod*",
+      "GET https://www.reddit.com/.well-known/openid-configuration: HTTP 404",
+      "GET https://www.reddit.com/prefs/apps and /api/v1/authorize: 302 to reddit.com/login",
+      "GET https://developers.reddit.com/app-registration: HTTP 200, states 2027-01-12 access removal, March 2027 end of public API, $1,000 bounty for registration by 2026-11-30",
+      "GET Reddit Help Center (Responsible Builder Policy, Data API Wiki): HTTP 403 Cloudflare challenge"
+    ],
+    "openQuestions": [
+      "Whether user-authorized OAuth (acting on a user's own account) survives the March 2027 shutdown, or only partners with written agreements keep access",
+      "The exact Responsible Builder Policy text and request form URL (Help Center blocked automated fetches)",
+      "Whether any request submitted before 2026-10-31 is still processed after that date",
+      "Current official rate limits for approved free clients",
+      "Whether Reddit has a published commercial data-licensing contact or pricing"
+    ]
+  }
+}

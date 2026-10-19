@@ -1,0 +1,262 @@
+{
+  "app": {
+    "name": "Coda",
+    "slug": "coda",
+    "website": "https://coda.io",
+    "developerPortal": "https://docs.superhuman.com/developers/apis/v1",
+    "category": "Docs & wikis"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth authorization server metadata",
+      "url": "https://coda.io/.well-known/oauth-authorization-server"
+    },
+    {
+      "kind": "scopes",
+      "label": "MCP protected-resource metadata (scopes)",
+      "url": "https://coda.io/.well-known/oauth-protected-resource/apis/mcp"
+    },
+    {
+      "kind": "api",
+      "label": "REST API reference (v1)",
+      "url": "https://docs.superhuman.com/developers/apis/v1"
+    },
+    {
+      "kind": "changelog",
+      "label": "MCP public beta announcement",
+      "url": "https://connect.superhuman.com/t/coda-mcp-is-now-available-in-public-beta/60331"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Coda (now branded Superhuman Docs) has no OAuth for its REST API, which only takes personal API tokens, but its remote MCP server at coda.io/apis/mcp exposes a standard OAuth 2.1 server with dynamic client registration, PKCE and no app review, so any user can connect your agent the same day. The catch is that it's a beta MCP-only path with a single all-access scope (mcp:all) and tool names Coda says not to treat as stable.",
+    "timeToDev": {
+      "range": "30 min–2 h",
+      "hours": { "min": 0.5, "max": 2 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s2"],
+        "note": "There is no console to register in: clients self-register at the registration_endpoint. Time is mostly wiring an MCP client with OAuth (many MCP SDKs handle discovery, DCR and PKCE)."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "Your agent reads and writes user docs through the Coda MCP server using OAuth; the REST API has no OAuth path, so the only alternative is asking each user to paste a personal API token.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s4", "s5"],
+        "note": "No review or listing step appears in any source we found. The metadata advertises open dynamic client registration."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "An MCP client that supports OAuth discovery, dynamic client registration and PKCE (S256)",
+      "why": "Coda's authorization server advertises a registration_endpoint, code_challenge_methods_supported S256 and only the authorization_code grant, so clients register themselves rather than through a console.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed in https://coda.io/.well-known/oauth-authorization-server on 2026-10-20." }
+    },
+    {
+      "item": "A Coda account for testing (any user who can open the docs you want to read)",
+      "why": "MCP access is bounded by the connecting user's existing doc permissions.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": "Stated by staff in replies to the beta announcement." }
+    },
+    {
+      "item": "An HTTPS redirect URI for your OAuth callback",
+      "why": "Standard for the authorization code flow; you supply it during dynamic registration.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "Coda's redirect URI rules (localhost, custom schemes) aren't documented in pages we could open." }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "MCP OAuth (the only OAuth scope)",
+      "examples": ["mcp:all"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Full read and write over everything the user can access in Coda via MCP tools. There is no read-only OAuth scope today.",
+      "evidence": { "label": "tested", "sourceIds": ["s1", "s2", "s4"], "note": "scopes_supported is [\"mcp:all\"] in both metadata documents, and the MCP endpoint's WWW-Authenticate header asks for scope=\"mcp:all\". Staff confirm it's the single scope." }
+    },
+    {
+      "tier": "Personal API token restricted to MCP (no OAuth)",
+      "examples": ["API token with restriction: MCP (read, write, or read+write)"],
+      "reviewRequired": false,
+      "time": "Minutes per user",
+      "impact": "Users generate a token in account settings and paste it into your app. It's the only way to get read-only access, and it suits headless agents, but your users have to handle a secret.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5"], "note": null }
+    },
+    {
+      "tier": "REST API v1 (token only)",
+      "examples": ["Authorization: Bearer <API token>"],
+      "reviewRequired": false,
+      "time": "Minutes per user",
+      "impact": "The REST API takes bearer API tokens; the reference doesn't mention OAuth. Coda staff say the MCP has more capabilities than REST and there are no plans to bring them to REST.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Fetch the OAuth metadata",
+      "owner": "agent",
+      "detail": "GET https://coda.io/.well-known/oauth-protected-resource/apis/mcp (resource and scopes), then https://coda.io/.well-known/oauth-authorization-server (authorize, token and registration endpoints).",
+      "url": "https://coda.io/.well-known/oauth-authorization-server",
+      "duration": "2 min",
+      "evidence": { "label": "tested", "sourceIds": ["s1", "s2"], "note": "Both returned JSON on 2026-10-20." }
+    },
+    {
+      "title": "Register your client dynamically",
+      "owner": "agent",
+      "detail": "POST your client metadata (name, redirect_uris) to https://coda.io/v4/api/oauth2/register. Store the client_id and secret it returns; the token endpoint expects client_secret_post.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "Endpoint and auth method come from the metadata. We did not call the registration endpoint, so the response shape isn't confirmed." }
+    },
+    {
+      "title": "Implement the authorization code + PKCE flow",
+      "owner": "agent",
+      "detail": "Send users to https://coda.io/v4/api/oauth2/authorize with response_type=code, client_id, redirect_uri, scope=mcp:all, state and an S256 code_challenge. Exchange the code at https://coda.io/v4/api/oauth2/token with the code_verifier.",
+      "url": null,
+      "duration": "1 h",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "Parameters follow the advertised metadata and the MCP authorization spec; Coda doesn't publish a dedicated OAuth guide." }
+    },
+    {
+      "title": "Connect and approve with a test account",
+      "owner": "human",
+      "detail": "Sign in to Coda in the browser when redirected and approve the 'Connect with Superhuman Docs' consent.",
+      "url": "https://coda.io",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "title": "Call the MCP server",
+      "owner": "agent",
+      "detail": "Send MCP requests to https://coda.io/apis/mcp with Authorization: Bearer <access token>. List tools at runtime instead of hard-coding names.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": { "label": "tested", "sourceIds": ["s6", "s4"], "note": "An unauthenticated POST returned 401 with WWW-Authenticate: Bearer realm=\"mcp\" pointing at the protected-resource metadata." }
+    },
+    {
+      "title": "Store and use refresh tokens",
+      "owner": "agent",
+      "detail": "Persist the refresh token per user so a server-side agent can keep working without the user present; staff describe approving once and storing the refresh token as the headless pattern.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "Access and refresh token lifetimes aren't documented in sources we could open." }
+    },
+    {
+      "title": "Offer a PAT fallback for read-only or headless setups",
+      "owner": "agent",
+      "detail": "Let users paste an API token created with the MCP restriction (and read-only if they want), since OAuth can't be narrowed below mcp:all.",
+      "url": "https://coda.io/account",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5"], "note": null }
+    },
+    {
+      "title": "Go live",
+      "owner": "human",
+      "detail": "Ship the connect button. There is no listing, verification or review step for OAuth clients in any source we found.",
+      "url": null,
+      "duration": "minutes",
+      "evidence": { "label": "inferred", "sourceIds": ["s1", "s5"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Read the OAuth and protected-resource metadata",
+    "Register the client via dynamic client registration",
+    "Implement PKCE, state checking, token storage and refresh",
+    "Discover MCP tools at runtime and handle schema changes",
+    "Write user-facing copy explaining the mcp:all access level"
+  ],
+  "humanMustDo": [
+    "Sign in to Coda and approve the consent screen for testing",
+    "Decide whether full read/write access is acceptable for your product",
+    "Create a dedicated Coda user and workspace if you want a service-style account",
+    "Generate an MCP-restricted API token where a PAT fallback is needed"
+  ],
+  "blockers": [
+    {
+      "symptom": "401 Unauthorized from https://coda.io/apis/mcp when using a personal API token",
+      "cause": "The token wasn't created with the MCP restriction.",
+      "fix": "Create a new API token and select the MCP restriction.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "The specific 401 behaviour for unrestricted tokens comes from Coda's help article, which we couldn't open (403); staff confirm the MCP restriction is required." }
+    },
+    {
+      "symptom": "You can't request read-only access in the OAuth flow",
+      "cause": "The authorization server supports a single scope, mcp:all.",
+      "fix": "Accept full access, or use a read-only MCP API token, or confine a dedicated user to a workspace with only the docs it should see.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "symptom": "Agent breaks after a tool is renamed or its parameters change",
+      "cause": "The MCP server is in public beta and staff advise assuming tool names and shapes are not stable.",
+      "fix": "Call tools/list at session start and map by description; add tests that alert on schema drift.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5"], "note": null }
+    },
+    {
+      "symptom": "Feature you need exists in MCP but not REST (or the reverse)",
+      "cause": "OAuth only covers MCP; REST v1 is token-only and lags MCP capabilities.",
+      "fix": "Build on MCP for OAuth users; staff say there are no plans to port MCP capabilities to REST.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "symptom": "OAuth approval completes in the browser but the client stays stuck on authentication",
+      "cause": "Client-side OAuth handling issues reported for some MCP clients (e.g. Cursor on Linux, ChatGPT without Developer Mode).",
+      "fix": "Verify your redirect handling and refresh logic; fall back to a PAT if the client can't complete PKCE.",
+      "evidence": { "label": "unverified", "sourceIds": ["s5"], "note": "User reports in the announcement thread, not confirmed by Coda." }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Coda is being rebranded as Superhuman Docs: coda.io/developers now redirects to docs.superhuman.com, and the MCP resource is named 'Superhuman Docs MCP Server'. Expect more URL moves.",
+      "evidence": { "label": "tested", "sourceIds": ["s2", "s3"], "note": "coda.io/developers/apis/v1 returned 307 to docs.superhuman.com on 2026-10-20." }
+    },
+    {
+      "text": "There is no bot or service-account concept; a token always acts as a real Coda user and inherits that user's doc permissions.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5"], "note": null }
+    },
+    {
+      "text": "REST API rate limits are per user: 100 reads per 6 s, 10 writes per 6 s, 5 doc-content writes per 10 s, 4 doc listings per 6 s; exceeding them returns 429. MCP rate limits aren't documented.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "Admins can't yet restrict individual MCP tools org-wide (e.g. delete tools) from Claude Team unless the server is in Claude's connector directory, which Superhuman said it was working on in June 2026.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "text": "The authorization server only advertises the authorization_code grant, with no client credentials grant, so a human approves each connection once.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "grant_types_supported: [\"authorization_code\"]. A refresh_token grant isn't listed although staff describe storing refresh tokens." }
+    },
+    {
+      "text": "Coda's help-center articles on MCP setup and security returned 403 to our fetcher, so details such as OAuth admin controls and token lifetimes come only from community posts.",
+      "evidence": { "label": "tested", "sourceIds": [], "note": "help.coda.io and help.superhuman.com returned HTTP 403 on 2026-10-20." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Coda OAuth authorization server metadata", "url": "https://coda.io/.well-known/oauth-authorization-server" },
+    { "id": "s2", "title": "Coda MCP protected-resource metadata", "url": "https://coda.io/.well-known/oauth-protected-resource/apis/mcp" },
+    { "id": "s3", "title": "Superhuman Docs (Coda) REST API v1 reference", "url": "https://docs.superhuman.com/developers/apis/v1" },
+    { "id": "s4", "title": "Superhuman community: MCP server headless auth for server-side agents (staff answers, June 2026)", "url": "https://connect.superhuman.com/t/superhuman-docs-mcp-server-headless-auth-for-server-side-agents/60859" },
+    { "id": "s5", "title": "Superhuman community: Coda MCP is now available in public beta (April 2026)", "url": "https://connect.superhuman.com/t/coda-mcp-is-now-available-in-public-beta/60331" },
+    { "id": "s6", "title": "Coda MCP endpoint", "url": "https://coda.io/apis/mcp" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://coda.io/.well-known/oauth-authorization-server: issuer https://coda.io, authorize/token/register under /v4/api/oauth2/, S256 PKCE, grant authorization_code, scopes [mcp:all], client_secret_post",
+      "GET https://coda.io/.well-known/oauth-protected-resource/apis/mcp: resource https://coda.io/apis/mcp, scopes [mcp:all], name 'Superhuman Docs MCP Server'",
+      "POST https://coda.io/apis/mcp unauthenticated: 401 with WWW-Authenticate Bearer realm=\"mcp\", scope=\"mcp:all\"",
+      "GET https://coda.io/.well-known/openid-configuration: 404 (no OIDC)",
+      "GET https://coda.io/developers/apis/v1: 307 to docs.superhuman.com"
+    ],
+    "openQuestions": [
+      "Access and refresh token lifetimes, and whether refresh tokens rotate",
+      "Whether enterprise admins can block OAuth MCP connections (help center pages were inaccessible)",
+      "Redirect URI rules for dynamic registration (localhost, custom schemes)",
+      "Whether REST API OAuth is planned",
+      "MCP-specific rate limits"
+    ]
+  }
+}

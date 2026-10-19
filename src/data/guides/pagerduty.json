@@ -1,0 +1,278 @@
+{
+  "app": {
+    "name": "PagerDuty",
+    "slug": "pagerduty",
+    "website": "https://www.pagerduty.com",
+    "developerPortal": "https://app.pagerduty.com/developer/applications",
+    "category": "Incident management"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth functionality guide", "url": "https://docs.pagerduty.com/developer/oauth-functionality" },
+    { "kind": "console", "label": "Register an app", "url": "https://docs.pagerduty.com/developer/register-an-app" },
+    { "kind": "review", "label": "Publish an app (review)", "url": "https://docs.pagerduty.com/developer/publish-an-app" },
+    { "kind": "scopes", "label": "Private apps and Scoped OAuth", "url": "https://docs.pagerduty.com/developer/private-apps" }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "PagerDuty has two OAuth types: Classic User OAuth works on any customer account as soon as you register it, but it only offers broad read or write access, while the recommended Scoped OAuth must be published (review aimed at 5 business days) and then installed by an admin on each customer account. Registering an app needs a Manager, Global Admin or Account Owner role, and PKCE plus a 30-second authorization code make the flow strict.",
+    "timeToDev": {
+      "range": "30–60 min",
+      "hours": { "min": 0.5, "max": 1 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s2", "s3"],
+        "note": "App Registration is a short wizard; Scoped OAuth app tokens via client_credentials work on your own account immediately."
+      }
+    },
+    "timeToProd": {
+      "range": "1–2 weeks",
+      "hours": { "min": 72, "max": 336 },
+      "assumes": "A Scoped OAuth app with granular scopes such as incidents.read, which PagerDuty recommends; a Classic User OAuth app with read or write works across accounts the same day with no review.",
+      "waitingOn": "PagerDuty's publish review (aim: 5 business days, plus any change requests), then an admin on each customer account installing the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4"],
+        "note": "The 5-business-day target is PagerDuty's; the 1–2 week range adds a round of feedback and is our estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A PagerDuty account (customer or developer account) where you have a Manager, Global Admin or Account Owner base role",
+      "why": "App Registration is available only to those roles.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "item": "Accept the PagerDuty Developer Agreement",
+      "why": "Use of PagerDuty Developer Services is governed by it.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "item": "PKCE support in your OAuth client",
+      "why": "Scoped OAuth apps must always use PKCE; Classic public clients must too.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "App documentation and support contact for publishing",
+      "why": "The Distribution Form asks for listing info, docs, support contact and testing instructions.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Classic User OAuth",
+      "examples": ["read", "write"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Works across accounts as soon as it's registered. read is read-only and write is read/write on all PagerDuty resources the user can access. Legacy, and a broad trust ask.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+    },
+    {
+      "tier": "Scoped OAuth, own account only (private)",
+      "examples": ["as_account-us.yoursubdomain", "incidents.read", "services.read", "schedules.read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Granular per-resource scopes and client_credentials app tokens, but only on the account that registered the app.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "tier": "Scoped OAuth, other accounts (public)",
+      "examples": ["incidents.read", "incidents.write", "services.read", "users.read"],
+      "reviewRequired": true,
+      "time": "1–2 weeks",
+      "impact": "After publish approval, an admin on each account installs it via https://app.pagerduty.com/oauth_apps/[app_id], then each user authorizes and gets a user token. App tokens aren't available on other accounts.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s3"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in with a Manager or Admin role",
+      "owner": "human",
+      "detail": "Log in to your PagerDuty account (or a developer account) and open Integrations → Developer Tools → App Registration.",
+      "url": "https://app.pagerduty.com/developer/applications",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s2"], "note": "The URL returned HTTP 200 on 2026-10-20 (not signed in); the menu path is from the docs." }
+    },
+    {
+      "title": "Create the app",
+      "owner": "human",
+      "detail": "Click New App, enter a name and description, and add OAuth 2.0 functionality. Apps are tied to a subdomain and a user and can't be moved, so use a shared service user.",
+      "url": "https://docs.pagerduty.com/developer/register-an-app",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Choose Scoped or Classic and pick scopes",
+      "owner": "agent",
+      "detail": "Map agent actions to scopes from the API reference (each endpoint lists its required scope). Prefer Scoped OAuth with only the resource scopes you need.",
+      "url": "https://docs.pagerduty.com/developer/private-apps",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Save redirect URLs and credentials",
+      "owner": "human",
+      "detail": "Add your redirect URL(s) on the Configure OAuth 2.0 screen, register, and copy the client ID and client secret.",
+      "url": null,
+      "duration": "5 min",
+      "evidence": { "label": "unverified", "sourceIds": ["s6"], "note": "Field order comes from a third-party setup guide; PagerDuty's register page doesn't list redirect URL rules." }
+    },
+    {
+      "title": "Implement the PKCE authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://identity.pagerduty.com/oauth/authorize with client_id, redirect_uri, response_type=code, scope (including as_account-{us|eu}.{subdomain} for Scoped), state and an S256 code_challenge. Exchange the code at https://identity.pagerduty.com/oauth/token within 30 seconds.",
+      "url": "https://docs.pagerduty.com/developer/oauth-functionality",
+      "duration": "45 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "title": "Implement refresh",
+      "owner": "agent",
+      "detail": "Scoped user tokens: 1-day access, 30-day refresh, 1-year rolling window. Classic: 30-day access, 210-day refresh, 3-year rolling window. Refresh with grant_type=refresh_token.",
+      "url": "https://docs.pagerduty.com/developer/oauth-functionality",
+      "duration": "20 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "title": "Write app docs and testing instructions",
+      "owner": "agent",
+      "detail": "Fill PagerDuty's app documentation template, support contact, website links and step-by-step test instructions for reviewers.",
+      "url": "https://docs.pagerduty.com/developer/publish-an-app",
+      "duration": "1–2 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Submit the Distribution Form",
+      "owner": "human",
+      "detail": "Set App Type to Public and submit the Distribution Form. The app is locked after submission; changes need an email to apps@pagerduty.com.",
+      "url": "https://docs.pagerduty.com/developer/publish-an-app",
+      "duration": "20 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Wait for PagerDuty review",
+      "owner": "wait",
+      "detail": "Reviewers test functionality and docs and reply to the account email with approval or feedback.",
+      "url": null,
+      "duration": "~5 business days",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "'We aim to review your submission and approve or reply with feedback within 5 business days.'" }
+    },
+    {
+      "title": "Have customer admins install the app",
+      "owner": "human",
+      "detail": "Each customer account's admin opens https://app.pagerduty.com/oauth_apps/[app_id] to install; installing grants no access by itself, so users then authorize individually.",
+      "url": null,
+      "duration": "5 min per account",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Pick least-privilege scopes from the API reference",
+    "Write the PKCE authorize, fast code exchange and refresh code",
+    "Build the as_account-{region}.{subdomain} scope for each customer",
+    "Fill the app documentation template and reviewer test steps",
+    "Write admin install instructions for customers"
+  ],
+  "humanMustDo": [
+    "Sign in with a Manager, Global Admin or Account Owner role",
+    "Register the app and copy the client secret",
+    "Submit the Distribution Form",
+    "Get each customer admin to install the app"
+  ],
+  "blockers": [
+    {
+      "symptom": "Token exchange fails even though the code just arrived",
+      "cause": "The authorization code is valid for only 30 seconds.",
+      "fix": "Exchange the code immediately in the callback; avoid queues or extra redirects before the token call.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Connect succeeds but every API call returns 403",
+      "cause": "Classic scope requests aren't validated; an invalid or mis-cased scope silently yields only openid.",
+      "fix": "Request exactly read or write (case sensitive) for Classic, or the documented resource scopes for Scoped.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Scoped OAuth app works on your account but not on a customer's",
+      "cause": "Unpublished Scoped OAuth apps work only on the registering account, and published ones need an admin install per account.",
+      "fix": "Publish the app, then have each customer admin install it at /oauth_apps/[app_id].",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "symptom": "client_credentials token request fails for a customer account",
+      "cause": "App tokens are issued only for the account that created the app.",
+      "fix": "Use per-user authorization code tokens on customer accounts.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "symptom": "Token endpoint returns {\"error\":\"invalid_client\",\"error_description\":\"Client or client authentication not configured on profile\"}",
+      "cause": "Unknown client_id or missing/incorrect client authentication.",
+      "fix": "Check the client ID and secret from App Registration; Classic public clients omit the secret but must use PKCE.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed with dummy values on 2026-10-20." }
+    },
+    {
+      "symptom": "You can't change the app after submitting it for review",
+      "cause": "Submitting the Distribution Form locks the app.",
+      "fix": "Finish testing first; for changes, email apps@pagerduty.com.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "symptom": "Tokens keep working after you delete OAuth functionality",
+      "cause": "Deleting OAuth functionality doesn't revoke existing tokens.",
+      "fix": "Click Revoke All Tokens first, then delete.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Scoped OAuth requires an as_account-{region}.{subdomain} scope (region us or eu), so you need each customer's subdomain and region before starting the flow.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "Token lifetimes: Scoped user tokens last 1 day with 30-day refresh tokens (1-year rolling window); Classic tokens last 30 days with 210-day refresh tokens (3-year rolling window). The Classic example response shows expires_in 864000 (10 days), which conflicts with the stated 30 days.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "text": "Apps are tied to a PagerDuty subdomain and a user and can't be moved, so register from a durable service account, not a person who may leave.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Publishing also lists the app in the Add Integrations list in the Service Directory, which helps discovery. For Classic apps it's recommended but optional.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "text": "PagerDuty issues a signed ID token showing the account, user and service region; use its aud for data-residency routing between US and EU.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "No OIDC discovery document is served at identity.pagerduty.com/.well-known/openid-configuration, so configure endpoints by hand.",
+      "evidence": { "label": "tested", "sourceIds": ["s5"], "note": "Returned PagerDuty's 404 page on 2026-10-20." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "PagerDuty docs: OAuth Functionality", "url": "https://docs.pagerduty.com/developer/oauth-functionality" },
+    { "id": "s2", "title": "PagerDuty docs: Register an App", "url": "https://docs.pagerduty.com/developer/register-an-app" },
+    { "id": "s3", "title": "PagerDuty docs: Private Apps (Scoped OAuth)", "url": "https://docs.pagerduty.com/developer/private-apps" },
+    { "id": "s4", "title": "PagerDuty docs: Publish an App", "url": "https://docs.pagerduty.com/developer/publish-an-app" },
+    { "id": "s5", "title": "PagerDuty identity server (live check)", "url": "https://identity.pagerduty.com/.well-known/openid-configuration" },
+    { "id": "s6", "title": "Celigo: Set up a connection to PagerDuty", "url": "https://docs.celigo.com/hc/en-us/articles/4404969657371-Set-up-a-connection-to-PagerDuty" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://identity.pagerduty.com/.well-known/openid-configuration: PagerDuty 404 page",
+      "GET https://identity.pagerduty.com/oauth/authorize?client_id=x...: HTTP 400",
+      "POST https://identity.pagerduty.com/oauth/token with dummy values: {\"error\":\"invalid_client\",\"error_description\":\"Client or client authentication not configured on profile\"}",
+      "GET https://app.pagerduty.com/developer/applications: HTTP 200 (not signed in)"
+    ],
+    "openQuestions": [
+      "Redirect URL rules (HTTPS required? localhost allowed?)",
+      "Whether creating Scoped OAuth apps is limited to admins (third-party guides say so; PagerDuty's register page lists Manager too)",
+      "Actual Classic access token lifetime (30 days stated vs 10 days in the example)",
+      "Typical real-world review time and common change requests",
+      "API rate limits that apply per OAuth app or per user token"
+    ]
+  }
+}

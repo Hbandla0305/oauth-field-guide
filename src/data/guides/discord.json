@@ -1,0 +1,294 @@
+{
+  "app": {
+    "name": "Discord",
+    "slug": "discord",
+    "website": "https://discord.com",
+    "developerPortal": "https://discord.com/developers/applications",
+    "category": "Communication"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth2 guide", "url": "https://docs.discord.com/developers/topics/oauth2" },
+    { "kind": "review", "label": "Privileged intent review guide", "url": "https://docs.discord.com/developers/gateway/getting-started-with-privileged-intent-review" },
+    { "kind": "review", "label": "App verification and discovery", "url": "https://docs.discord.com/developers/discovery/enabling-discovery" },
+    { "kind": "api", "label": "Rate limits", "url": "https://docs.discord.com/developers/topics/rate-limits" },
+    { "kind": "changelog", "label": "Developer changelog", "url": "https://docs.discord.com/developers/change-log" },
+    { "kind": "console", "label": "Developer Portal", "url": "https://discord.com/developers/applications" }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "User OAuth (identify, guilds, email) and bot installs are self-serve with no review, and since June 10, 2026 privileged intents like MESSAGE_CONTENT only need review once a bot can reach 10,000 users. The catches are the 100-server cap for unverified bots (App Verification needs team-owner identity verification) and a set of partner-only scopes such as dm_channels.read and rpc.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": { "min": 0.25, "max": 1 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s9"],
+        "note": "Create an application, add a redirect URI, copy client ID/secret, and run the code flow or bot invite link. No review for development."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day–3 weeks",
+      "hours": { "min": 2, "max": 504 },
+      "assumes": "A bot that reads messages (bot scope + MESSAGE_CONTENT intent) and grows past 100 servers, which needs App Verification; a bot in under 100 servers and under 10,000 users, or user-only OAuth, is live the same day.",
+      "waitingOn": "Nothing for user OAuth or small bots. For growth: App Verification (team-owner identity verification) before the 100th server, and a privileged intent application within 90 days of crossing 10,000 users.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s2", "s3", "s5"],
+        "note": "Thresholds are sourced; Discord publishes no review durations, so the upper bound is our estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Discord account (ideally with 2FA) and a Developer Team for the app",
+      "why": "Apps are created in the Developer Portal; App Verification requires the team owner to complete identity verification, and bots with elevated permissions need 2FA on the owner account for 2FA-enforced servers.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s5"], "note": null }
+    },
+    {
+      "item": "A registered redirect URI matching the one sent in authorize and token requests",
+      "why": "redirect_uri must be one registered on the app and must match in the token exchange.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "A clear data-handling story (storage, retention, security) for any privileged intent",
+      "why": "Privileged intent applications are judged on a specific use case and on how data is stored, retained and secured.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "User identity scopes",
+      "examples": ["identify", "email", "guilds", "guilds.members.read", "openid", "connections"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Sign-in and knowing which servers a user is in. Self-serve for any user.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Bot install (non-privileged)",
+      "examples": ["bot", "applications.commands", "webhook.incoming", "guilds.join"],
+      "reviewRequired": false,
+      "time": "Same day (cap: 100 servers unverified)",
+      "impact": "Bot can post, run slash commands and read message events that mention it. Unverified apps are limited to 100 servers; verification is required beyond that.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": "The 100-guild verification requirement is stated in the gateway docs." }
+    },
+    {
+      "tier": "Bot + privileged intents",
+      "examples": ["MESSAGE_CONTENT intent", "GUILD_MEMBERS intent", "GUILD_PRESENCES intent"],
+      "reviewRequired": false,
+      "time": "Toggle under 10k users; review above",
+      "impact": "Needed for an agent that reads message text in channels. Toggle-on under 10,000 reachable users; above that, apply within 90 days and reapply every year.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "reviewRequired=false describes the small-app path; large apps need review." }
+    },
+    {
+      "tier": "Partner-only / restricted scopes",
+      "examples": ["dm_channels.read", "messages.read", "rpc", "rpc.voice.read", "identify.premium", "voice", "activities.read"],
+      "reviewRequired": true,
+      "time": "Unlikely",
+      "impact": "Reading a user's DMs or controlling their client needs approved-partner status; activities.read/write are not available to apps. Requesting them without approval may cause errors in the OAuth flow.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "messages.read is an RPC scope; that it's effectively partner-only is our reading of the rpc restrictions." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the application",
+      "owner": "human",
+      "detail": "In the Developer Portal, click New Application (ideally under a Team so verification and ownership are shared). Copy the client ID and reset/copy the client secret.",
+      "url": "https://discord.com/developers/applications",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s9"], "note": "The portal URL returned HTTP 200 on 2026-10-20; we did not sign in." }
+    },
+    {
+      "title": "Decide user OAuth vs bot",
+      "owner": "agent",
+      "detail": "User OAuth (identify guilds) acts as the user with limited read scopes; reading channel messages for an agent means a bot plus the MESSAGE_CONTENT intent. Check 'You Might Not Need a Privileged Intent' first (slash commands and mentions don't need it).",
+      "url": "https://docs.discord.com/developers/gateway/getting-started-with-privileged-intent-review",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3", "s4"], "note": null }
+    },
+    {
+      "title": "Configure OAuth2 redirects and the bot user",
+      "owner": "human",
+      "detail": "Add redirect URIs under OAuth2, create the bot under Bot, and toggle needed privileged intents (allowed freely under 10,000 users).",
+      "url": "https://discord.com/developers/applications",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "Exact menu names not observed." }
+    },
+    {
+      "title": "Implement the authorization code flow with PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://discord.com/oauth2/authorize?response_type=code&client_id=...&scope=identify%20guilds%20bot&permissions=...&redirect_uri=...&state=...&code_challenge=...&code_challenge_method=S256. Exchange at POST https://discord.com/api/oauth2/token (form-encoded only). Read guild_id from the redirect as a hint. Validate the new iss parameter.",
+      "url": "https://docs.discord.com/developers/topics/oauth2",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3", "s8"], "note": "S256 PKCE support observed in the OIDC discovery document." }
+    },
+    {
+      "title": "Add refresh and revocation handling",
+      "owner": "agent",
+      "detail": "Example tokens expire in 604800 s (7 days); refresh with grant_type=refresh_token. Treat invalid_grant like an APPLICATION_DEAUTHORIZED event and prompt reconnect.",
+      "url": "https://docs.discord.com/developers/topics/oauth2",
+      "duration": "30–60 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "title": "Build rate-limit handling",
+      "owner": "agent",
+      "detail": "Respect per-route buckets and the 50 req/s global limit, honour 429 retry_after, and keep invalid (401/403/429) responses well under 10,000 per 10 minutes to avoid Cloudflare IP bans.",
+      "url": "https://docs.discord.com/developers/topics/rate-limits",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "title": "Launch to users (no review)",
+      "owner": "human",
+      "detail": "Share the install/authorize link. Any user or server admin can connect immediately.",
+      "url": null,
+      "duration": "minutes",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "No review step exists in the OAuth docs for non-restricted scopes." }
+    },
+    {
+      "title": "Prepare App Verification before 100 servers",
+      "owner": "agent",
+      "detail": "Draft the privacy policy, terms of service and app description the verification checklist asks for; check the portal's App Verification page for the current criteria.",
+      "url": "https://discord.com/developers/applications/select/verification-onboarding",
+      "duration": "half a day",
+      "evidence": { "label": "inferred", "sourceIds": ["s5"], "note": "The exact checklist is only shown inside the portal; privacy policy/ToS as items are our expectation." }
+    },
+    {
+      "title": "Complete team-owner identity verification and submit",
+      "owner": "human",
+      "detail": "The team owner completes identity verification, then submits the app for verification from the App Verification page.",
+      "url": "https://discord.com/developers/applications/select/verification-onboarding",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "title": "Wait for App Verification",
+      "owner": "wait",
+      "detail": "Discord reviews the app; verification also unlocks Discovery and monetization.",
+      "url": null,
+      "duration": "Unknown (days–weeks)",
+      "evidence": { "label": "inferred", "sourceIds": ["s5"], "note": "No published review time." }
+    },
+    {
+      "title": "Apply for privileged intents at 10,000 users",
+      "owner": "human",
+      "detail": "When the portal notifies you that the app reaches 10,000 users, submit a specific use-case and data-handling description within 90 days. Reapply yearly. The app can keep joining servers during review.",
+      "url": "https://discord.com/developers/applications",
+      "duration": "1–2 h to submit",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose scopes, bot permissions integer and intents (and check whether a privileged intent is avoidable)",
+    "Implement the code flow with PKCE, iss validation, refresh and revocation",
+    "Build rate-limit and 429 handling that avoids Cloudflare invalid-request bans",
+    "Draft privacy policy, ToS and the privileged-intent use-case and data-handling write-up",
+    "Verify endpoints via the OIDC and OAuth metadata documents"
+  ],
+  "humanMustDo": [
+    "Sign in to the Developer Portal, create the app and bot, and store the secret",
+    "Toggle privileged intents and register redirect URIs",
+    "Complete team-owner identity verification and submit App Verification",
+    "Submit the privileged intent application (and yearly reapplication) when notified",
+    "Customer side: a server admin with Manage Server authorizes the bot"
+  ],
+  "blockers": [
+    {
+      "symptom": "Gateway connection closes with code 4014 (Disallowed intent)",
+      "cause": "The bot passed a privileged intent (e.g. MESSAGE_CONTENT) that isn't enabled or approved for the app.",
+      "fix": "Toggle the intent in the portal (under 10,000 users) or get it approved in review.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "symptom": "Bot receives messages with empty content fields",
+      "cause": "Without the MESSAGE_CONTENT intent, content is only present in some cases such as messages that mention the bot or DMs.",
+      "fix": "Enable MESSAGE_CONTENT, or redesign around slash commands and mentions.",
+      "evidence": { "label": "inferred", "sourceIds": ["s4", "s2"], "note": "Exceptions are described in the message content intent docs section, which we read only partially." }
+    },
+    {
+      "symptom": "Bot can't be added to more servers at around 100 guilds",
+      "cause": "Unverified apps are limited to 100 servers.",
+      "fix": "Submit App Verification (team-owner identity verification) before hitting the cap.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s10"], "note": "The gateway docs say verification is required for 100+ guilds; the exact error behaviour comes from community posts." }
+    },
+    {
+      "symptom": "OAuth errors or odd behaviour when requesting scopes like dm_channels.read or rpc",
+      "cause": "These scopes are limited to approved partners.",
+      "fix": "Remove them; use a bot with channel access instead of reading users' DMs.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Repeated temporary bans / Cloudflare 1015-style blocks from the Discord API",
+      "cause": "More than 10,000 invalid (401/403/429) requests in 10 minutes from one IP.",
+      "fix": "Stop retrying on 401/403, honour retry_after, and log invalid-request rate.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": "The Cloudflare error number is our addition, not from the docs." }
+    },
+    {
+      "symptom": "Token exchange fails with a content-type error",
+      "cause": "The token and revoke endpoints only accept application/x-www-form-urlencoded.",
+      "fix": "Send form-encoded bodies, not JSON.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Since June 10, 2026 the privileged intent threshold is 10,000 reachable users (not 100 servers), access must be reconfirmed every year, and App Verification is a separate process from intent review. Many third-party guides still describe the old 100-server intent rule.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "text": "Access tokens in Discord's examples last 7 days (expires_in 604800) with a refresh token. Revoking one token revokes all tokens for that authorization.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs show this as an example value, not a guaranteed policy." }
+    },
+    {
+      "text": "Bots get 50 requests/second globally plus per-route limits; increases are requested through support (dis.gd/rate-limit).",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "text": "Discord's policy-update FAQ says it does not allow AI companies to train models on users' messages, which matters for any agent that stores message content.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": "This is Discord's general policy FAQ; we couldn't open the Developer Policy itself (HTTP 403)." }
+    },
+    {
+      "text": "Since October 14, 2026 authorization redirects include iss=https://discord.com (RFC 9207); clients can validate it to prevent mix-up attacks.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "Discord is also an OIDC provider (issuer https://discord.com, S256 PKCE, RS256 ID tokens).",
+      "evidence": { "label": "tested", "sourceIds": ["s8"], "note": "Fetched discord.com/.well-known/openid-configuration on 2026-10-20." }
+    },
+    {
+      "text": "Developer docs moved to docs.discord.com (Mintlify) in 2026; old discord.com/developers/docs URLs 301-redirect there, and there's a docs MCP server at docs.discord.com/mcp.",
+      "evidence": { "label": "tested", "sourceIds": ["s1", "s3"], "note": "Observed the 301 from discord.com/developers/docs/topics/oauth2 on 2026-10-20." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Discord docs: OAuth2", "url": "https://docs.discord.com/developers/topics/oauth2" },
+    { "id": "s2", "title": "Discord docs: Getting started with privileged intent review", "url": "https://docs.discord.com/developers/gateway/getting-started-with-privileged-intent-review" },
+    { "id": "s3", "title": "Discord developer changelog", "url": "https://docs.discord.com/developers/change-log" },
+    { "id": "s4", "title": "Discord docs: Gateway (intents, privileged intents)", "url": "https://docs.discord.com/developers/events/gateway" },
+    { "id": "s5", "title": "Discord docs: Enabling discovery (App Verification)", "url": "https://docs.discord.com/developers/discovery/enabling-discovery" },
+    { "id": "s6", "title": "Discord docs: Rate limits", "url": "https://docs.discord.com/developers/topics/rate-limits" },
+    { "id": "s7", "title": "Discord: Important policy updates (FAQ on AI training)", "url": "https://discord.com/safety/important-policy-updates" },
+    { "id": "s8", "title": "Discord OpenID Connect discovery document", "url": "https://discord.com/.well-known/openid-configuration" },
+    { "id": "s9", "title": "Discord Developer Portal", "url": "https://discord.com/developers/applications" },
+    { "id": "s10", "title": "Community: Zapier thread on Discord bot reaching maximum servers", "url": "https://community.zapier.com/code-webhooks-52/discord-bot-reached-maximum-number-of-servers-5549/index4.html" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://discord.com/.well-known/openid-configuration: issuer https://discord.com, token https://discord.com/api/oauth2/token, PKCE S256, RS256, iss response parameter supported",
+      "GET https://discord.com/.well-known/oauth-authorization-server: revocation endpoint https://discord.com/api/oauth2/token/revoke",
+      "GET https://discord.com/developers/applications: HTTP 200",
+      "GET https://discord.com/oauth2/authorize?client_id=1: HTTP 200",
+      "GET https://discord.com/developers/docs/topics/oauth2: 301 to docs.discord.com/developers/topics/oauth2"
+    ],
+    "openQuestions": [
+      "Whether the 100-server cap for unverified apps still applies after App Verification was split from intent review (gateway docs still say so)",
+      "Typical App Verification and privileged-intent review durations in 2026",
+      "The exact Developer Policy wording on AI training and message-content retention (page returned 403)",
+      "The full current App Verification checklist (only visible in the portal)"
+    ]
+  }
+}

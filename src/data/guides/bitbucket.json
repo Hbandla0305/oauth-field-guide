@@ -1,0 +1,501 @@
+{
+  "app": {
+    "name": "Bitbucket",
+    "slug": "bitbucket",
+    "website": "https://bitbucket.org",
+    "developerPortal": "https://developer.atlassian.com/cloud/bitbucket/",
+    "category": "Developer tools"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "REST API authentication (OAuth 2.0)",
+      "url": "https://developer.atlassian.com/cloud/bitbucket/rest/intro/"
+    },
+    {
+      "kind": "console",
+      "label": "Create an OAuth consumer",
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/"
+    },
+    {
+      "kind": "scopes",
+      "label": "OAuth 2.0 scopes (in the REST intro)",
+      "url": "https://developer.atlassian.com/cloud/bitbucket/rest/intro/"
+    },
+    {
+      "kind": "api",
+      "label": "API request limits",
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/api-request-limits/"
+    },
+    {
+      "kind": "changelog",
+      "label": "OAuth 2.0 and API authentication changes (May 2026)",
+      "url": "https://community.developer.atlassian.com/t/oauth-2-0-and-api-authentication-changes-for-bitbucket-cloud/99003"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Anyone can add an OAuth consumer in a Bitbucket workspace's settings and any Bitbucket user can authorize it immediately: there's no review or marketplace gate for plain OAuth 2.0. Since 4 May 2026 Atlassian enforces rotating refresh tokens, header-only Bearer tokens sent to api.bitbucket.org, and a 'scope' (not 'scopes') field in token responses, so older client code breaks.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "bb2",
+          "bb1"
+        ],
+        "note": "Add a consumer with a callback URL, pick scopes, run the authorization code flow. No verification step is documented."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
+      "assumes": "A 3LO OAuth consumer requesting repository and pullrequest scopes to read code and PRs on users' behalf; no Atlassian Marketplace listing.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "bb1",
+          "bb2"
+        ],
+        "note": "The docs describe no approval step for OAuth consumers; absence of review is our reading."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Bitbucket Cloud account and a workspace to own the consumer",
+      "why": "Consumers are created under Workspace settings > Apps and features > OAuth consumers on any existing workspace.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb2"
+        ],
+        "note": "The required workspace role isn't stated."
+      }
+    },
+    {
+      "item": "A callback URL",
+      "why": "Required for OAuth 2.0 consumers; any callback sent in a request must sit under the configured URL.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Client code that sends tokens only in the Authorization header to https://api.bitbucket.org",
+      "why": "Query-parameter and POST-body tokens and token calls to bitbucket.org are rejected after 4 May 2026.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1",
+          "bb3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity",
+      "examples": [
+        "account",
+        "email"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read the user's account and email. Enough for sign-in only.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Read code and pull requests",
+      "examples": [
+        "repository",
+        "pullrequest",
+        "project",
+        "issue"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Clone and browse repositories, read and comment on PRs. Note repository alone doesn't include PRs; pullrequest implies repository read.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Write",
+      "examples": [
+        "repository:write",
+        "pullrequest:write",
+        "issue:write",
+        "pipeline:write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Push, create/merge/decline PRs and run pipelines. pullrequest:write implicitly grants repository:write.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Admin and destructive",
+      "examples": [
+        "repository:admin",
+        "repository:delete",
+        "project:admin",
+        "webhook",
+        "pipeline:variable"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Repo/project admin, deletion, webhooks and pipeline variables. No review, but users see broad permissions on consent and only admins can use them.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Open the workspace's OAuth consumer settings",
+      "owner": "human",
+      "detail": "Avatar > pick the workspace > Settings cog > Workspace settings > Apps and features > OAuth consumers (shown as 'OAuth clients' in some current UIs).",
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/",
+      "duration": "2 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb2",
+          "bb5"
+        ],
+        "note": "The 'OAuth clients' rename is from a third-party forum, not Atlassian."
+      }
+    },
+    {
+      "title": "Add the consumer",
+      "owner": "human",
+      "detail": "Select Add consumer, enter a unique name, callback URL and scopes, save, then click the name to reveal the Key (client_id) and Secret.",
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Choose least-privilege scopes",
+      "owner": "agent",
+      "detail": "For a read-only code agent use repository + pullrequest (+ account); add pullrequest:write only if the agent opens or merges PRs.",
+      "url": "https://developer.atlassian.com/cloud/bitbucket/rest/intro/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Send users to https://bitbucket.org/site/oauth2/authorize?client_id=...&response_type=code&state=... and exchange the code with POST https://bitbucket.org/site/oauth2/access_token (HTTP Basic client_id:secret, grant_type=authorization_code). Read 'scope' from the response.",
+      "url": "https://developer.atlassian.com/cloud/bitbucket/rest/intro/",
+      "duration": "1-2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1",
+          "bb3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle rotating refresh tokens",
+      "owner": "agent",
+      "detail": "Access tokens expire in one hour. Each refresh returns a new refresh token and the old one expires shortly after; unused refresh tokens expire after 3 months, forcing re-authorization.",
+      "url": "https://developer.atlassian.com/cloud/bitbucket/rest/intro/",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1",
+          "bb3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Call the API correctly",
+      "owner": "agent",
+      "detail": "Send 'Authorization: Bearer <token>' to https://api.bitbucket.org/2.0/... ; clone with https://x-token-auth:{token}@bitbucket.org/... .",
+      "url": "https://developer.atlassian.com/cloud/bitbucket/rest/intro/",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Budget for per-user rate limits",
+      "owner": "agent",
+      "detail": "Repository data endpoints allow 1,000 requests/hour per user by default (rolling). Watch X-RateLimit-NearLimit and cache aggressively.",
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/api-request-limits/",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test with a second Bitbucket account",
+      "owner": "human",
+      "detail": "Authorize from an account outside your workspace to confirm third-party access and refresh behaviour.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Pick minimal scopes from the scope reference",
+    "Implement the code exchange and rotating refresh-token storage",
+    "Send header-only Bearer calls to api.bitbucket.org",
+    "Add rate-limit monitoring with X-RateLimit headers",
+    "Migrate older code off OAuth 1.0, implicit grant and app passwords"
+  ],
+  "humanMustDo": [
+    "Sign in and add the OAuth consumer in workspace settings",
+    "Copy and store the Key and Secret",
+    "Authorize once with a test account"
+  ],
+  "blockers": [
+    {
+      "symptom": "401s on API calls that worked before May 2026",
+      "cause": "Tokens sent as query parameters or in the POST body, or requests sent to bitbucket.org instead of api.bitbucket.org.",
+      "fix": "Send 'Authorization: Bearer <token>' to https://api.bitbucket.org.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb3",
+          "bb1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Refresh fails after a previous refresh succeeded",
+      "cause": "Refresh tokens now rotate; the old token expires shortly after use.",
+      "fix": "Persist the new refresh token from every refresh response.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb3",
+          "bb1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Granted scopes appear empty after token exchange",
+      "cause": "Token responses return 'scope' instead of 'scopes'.",
+      "fix": "Read the 'scope' field.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb3",
+          "bb5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "{\"error\": \"invalid_grant\", \"error_description\": \"Unsupported grant type: \"}",
+      "cause": "Token request missing or using an unsupported grant_type (implicit and password grants are gone).",
+      "fix": "Use authorization_code, refresh_token or client_credentials.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": "Observed with an empty POST to the token endpoint on 2026-10-20."
+      }
+    },
+    {
+      "symptom": "Users see the consent screen on every authorization",
+      "cause": "Reported since late July 2026; no Atlassian response yet.",
+      "fix": "Avoid unnecessary re-authorization by refreshing tokens rather than re-running the flow.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "bb6"
+        ],
+        "note": "Community reports only."
+      }
+    },
+    {
+      "symptom": "429 or X-RateLimit-NearLimit: true",
+      "cause": "Per-user hourly limit (1,000/hour for repository data by default).",
+      "fix": "Back off, cache, and use webhooks instead of polling.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "OAuth 1.0 and the implicit grant were retired on 27 February 2026; app passwords were scheduled to stop working on 9 June 2026 in favour of API tokens.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb7",
+          "bb8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Client credentials grants no longer return refresh tokens, authenticate as an app_user, and consumers owned by personal workspaces only reach that workspace's data.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Scaled rate limits (up to 10,000/hour) apply only to workspace/project/repository access tokens and Forge asApp calls on large paid workspaces, not to per-user OAuth tokens.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "bb4"
+        ],
+        "note": "The page lists those token types as requirements; OAuth 3LO isn't mentioned."
+      }
+    },
+    {
+      "text": "Bitbucket has no OIDC discovery document; it's plain OAuth 2.0.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [],
+        "note": "Live check on 2026-10-20: https://bitbucket.org/.well-known/openid-configuration returned 404."
+      }
+    },
+    {
+      "text": "The 'repository' scope doesn't include pull requests; request 'pullrequest' for PR data.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "bb1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "bb1",
+      "title": "Bitbucket Cloud REST API: Authentication and scopes",
+      "url": "https://developer.atlassian.com/cloud/bitbucket/rest/intro/"
+    },
+    {
+      "id": "bb2",
+      "title": "Atlassian Support: Use OAuth on Bitbucket Cloud",
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/"
+    },
+    {
+      "id": "bb3",
+      "title": "Atlassian Developer Community: OAuth 2.0 and API authentication changes for Bitbucket Cloud",
+      "url": "https://community.developer.atlassian.com/t/oauth-2-0-and-api-authentication-changes-for-bitbucket-cloud/99003"
+    },
+    {
+      "id": "bb4",
+      "title": "Atlassian Support: Bitbucket Cloud API request limits",
+      "url": "https://support.atlassian.com/bitbucket-cloud/docs/api-request-limits/"
+    },
+    {
+      "id": "bb5",
+      "title": "Community (SonarSource): Bitbucket Cloud now shows OAuth Clients, not Consumers",
+      "url": "https://community.sonarsource.com/t/bitbucket-cloud-integration-docs-reference-oauth-consumers-but-bitbucket-cloud-only-provides-oauth/187531"
+    },
+    {
+      "id": "bb6",
+      "title": "Community: Bitbucket Cloud OAuth consent screen shown on every authorization",
+      "url": "https://community.developer.atlassian.com/t/bitbucket-cloud-oauth-consent-screen-shown-on-every-authorization-consent-no-longer-remembered/102357"
+    },
+    {
+      "id": "bb7",
+      "title": "Atlassian Developer Community: Deprecation of OAuth 1.0 and implicit grant for Bitbucket Cloud",
+      "url": "https://community.developer.atlassian.com/t/deprecation-notice-oauth-1-0-and-implicit-grant-flows-for-bitbucket-cloud/97520"
+    },
+    {
+      "id": "bb8",
+      "title": "Atlassian blog: Bitbucket Cloud transitions to API tokens (app password deprecation)",
+      "url": "https://www.atlassian.com/blog/bitbucket/bitbucket-cloud-transitions-to-api-tokens-enhancing-security-with-app-password-deprecation"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://bitbucket.org/site/oauth2/authorize (no params): HTTP 401",
+      "POST https://bitbucket.org/site/oauth2/access_token (no body): 400 invalid_grant 'Unsupported grant type: '",
+      "GET https://api.bitbucket.org/2.0/user unauthenticated: HTTP 401",
+      "GET https://bitbucket.org/.well-known/openid-configuration: HTTP 404"
+    ],
+    "openQuestions": [
+      "Whether the UI rename to 'OAuth clients' changes any fields (e.g. the private consumer option)",
+      "Which workspace role is needed to create a consumer",
+      "Whether the consent-every-time behaviour is intentional",
+      "Whether workspace admins can block third-party OAuth consumers for their members"
+    ]
+  }
+}

@@ -1,0 +1,532 @@
+{
+  "app": {
+    "name": "Zoom",
+    "slug": "zoom",
+    "website": "https://zoom.us",
+    "developerPortal": "https://marketplace.zoom.us",
+    "category": "Video meetings"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 guide",
+      "url": "https://developers.zoom.us/docs/integrations/oauth/"
+    },
+    {
+      "kind": "scopes",
+      "label": "Granular scopes reference",
+      "url": "https://developers.zoom.us/docs/integrations/oauth-scopes-granular/"
+    },
+    {
+      "kind": "review",
+      "label": "App review process",
+      "url": "https://developers.zoom.us/docs/distribute/app-review-process/"
+    },
+    {
+      "kind": "review",
+      "label": "Sharing private and beta apps",
+      "url": "https://developers.zoom.us/docs/distribute/sharing-private-and-beta-apps/"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits",
+      "url": "https://developers.zoom.us/docs/api/rate-limits/"
+    },
+    {
+      "kind": "console",
+      "label": "App Marketplace developer console",
+      "url": "https://marketplace.zoom.us/develop/create"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "A General (OAuth) app works in your own Zoom account within minutes, but outside your account you either need Zoom's approval to share a beta app (capped at 10 account-level or 100 user-level installs, with URLs that expire after 4 weeks) or you must publish through Marketplace review, which includes a functional review and a security review with technical design documentation and OWASP testing. Zoom cites a 72-hour SLA per step and up to two weeks for security review, but developers report 6–8+ weeks.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s8"
+        ],
+        "note": "Create a General app, add redirect URL and scopes, install via Local Test in your own account."
+      }
+    },
+    "timeToProd": {
+      "range": "2–8 weeks",
+      "hours": {
+        "min": 336,
+        "max": 1344
+      },
+      "assumes": "A published Marketplace app (can be unlisted via 'install from your landing page') that reads meetings, recordings or transcripts for any Zoom user; a beta share to up to 100 external users takes 3–4 business days.",
+      "waitingOn": "Marketplace functional review, then security review (technical design document review, scope evaluation, OWASP testing), plus any remediation rounds.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": "Zoom staff (Dec 2024) cite a 72-hour SLA per submission and up to 2 weeks for security review; forum reports through 2026 describe 6–8+ weeks. The official review page gives no timeframe."
+      }
+    },
+    "cost": "Free to build and submit; no review fee found. API rate limits depend on the customer's Zoom plan (Free accounts have low daily caps)."
+  },
+  "prerequisites": [
+    {
+      "item": "A Zoom account with permission to create Marketplace apps",
+      "why": "Apps are created in the Marketplace developer console and tested by installing into your own account.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Public HTTPS redirect URL and an allow-list entry for it",
+      "why": "The OAuth flow returns the code to your registered redirect URL.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "For publishing: technical design documentation, security information, clear listing content, and a test plan",
+      "why": "The submission completeness check and security review depend on them, and unclear scopes or listings lengthen review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Own account (private app, no review)",
+      "examples": [
+        "user:read:user",
+        "meeting:read:meeting"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Private apps can be shared only with members of your own Zoom account; no review needed.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Beta share to external users",
+      "examples": [
+        "meeting:read:meeting",
+        "cloud_recording:read:recording_settings"
+      ],
+      "reviewRequired": true,
+      "time": "3–4 business days",
+      "impact": "Request to Share needs Zoom approval; caps of 10 account-level / 100 user-level additions; URLs valid 4 weeks with two possible 4-week extensions. Fine for pilots, not production.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "User-level scopes on a published app",
+      "examples": [
+        "meeting:read:meeting",
+        "meeting:write:meeting",
+        "webinar:write:registrant"
+      ],
+      "reviewRequired": true,
+      "time": "2–8 weeks",
+      "impact": "Any Zoom user can install after Marketplace approval. Security review evaluates whether each scope is necessary.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Admin-level scopes (account-wide data)",
+      "examples": [
+        "meeting:read:meeting:admin",
+        "meeting:read:meeting:master"
+      ],
+      "reviewRequired": true,
+      "time": "2–8 weeks",
+      "impact": "Gives access across the whole account, so an account admin has to install it. Expect more scrutiny in scope evaluation.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": "Zoom's scope page lists :admin and :master variants but doesn't define them; reading them as account-admin / master-account access is our inference."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a General (OAuth) app",
+      "owner": "human",
+      "detail": "Sign in to the App Marketplace, open the developer console and build a General app. Set the OAuth redirect URL, allow-list it, and add scopes.",
+      "url": "https://marketplace.zoom.us/develop/create",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "marketplace.zoom.us/develop/create returned HTTP 200 on 2026-10-20. We did not sign in, so console labels weren't observed."
+      }
+    },
+    {
+      "title": "Pick least-privilege granular scopes",
+      "owner": "agent",
+      "detail": "Map features to service:action:resource scopes (for example meeting:read:meeting, cloud_recording read scopes) and avoid :admin variants unless the agent truly needs account-wide data. Write a one-line justification per scope for review.",
+      "url": "https://developers.zoom.us/docs/integrations/oauth-scopes-granular/",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement OAuth (auth code, optional PKCE)",
+      "owner": "agent",
+      "detail": "Redirect to https://zoom.us/oauth/authorize, exchange at https://zoom.us/oauth/token. Access tokens last 1 hour; refresh tokens 90 days and rotate on each refresh, so always store the newest one. Public clients must use S256 (plain is the default if omitted).",
+      "url": "https://developers.zoom.us/docs/integrations/oauth/",
+      "duration": "1-3 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Install via Local Test and verify",
+      "owner": "human",
+      "detail": "Use the app's Local Test page to add it to your own account, then call GET https://api.zoom.us/v2/users/me.",
+      "url": "https://marketplace.zoom.us",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "(Optional) Request a beta share for pilot customers",
+      "owner": "human",
+      "detail": "In the Beta Test section select Request to Share. After approval, send the authorization URL to up to 10 accounts (account-level) or 100 users (user-level). Renew every 4 weeks (two extensions).",
+      "url": "https://developers.zoom.us/docs/distribute/sharing-private-and-beta-apps/",
+      "duration": "3-4 business days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft technical design and security documentation",
+      "owner": "agent",
+      "detail": "Describe architecture, data flow of Zoom data, storage and retention, encryption, AI/LLM processing, and scope justifications; prepare listing copy and a reviewer test plan.",
+      "url": "https://developers.zoom.us/docs/distribute/app-review-process/",
+      "duration": "1-2 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Decide listing visibility",
+      "owner": "human",
+      "detail": "To keep installs gated, enable 'From your landing page' so the Marketplace button becomes 'Visit site to add' and put the authorization URL behind your login.",
+      "url": "https://developers.zoom.us/blog/limit-who-can-install-your-app/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit for Marketplace review",
+      "owner": "human",
+      "detail": "Submit from the app's console page with listing info, documentation, and test credentials.",
+      "url": "https://marketplace.zoom.us",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Functional and compliance review",
+      "owner": "wait",
+      "detail": "Reviewers test install, uninstall, configuration, sign-up and data flow; compliance reviews your technical design document.",
+      "url": null,
+      "duration": "about 72 h per round (stated)",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": "SLA from a Zoom staff forum reply."
+      }
+    },
+    {
+      "title": "Security review",
+      "owner": "wait",
+      "detail": "Technical design review, OAuth scope evaluation and OWASP Top 10 testing. Failures come back as a remediation report; you fix and resubmit.",
+      "url": null,
+      "duration": "2 weeks stated; often longer",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Publish and monitor",
+      "owner": "human",
+      "detail": "Publish once approved. Beta authorization URLs stop working after publishing, so move pilot users to the published URL. Zoom monitors published apps for ongoing compliance.",
+      "url": "https://marketplace.zoom.us",
+      "duration": "minutes",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Beta URLs invalidating on publish comes from Zoom's Authorization URL FAQ as seen in a search snippet."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Choose least-privilege granular scopes and write per-scope justifications",
+    "Implement OAuth with PKCE and rotating refresh tokens",
+    "Draft the technical design document, security answers, listing copy and test plan",
+    "Build per-account rate-limit handling for 429s",
+    "Check the authorize and token endpoints and redirect allow-list"
+  ],
+  "humanMustDo": [
+    "Sign in to the Marketplace and create the app",
+    "Install it via Local Test and request beta sharing",
+    "Submit for review, supply test credentials and answer reviewer feedback",
+    "Click publish and manage beta URL renewals"
+  ],
+  "blockers": [
+    {
+      "symptom": "External user gets an error or can't add the app from your authorization URL",
+      "cause": "Unpublished apps can't be added outside your account without an approved beta share, or the 4-week URL has expired.",
+      "fix": "Request to Share (3–4 business days) or Request Extension; for production, publish via review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Exact error text not captured."
+      }
+    },
+    {
+      "symptom": "New pilot customers can't install once you hit 10 accounts / 100 users",
+      "cause": "Beta install caps.",
+      "fix": "Email Zoom with a reason to raise the cap, or finish Marketplace review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The email-to-raise option comes from a search snippet of Zoom docs."
+      }
+    },
+    {
+      "symptom": "Review returned with a remediation report",
+      "cause": "Unnecessary scopes, unclear technical design document, or OWASP findings in security testing.",
+      "fix": "Drop unneeded scopes, tighten docs, fix findings, resubmit.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 on API calls, especially for customers on Free plans",
+      "cause": "Rate limits are per account and shared across all apps installed on it; Free accounts get as little as 1/sec and 1,000/day for heavy APIs.",
+      "fix": "Back off, cache, use webhooks instead of polling, and size features by customer plan.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_grant on refresh",
+      "cause": "Zoom rotates refresh tokens on each refresh and they expire after 90 days; an old token was reused or the user went inactive too long.",
+      "fix": "Persist the newest refresh token atomically and re-run authorization when it fails.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The exact error string is our assumption."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last one hour; refresh tokens last 90 days and a new one comes with every refresh.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits are shared by all apps installed on an account, so another vendor's integration can eat your customer's quota.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Public clients without a secret always show the consent screen.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "A published app can still be gated: 'From your landing page' replaces the Add button with 'Visit site to add' so only your signed-in users reach the authorization URL.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Load testing and DoS simulations aren't part of Zoom's security review, but OWASP Top 10 testing and vulnerable-library checks are.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Zoom Developer docs: App review process",
+      "url": "https://developers.zoom.us/docs/distribute/app-review-process/"
+    },
+    {
+      "id": "s2",
+      "title": "Zoom Developer docs: Sharing private and beta apps",
+      "url": "https://developers.zoom.us/docs/distribute/sharing-private-and-beta-apps/"
+    },
+    {
+      "id": "s3",
+      "title": "Zoom Developer docs: OAuth 2.0",
+      "url": "https://developers.zoom.us/docs/integrations/oauth/"
+    },
+    {
+      "id": "s4",
+      "title": "Zoom Developer docs: API rate limits",
+      "url": "https://developers.zoom.us/docs/api/rate-limits/"
+    },
+    {
+      "id": "s5",
+      "title": "Zoom Developer docs: Granular OAuth scopes",
+      "url": "https://developers.zoom.us/docs/integrations/oauth-scopes-granular/"
+    },
+    {
+      "id": "s6",
+      "title": "Zoom Developer blog: How to limit who can install your Marketplace app",
+      "url": "https://developers.zoom.us/blog/limit-who-can-install-your-app/"
+    },
+    {
+      "id": "s7",
+      "title": "Zoom Developer Forum: App Marketplace review process (staff reply, Dec 2024)",
+      "url": "https://devforum.zoom.us/t/zoom-app-marketplace-review-process/121554"
+    },
+    {
+      "id": "s8",
+      "title": "Zoom App Marketplace developer console",
+      "url": "https://marketplace.zoom.us/develop/create"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://marketplace.zoom.us/develop/create: HTTP 200",
+      "GET https://zoom.us/oauth/authorize?response_type=code&client_id=x: HTTP 200",
+      "POST https://zoom.us/oauth/token with no body: {\"reason\":\"Missing grant type\",\"error\":\"unsupported_grant_type\"}"
+    ],
+    "openQuestions": [
+      "Current real-world Marketplace review duration in 2026 (only a staff SLA and anecdotal forum reports were found)",
+      "Whether Zoom's API terms restrict using recordings or transcripts obtained via API for AI training",
+      "Whether specific scopes (for example real-time media or transcript access) need extra approval beyond standard review",
+      "Exact meaning of :admin and :master scope suffixes (Zoom doesn't define them on the scopes page)"
+    ]
+  }
+}

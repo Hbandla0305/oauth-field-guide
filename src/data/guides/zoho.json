@@ -1,0 +1,533 @@
+{
+  "app": {
+    "name": "Zoho CRM",
+    "slug": "zoho",
+    "website": "https://www.zoho.com/crm/",
+    "developerPortal": "https://api-console.zoho.com",
+    "category": "CRM"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 overview",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/oauth-overview.html"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/scopes.html"
+    },
+    {
+      "kind": "console",
+      "label": "Developer console (client registration)",
+      "url": "https://api-console.zoho.com"
+    },
+    {
+      "kind": "api",
+      "label": "API limits",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/api-limits.html"
+    },
+    {
+      "kind": "oauth",
+      "label": "Multi-DC support",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/multi-dc.html"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Register a Server-based client in the Zoho API Console and any Zoho CRM user can authorize it the same day; the docs we read describe no app review or verification step. The real work is engineering: routing each user to their data center, staying under per-org API credits, and the 20-refresh-tokens-per-user cap.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": "Register a Server-based client, run the code flow with access_type=offline, call the API."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
+      "assumes": "A Server-based client with Multi-DC enabled and ZohoCRM.modules scopes, distributed from your own site; a Zoho Marketplace listing is a separate, optional path.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s6",
+          "s5"
+        ],
+        "note": "None of the OAuth, registration, scopes or multi-DC pages mention a review. Absence of a documented review is not proof that none exists."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Zoho account with access to Zoho CRM (a free or trial org works for testing)",
+      "why": "You sign in to the API Console with a Zoho account, and users pick the CRM organization when they grant access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A backend with an HTTPS redirect URI",
+      "why": "Server-based clients need a backend and web UI to handle the redirect; the redirect_uri must match the registered one.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Customers on a paid edition for real agent workloads",
+      "why": "The Free edition gets 5,000 API credits a day and a concurrency limit of 5, which a busy agent can exhaust quickly.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Limits are sourced; that they are too low for agents is our inference."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity (OIDC)",
+      "examples": [
+        "openid",
+        "email",
+        "profile"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Sign-in only.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "scopes_supported in accounts.zoho.com's OIDC discovery document."
+      }
+    },
+    {
+      "tier": "Record read (typical agent)",
+      "examples": [
+        "ZohoCRM.modules.READ",
+        "ZohoCRM.modules.leads.READ",
+        "ZohoCRM.coql.READ",
+        "ZohoCRM.settings.fields.READ"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read records and query with COQL. Access is still limited by the user's CRM profile and role.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "No approval requirement is mentioned on the scopes page."
+      }
+    },
+    {
+      "tier": "Record write and bulk",
+      "examples": [
+        "ZohoCRM.modules.ALL",
+        "ZohoCRM.bulk.ALL",
+        "ZohoCRM.notifications.CREATE"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Create, update and delete records, run bulk jobs, and subscribe to change notifications.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Org and admin settings",
+      "examples": [
+        "ZohoCRM.settings.ALL",
+        "ZohoCRM.users.ALL",
+        "ZohoCRM.org.ALL"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Manage settings, users and org data. Works only as far as the authorizing user's own permissions allow.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "That user permissions cap what these scopes do is our inference."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to the Zoho API Console",
+      "owner": "human",
+      "detail": "Sign in with a Zoho account and click Get Started.",
+      "url": "https://api-console.zoho.com",
+      "duration": "5 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "The console URL returned HTTP 302 (to sign-in) on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Register a Server-based client",
+      "owner": "human",
+      "detail": "Choose Server-based Applications, enter client name (no special characters except _ and &), homepage URL and redirect URI, then Create. Copy the Client ID and Client Secret from the Client Secret tab.",
+      "url": "https://api-console.zoho.com",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Enable Multi-DC",
+      "owner": "human",
+      "detail": "On the client's Settings tab, turn on Multi DC and pick which data centers' users can connect. Client ID stays the same; secrets can differ per DC.",
+      "url": "https://api-console.zoho.com",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Pick least-privilege scopes",
+      "owner": "agent",
+      "detail": "Use service.scope.operation scopes, e.g. ZohoCRM.modules.READ,ZohoCRM.coql.READ for read-only agents; add CREATE/UPDATE or ALL only where needed.",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/scopes.html",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Send users to https://accounts.zoho.com/oauth/v2/auth with response_type=code, client_id, scope, redirect_uri and access_type=offline. Read location and accounts-server from the callback, then exchange the code (valid 3 minutes) at {accounts-server}/oauth/v2/token.",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/auth-request.html",
+      "duration": "2–3 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7",
+          "s6",
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Route API calls per data center",
+      "owner": "agent",
+      "detail": "Store location, accounts-server and the API domain per connection. Call the matching zohoapis host (e.g. www.zohoapis.eu) and refresh against the same accounts server.",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/multi-dc.html",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s10"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement token caching and refresh",
+      "owner": "agent",
+      "detail": "Cache the 1-hour access token and reuse it; at most 10 access tokens per refresh token per 10 minutes. Avoid re-running consent repeatedly, since each user keeps at most 20 refresh tokens and the oldest is invalidated.",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/token-validity.html",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Budget API credits and concurrency",
+      "owner": "agent",
+      "detail": "Track per-org daily credits (Free 5,000; paid editions 50,000 plus per-user credits) and concurrency (5–25 per org per app). Use notifications and bulk APIs instead of tight polling.",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/api-limits.html",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test with users from more than one data center",
+      "owner": "human",
+      "detail": "Connect a US account and at least one non-US account (e.g. EU or IN) to confirm DC routing works end to end.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Choose least-privilege ZohoCRM scopes",
+    "Implement the code flow with access_type=offline and DC-aware token exchange",
+    "Build per-connection routing for accounts and API domains",
+    "Implement token caching that respects Zoho's token caps",
+    "Add credit and concurrency budgeting with backoff"
+  ],
+  "humanMustDo": [
+    "Sign in to the Zoho API Console and register the Server-based client",
+    "Enable Multi-DC and pick the allowed data centers",
+    "Copy the Client ID and Client Secret into your secrets store",
+    "Test with real accounts in several data centers"
+  ],
+  "blockers": [
+    {
+      "symptom": "{\"error\":\"invalid_client\"} or invalid_code when exchanging a code for a non-US user",
+      "cause": "The token request went to accounts.zoho.com instead of the user's accounts-server, or Multi-DC isn't enabled for that DC.",
+      "fix": "Use the accounts-server value from the callback for token and refresh calls, and enable Multi-DC for that region.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6",
+          "s10"
+        ],
+        "note": "We observed invalid_client from accounts.zoho.com with bogus credentials; mapping it to wrong-DC calls is our inference."
+      }
+    },
+    {
+      "symptom": "No refresh_token in the token response",
+      "cause": "access_type wasn't set to offline in the authorization request.",
+      "fix": "Add access_type=offline (and re-consent the user).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "An older connection for the same user suddenly stops refreshing",
+      "cause": "A user can hold at most 20 refresh tokens; generating a 21st invalidates the oldest.",
+      "fix": "Don't re-run consent needlessly; reuse the stored refresh token per user.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Access Denied when refreshing",
+      "cause": "More than 10 access tokens requested from one refresh token within 10 minutes.",
+      "fix": "Cache access tokens for their 1-hour life and share them across workers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "API calls rejected for the rest of the day, or concurrency errors under load",
+      "cause": "The org's 24-hour API credit allowance or per-app concurrency limit is used up.",
+      "fix": "Reduce call volume, use bulk/COQL and notifications, and queue requests to respect concurrency.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "The exact error code wasn't captured in the pages we read."
+      }
+    },
+    {
+      "symptom": "ERROR_invalid_redirect_uri on the authorize page",
+      "cause": "redirect_uri doesn't match the one registered in the API Console.",
+      "fix": "Register the exact redirect URI and send it identically in both requests.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 1 hour; refresh tokens don't expire until revoked. Grant codes last 3 minutes, and only 10 grant tokens per client ID can be issued in 10 minutes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Zoho's live server-info endpoint lists more data centers than the CRM multi-DC docs: it also returns UK, SA, AE, SG and an IN enterprise host (accounts.zohohq.in). Don't hard-code the docs' list of seven.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s10",
+          "s6"
+        ],
+        "note": "GET https://accounts.zoho.com/oauth/serverinfo on 2026-10-20 returned 11 locations."
+      }
+    },
+    {
+      "text": "A refresh token is tied to the organization the user chose at consent and can't be used for another org.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Daily API credits are per org: Free 5,000; Standard 50,000 + 250/user (max 100,000); Professional 50,000 + 500/user; Enterprise 50,000 + 1,000/user; Ultimate 50,000 + 2,000/user. Your app shares them with every other integration in that org.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "'Shares them with every other integration' is our reading of the per-org allowance."
+      }
+    },
+    {
+      "text": "Zoho's OIDC discovery advertises device-code and jwt-bearer grants plus token introspection and revocation endpoints.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "Observed 2026-10-20."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Zoho CRM API v8: OAuth overview",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/oauth-overview.html"
+    },
+    {
+      "id": "s2",
+      "title": "Zoho CRM API v8: Register your application",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/register-client.html"
+    },
+    {
+      "id": "s3",
+      "title": "Zoho CRM API v8: Scopes",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/scopes.html"
+    },
+    {
+      "id": "s4",
+      "title": "Zoho CRM API v8: API limits",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/api-limits.html"
+    },
+    {
+      "id": "s5",
+      "title": "Zoho API Console",
+      "url": "https://api-console.zoho.com"
+    },
+    {
+      "id": "s6",
+      "title": "Zoho CRM API v8: Multi-DC support",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/multi-dc.html"
+    },
+    {
+      "id": "s7",
+      "title": "Zoho CRM API v8: Authorization request",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/auth-request.html"
+    },
+    {
+      "id": "s8",
+      "title": "Zoho Accounts OpenID Connect discovery document",
+      "url": "https://accounts.zoho.com/.well-known/openid-configuration"
+    },
+    {
+      "id": "s9",
+      "title": "Zoho CRM API v8: Token validity",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/token-validity.html"
+    },
+    {
+      "id": "s10",
+      "title": "Zoho Accounts data center server info",
+      "url": "https://accounts.zoho.com/oauth/serverinfo"
+    },
+    {
+      "id": "s11",
+      "title": "Zoho CRM API v8: Refresh access tokens",
+      "url": "https://www.zoho.com/crm/developer/docs/api/v8/refresh.html"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://accounts.zoho.com/.well-known/openid-configuration: issuer https://accounts.zoho.com, authorize /oauth/v2/auth, scopes email/profile/openid/phone, device_code and jwt-bearer grants",
+      "GET https://accounts.zoho.com/oauth/serverinfo: 11 locations (us, eu, in, inec, au, jp, ca, sa, uk, ae, sg)",
+      "POST https://accounts.zoho.com/oauth/v2/token with bogus credentials: {\"error\":\"invalid_client\"}",
+      "GET https://api-console.zoho.com: HTTP 302 to sign-in"
+    ],
+    "openQuestions": [
+      "Whether Zoho has any app review, verification or unverified-app warning for high-volume third-party clients (none documented)",
+      "Whether CRM admins can block or allow-list third-party OAuth clients per org",
+      "Whether the extra data centers (UK, SA, AE, SG) work with Multi-DC clients and which zohoapis hosts they use",
+      "Requirements and timeline for a Zoho Marketplace listing for an external OAuth app"
+    ]
+  }
+}

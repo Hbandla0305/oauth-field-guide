@@ -1,0 +1,261 @@
+{
+  "app": {
+    "name": "Wrike",
+    "slug": "wrike",
+    "website": "https://www.wrike.com",
+    "developerPortal": "https://www.wrike.com/appconsole.htm?#/api",
+    "category": "Project management"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth 2.0 authorization guide", "url": "https://developers.wrike.com/oauth-20-authorization/" },
+    { "kind": "console", "label": "App Console (API apps)", "url": "https://www.wrike.com/appconsole.htm?#/api" },
+    { "kind": "scopes", "label": "API reference (scopes listed per method)", "url": "https://developers.wrike.com/reference/gettasksempty" },
+    { "kind": "api", "label": "Wrike MCP server overview", "url": "https://developers.wrike.com/docs/wrike-mcp-server-overview" },
+    { "kind": "api", "label": "API errors and rate limits", "url": "https://developers.wrike.com/docs/errors-api-reference-v4.md" },
+    { "kind": "changelog", "label": "API changelog", "url": "https://developers.wrike.com/changelog/tuesday-december-30-2025.md" }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Any Wrike user, including on the Free plan, can register an OAuth app in the App Console and any other Wrike user can authorize it straight away; the docs describe no review or marketplace gate. The main things to handle are 1-hour access tokens with rotating refresh tokens, a per-user data-center host (US or EU) returned with the token, and a 400 requests/minute limit.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": { "min": 0.25, "max": 1 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["w1", "w2"],
+        "note": "Create the app with + App, add an https redirect (https://localhost allowed), run the code flow. A permanent token from the console works for even faster single-user testing."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "An OAuth app requesting wsReadOnly or wsReadWrite to read and write a user's tasks and folders; no listing in Wrike's integrations directory.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["w1", "w2"],
+        "note": "Neither the OAuth guide nor the help article mentions an approval step; the absence of review is our reading."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Wrike account on a plan with the API tab (Free, Team, Business, Pinnacle, Apex or legacy equivalents)",
+      "why": "Apps are created under Apps & Integrations > API, which is available on these plans.",
+      "evidence": { "label": "sourced", "sourceIds": ["w2"], "note": null }
+    },
+    {
+      "item": "'Access to App Console (API Apps)' permission on your user type",
+      "why": "Admins control this per user type; it's on by default for admins. Account owners always have the required API permissions.",
+      "evidence": { "label": "sourced", "sourceIds": ["w2", "w3"], "note": null }
+    },
+    {
+      "item": "An HTTPS redirect URI",
+      "why": "Redirect URIs must follow OAuth 2.0 rules and use HTTPS; https://localhost is allowed for development.",
+      "evidence": { "label": "sourced", "sourceIds": ["w1", "w2"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Workspace read-only",
+      "examples": ["Default", "wsReadOnly"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read tasks, folders, projects and comments as the user. Tokens inherit the user's own permissions.",
+      "evidence": { "label": "sourced", "sourceIds": ["w4", "w1"], "note": "Scope strings taken from the Query Tasks reference page." }
+    },
+    {
+      "tier": "Workspace read/write",
+      "examples": ["wsReadWrite"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Create and update tasks, comments and folders. It's the only scope advertised by the hosted MCP v2 server.",
+      "evidence": { "label": "tested", "sourceIds": ["w4", "w5"], "note": "MCP v2 protected-resource metadata on 2026-10-20 listed scopes_supported [wsReadWrite]." }
+    },
+    {
+      "tier": "Account management (admin users only)",
+      "examples": ["amReadOnlyUser", "amReadWriteUser", "amReadOnlyInvitation", "amReadWriteInvitation"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Manage users and invitations. No app review, but the calls only work when the authorizing user is an admin.",
+      "evidence": { "label": "inferred", "sourceIds": ["w6"], "note": "Scope strings from reference pages; the admin-only requirement is inferred from endpoints like Modify User being restricted to admins." }
+    },
+    {
+      "tier": "Data export",
+      "examples": ["dataExport"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Access BI data export endpoints, which depend on the customer's plan.",
+      "evidence": { "label": "inferred", "sourceIds": ["w4"], "note": "Scope name seen in the reference; plan dependency not confirmed." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in and open the App Console",
+      "owner": "human",
+      "detail": "In Wrike go to profile > Apps & Integrations > API, or open the App Console directly.",
+      "url": "https://www.wrike.com/appconsole.htm?#/api",
+      "duration": "2 min",
+      "evidence": { "label": "tested", "sourceIds": ["w2"], "note": "The console URL redirected to login.wrike.com/login on 2026-10-20; we didn't sign in." }
+    },
+    {
+      "title": "Create the app",
+      "owner": "human",
+      "detail": "Click + App, enter name, logo and description, add redirect URIs, and copy the Client ID and Client Secret.",
+      "url": "https://www.wrike.com/appconsole.htm?#/api",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["w2"], "note": null }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://login.wrike.com/oauth2/authorize/v4?client_id=...&response_type=code&redirect_uri=...&state=...&scope=Default,wsReadOnly. Exchange the code (valid 10 minutes) with POST https://login.wrike.com/oauth2/token, grant_type=authorization_code.",
+      "url": "https://developers.wrike.com/oauth-20-authorization/",
+      "duration": "1-2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["w1"], "note": null }
+    },
+    {
+      "title": "Store the per-user host",
+      "owner": "agent",
+      "detail": "Save the host from the token response (e.g. www.wrike.com or app-eu.wrike.com) and call https://<host>/api/v4. The wrong base URL returns 401 not_authorized.",
+      "url": "https://developers.wrike.com/oauth-20-authorization/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["w1"], "note": null }
+    },
+    {
+      "title": "Handle refresh-token rotation",
+      "owner": "agent",
+      "detail": "Access tokens last one hour. Refresh with grant_type=refresh_token; each refresh returns a new refresh token and invalidates the old one, so persist it atomically.",
+      "url": "https://developers.wrike.com/oauth-20-authorization/",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["w1"], "note": "The guide is inconsistent on whether to refresh against login.wrike.com or the host URL." }
+    },
+    {
+      "title": "Add rate-limit handling and batching",
+      "owner": "agent",
+      "detail": "Back off on 429 too_many_requests (400 requests/minute per IP or token) and rate_limit_exceeded; use batch operations to cut call volume.",
+      "url": "https://developers.wrike.com/docs/errors-api-reference-v4.md",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["w7"], "note": null }
+    },
+    {
+      "title": "Optionally connect via the hosted MCP server",
+      "owner": "agent",
+      "detail": "Point an MCP client at https://mcp.wrike.com/v2 (Streamable HTTP). Older /app/mcp/stream and /app/mcp/sse URLs are v1. You still register your own OAuth app and add the client's redirect URL.",
+      "url": "https://developers.wrike.com/docs/wrike-mcp-server-overview",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["w3", "w5"], "note": null }
+    },
+    {
+      "title": "Test with a second Wrike account",
+      "owner": "human",
+      "detail": "Authorize from a different Wrike account (ideally on an EU account too) to confirm cross-account and host handling.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": { "label": "inferred", "sourceIds": ["w1"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the code flow, state checking and token exchange",
+    "Persist rotating refresh tokens and the per-user host",
+    "Pick minimal scopes per endpoint from the API reference",
+    "Add 429 backoff and batch operations",
+    "Configure an MCP client for https://mcp.wrike.com/v2"
+  ],
+  "humanMustDo": [
+    "Sign in and create the app in the App Console",
+    "Copy and store the client secret",
+    "Generate a permanent token for testing if wanted (needs a password, not SSO-only)",
+    "Customer side: admins may audit apps via App Activity (Pinnacle/Apex)"
+  ],
+  "blockers": [
+    {
+      "symptom": "401 not_authorized right after a successful token exchange",
+      "cause": "Calling www.wrike.com when the user's data lives in another data center.",
+      "fix": "Use the host value from the token response as the API base URL.",
+      "evidence": { "label": "sourced", "sourceIds": ["w1"], "note": null }
+    },
+    {
+      "symptom": "Refresh fails with an invalid refresh token",
+      "cause": "Wrike rotates refresh tokens; the old one is invalid after a refresh.",
+      "fix": "Always store the newest refresh token and avoid concurrent refreshes.",
+      "evidence": { "label": "inferred", "sourceIds": ["w1"], "note": "Exact error string not documented." }
+    },
+    {
+      "symptom": "429 too_many_requests: 'IP or access token exceeded limit: 400 requests per minute'",
+      "cause": "Exceeding 400 requests/minute per IP or token.",
+      "fix": "Throttle per token, back off, and use batch operations.",
+      "evidence": { "label": "sourced", "sourceIds": ["w7"], "note": null }
+    },
+    {
+      "symptom": "Tokens suddenly stop working for a user",
+      "cause": "Tokens are revoked when the user revokes access, resets their password or is deactivated, or when an admin uses 'Log in as this user' or changes password policy.",
+      "fix": "Detect 401s and prompt the user to reconnect.",
+      "evidence": { "label": "sourced", "sourceIds": ["w1"], "note": null }
+    },
+    {
+      "symptom": "403 not_allowed on some endpoints",
+      "cause": "License or quota limits on the customer's plan.",
+      "fix": "Check the user's plan and degrade gracefully.",
+      "evidence": { "label": "sourced", "sourceIds": ["w7"], "note": null }
+    },
+    {
+      "symptom": "Can't find the API tab or create an app",
+      "cause": "Your user type lacks 'Access to App Console (API Apps)'.",
+      "fix": "Ask an account admin to enable it under Settings > User types.",
+      "evidence": { "label": "sourced", "sourceIds": ["w2"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last one hour, authorization codes 10 minutes; permanent tokens never expire and grant access to all the user's data, so keep them to testing.",
+      "evidence": { "label": "sourced", "sourceIds": ["w1"], "note": null }
+    },
+    {
+      "text": "Tokens always inherit the authorizing user's permissions; scopes can only narrow access on certain endpoints.",
+      "evidence": { "label": "sourced", "sourceIds": ["w2"], "note": null }
+    },
+    {
+      "text": "Scopes are comma-separated and case-sensitive. There's no single scopes page: each API method lists the scopes it accepts.",
+      "evidence": { "label": "sourced", "sourceIds": ["w1"], "note": null }
+    },
+    {
+      "text": "Wrike's hosted MCP v2 server advertises only wsReadWrite, so an MCP-based agent can't request read-only access there.",
+      "evidence": { "label": "tested", "sourceIds": ["w5"], "note": "Observed 2026-10-20." }
+    },
+    {
+      "text": "Apps registered on developers.wrike.com (rather than the in-product API tab) need a support request before they can be configured.",
+      "evidence": { "label": "sourced", "sourceIds": ["w2"], "note": null }
+    },
+    {
+      "text": "On Pinnacle and Apex, customer admins see every API app used in their account (creator, authorized users, last OAuth activity) via App Activity.",
+      "evidence": { "label": "sourced", "sourceIds": ["w2"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "w1", "title": "Wrike developers: OAuth 2.0 authorization", "url": "https://developers.wrike.com/oauth-20-authorization/" },
+    { "id": "w2", "title": "Wrike Help Center: Wrike API (registering apps, tokens, App Activity)", "url": "https://help.wrike.com/hc/en-us/articles/210409445" },
+    { "id": "w3", "title": "Wrike developers: Wrike MCP server overview", "url": "https://developers.wrike.com/docs/wrike-mcp-server-overview" },
+    { "id": "w4", "title": "Wrike API reference: Query tasks (scopes)", "url": "https://developers.wrike.com/reference/gettasksempty.md" },
+    { "id": "w5", "title": "Wrike MCP v2 protected-resource metadata", "url": "https://mcp.wrike.com/.well-known/oauth-protected-resource/v2" },
+    { "id": "w6", "title": "Wrike API reference: Modify user (amReadWriteUser)", "url": "https://developers.wrike.com/reference/putuserssingle.md" },
+    { "id": "w7", "title": "Wrike developers: Errors (rate limits)", "url": "https://developers.wrike.com/docs/errors-api-reference-v4.md" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://www.wrike.com/appconsole.htm: 302 to https://login.wrike.com/login/?redirectUrl=/appconsole.htm",
+      "GET https://mcp.wrike.com/.well-known/oauth-protected-resource/v2: authorization_servers https://login.wrike.com/oauth2, scopes_supported [wsReadWrite]",
+      "POST https://mcp.wrike.com/v2 unauthenticated: HTTP 401",
+      "GET https://login.wrike.com/.well-known/openid-configuration and oauth-authorization-server: 404 (no discovery document)"
+    ],
+    "openQuestions": [
+      "Refresh token lifetime, and whether refresh should go to login.wrike.com or the user's host",
+      "Whether Wrike's API terms restrict commercial or AI use of customer data",
+      "Whether customer admins can block third-party OAuth apps from being authorized (not just audit them)",
+      "Whether a listing in Wrike's integrations directory has its own review process"
+    ]
+  }
+}

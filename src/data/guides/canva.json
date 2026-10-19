@@ -1,0 +1,310 @@
+{
+  "app": {
+    "name": "Canva",
+    "slug": "canva",
+    "website": "https://www.canva.com",
+    "developerPortal": "https://www.canva.com/developers/",
+    "category": "Design"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Connect API authentication (OAuth + PKCE)",
+      "url": "https://www.canva.dev/docs/connect/authentication/"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://www.canva.dev/docs/connect/appendix/scopes/"
+    },
+    {
+      "kind": "review",
+      "label": "Submitting integrations for review",
+      "url": "https://www.canva.dev/docs/connect/submitting-integrations/"
+    },
+    {
+      "kind": "review",
+      "label": "Submission checklist",
+      "url": "https://www.canva.dev/docs/connect/submission-checklist/"
+    },
+    {
+      "kind": "api",
+      "label": "Canva MCP access and permissions",
+      "url": "https://www.canva.dev/docs/apps/mcp/access/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Anyone with MFA turned on can create a Connect API integration and test it in draft, but a public integration has to pass Canva review before other Canva users can authorize it, and Canva publishes no review timeline. The no-review alternative, a private integration, only works for your own team on a Canva Enterprise plan; for AI agents the hosted Canva MCP server can be switched on for the same Developer Portal app.",
+    "timeToDev": {
+      "range": "30 min–2 h",
+      "hours": { "min": 0.5, "max": 2 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s6", "s7"],
+        "note": "Enable MFA, create the integration, pick scopes, add an http://127.0.0.1 redirect, and implement PKCE."
+      }
+    },
+    "timeToProd": {
+      "range": "1–6 weeks",
+      "hours": { "min": 168, "max": 1008 },
+      "assumes": "A public integration (Connect REST API or Canva MCP via the Developer Portal) that reads and edits users' designs; a private integration skips review but only serves your own Canva Enterprise team.",
+      "waitingOn": "Canva's integration review (tracked in a Jira Service Desk ticket; no stated SLA).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s4"],
+        "note": "Canva says review duration 'depends on the complexity of the app and the amount of feedback required'. The range is our estimate, not a Canva figure."
+      }
+    },
+    "cost": "No developer fee found. Brand templates, autofill, brand kits and resize need the end user to be on Canva Pro or above (per the MCP access docs); private integrations need Canva Enterprise."
+  },
+  "prerequisites": [
+    {
+      "item": "A Canva account with multi-factor authentication enabled",
+      "why": "Canva requires MFA before you can create an integration.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "item": "A backend to hold the client secret and PKCE verifier",
+      "why": "Token requests use HTTP Basic auth with the client ID and secret and can't be made from a browser (CORS); the code verifier must stay hidden from the user's browser.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "A production HTTPS redirect URL (no local URLs at submission)",
+      "why": "http://127.0.0.1:<port> works for development (localhost isn't allowed), but public integrations can't be submitted while a local redirect URL is configured.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s7"], "note": "The localhost-vs-127.0.0.1 detail came from a Canva docs search snippet; the checklist confirms local redirect URLs block submission." }
+    },
+    {
+      "item": "Reviewer test credentials and documentation for your platform",
+      "why": "The submission checklist asks for a test account login if authentication is used, plus platform documentation.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Private integration (your Enterprise team only)",
+      "examples": ["design:content:read", "design:meta:read", "asset:read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "No Canva submission, but only usable by your team, and only if that team is on Canva Enterprise.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s6", "s7"], "note": null }
+    },
+    {
+      "tier": "Public integration: design, asset, folder, comment scopes",
+      "examples": ["design:content:read", "design:content:write", "design:meta:read", "asset:read", "asset:write", "folder:read", "comment:read", "profile:read"],
+      "reviewRequired": true,
+      "time": "1–6 weeks",
+      "impact": "Any Canva user can authorize after approval. Scopes are explicit: asset:write doesn't imply asset:read.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "Review time is our estimate." }
+    },
+    {
+      "tier": "Brand template / autofill scopes",
+      "examples": ["brandtemplate:meta:read", "brandtemplate:content:read", "brandtemplate:content:write"],
+      "reviewRequired": true,
+      "time": "1–6 weeks, plus user plan limits",
+      "impact": "Only useful for end users on paid plans (Pro and above per the MCP docs). The 2024 launch post said integrations using Autofill and Brand Template endpoints couldn't be submitted yet; current status is unclear.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s5", "s6"], "note": "The submission restriction is from June 2024 and may be outdated." }
+    },
+    {
+      "tier": "Webhooks",
+      "examples": ["collaboration:event"],
+      "reviewRequired": true,
+      "time": "1–6 weeks",
+      "impact": "Needs a valid webhook URL configured before submission.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Enable MFA on your Canva account",
+      "owner": "human",
+      "detail": "Turn on multi-factor authentication in Canva account settings; it's required to create integrations.",
+      "url": "https://www.canva.com/settings/login-and-security",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": "Settings URL not checked live." }
+    },
+    {
+      "title": "Create a public integration in the Developer Portal",
+      "owner": "human",
+      "detail": "Open the Developer Portal, create an integration of type Public (Private needs Enterprise), and copy the client ID and generate a client secret.",
+      "url": "https://www.canva.com/developers/",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s6", "s7"], "note": "We didn't sign in; portal pages returned 403 to unauthenticated requests." }
+    },
+    {
+      "title": "Choose scopes and configure redirect URLs",
+      "owner": "agent",
+      "detail": "Pick explicit scopes (e.g. design:content:read, design:meta:read, asset:read, profile:read). Add http://127.0.0.1:<port>/oauth/redirect for development and your HTTPS production URL.",
+      "url": "https://www.canva.dev/docs/connect/appendix/scopes/",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s7"], "note": null }
+    },
+    {
+      "title": "Implement Authorization Code + PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://www.canva.com/api/oauth/authorize with client_id, scope, code_challenge (S256, 43–128 char verifier), state and redirect_uri. Exchange the code at POST https://api.canva.com/rest/v1/oauth/token with Basic auth and the code_verifier.",
+      "url": "https://www.canva.dev/docs/connect/authentication/",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Token URL path observed live (400 'Content-Type header is missing for /rest/v1/oauth/token')." }
+    },
+    {
+      "title": "Implement single-use refresh tokens",
+      "owner": "agent",
+      "detail": "Access tokens are short-lived. Each refresh token can only be used once and returns a new pair, so persist atomically and serialize refreshes.",
+      "url": "https://www.canva.dev/docs/connect/authentication/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Optional: turn on Canva MCP for the app",
+      "owner": "human",
+      "detail": "Toggle Canva MCP on in the app's configuration to use the hosted MCP endpoint https://api.canva.com/connect/v1/mcp with the same client credentials.",
+      "url": "https://www.canva.dev/docs/apps/mcp/access/",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "title": "Test in draft with your own account",
+      "owner": "human",
+      "detail": "Authorize, run core flows, and test the auth flow with and without an active Canva session.",
+      "url": null,
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Prepare submission materials",
+      "owner": "agent",
+      "detail": "Remove local redirect URLs, check the app name, draft listing copy, write platform documentation and reviewer notes, and follow the brand, design and security guidelines.",
+      "url": "https://www.canva.dev/docs/connect/submission-checklist/",
+      "duration": "2–4 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Create reviewer test account and submit",
+      "owner": "human",
+      "detail": "Provide test login details, agree to the Developer Terms, and submit from the Developer Portal. You can submit at most 5 times a day, and a submitted app can't be modified without cancelling the submission.",
+      "url": "https://www.canva.com/developers/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "title": "Canva review",
+      "owner": "wait",
+      "detail": "The integration joins Canva's review queue with a Jira Service Desk ticket for all communication. Duration depends on complexity and feedback rounds.",
+      "url": null,
+      "duration": "1–6 weeks (estimate)",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": "Duration is our estimate; Canva gives none." }
+    },
+    {
+      "title": "Release",
+      "owner": "human",
+      "detail": "After approval, release the integration so any Canva user can authorize.",
+      "url": "https://www.canva.com/developers/",
+      "duration": "minutes",
+      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Select explicit scopes and generate redirect/config values",
+    "Implement PKCE, state checks and single-use refresh handling",
+    "Draft listing copy, platform docs and reviewer instructions",
+    "Run the submission checklist (local URLs, webhook URL, app name)",
+    "Check OIDC and MCP OAuth metadata endpoints"
+  ],
+  "humanMustDo": [
+    "Enable MFA and create the integration in the Developer Portal",
+    "Generate and store the client secret",
+    "Provide a reviewer test account for your service",
+    "Submit, respond in the Jira ticket, and release after approval"
+  ],
+  "blockers": [
+    {
+      "symptom": "Can't create an integration in the Developer Portal",
+      "cause": "MFA isn't enabled on the Canva account.",
+      "fix": "Turn on multi-factor authentication, then return to the portal.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "symptom": "Submit button blocked or submission rejected over redirect URLs",
+      "cause": "A local (127.0.0.1) redirect URL is still configured on a public integration.",
+      "fix": "Remove local redirect URLs (keep a separate dev integration for local testing).",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "symptom": "Private integration option unavailable",
+      "cause": "Private integrations need a Canva Enterprise team.",
+      "fix": "Use a public integration and go through review, or use an Enterprise team.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6", "s7"], "note": null }
+    },
+    {
+      "symptom": "Refresh fails with an invalid grant after working once",
+      "cause": "Canva refresh tokens are single-use; a parallel or retried refresh reused an old token.",
+      "fix": "Serialize refreshes per user and persist the new refresh token before using the access token.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "Single-use is documented; the exact error string isn't." }
+    },
+    {
+      "symptom": "Token requests fail from the browser with CORS errors",
+      "cause": "Endpoints that need the client secret can't be called from a web-browser client.",
+      "fix": "Move the code exchange and refresh to your backend.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Brand template or autofill calls fail for some users",
+      "cause": "Those features need the user to be on Canva Pro or above.",
+      "fix": "Detect the plan and degrade gracefully; don't make them core to your flow.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": "Plan tiers stated for MCP; assumed similar for REST." }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Canva supports no organization-level authentication for MCP: each user authorizes individually and sees only what their own permissions allow.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s8"], "note": null }
+    },
+    {
+      "text": "Canva MCP has two onboarding routes: self-serve via the Developer Portal (client ID + secret, endpoint api.canva.com/connect/v1/mcp) or a reviewed waitlist for secretless CIMD clients (endpoint mcp.canva.com/mcp). DCR still works but is deprecated in favour of CIMD.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "text": "Canva's OIDC uses pairwise subject identifiers, so the user's sub differs per client; don't use it to join users across apps.",
+      "evidence": { "label": "tested", "sourceIds": ["s9"], "note": "subject_types_supported: [\"pairwise\"] in the discovery document fetched 2026-10-20." }
+    },
+    {
+      "text": "Scopes are explicit and must already be set in the integration's settings; you can't request a scope you haven't configured, and write doesn't imply read.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "text": "Once submitted, an integration can't be edited without cancelling the submission, which likely puts it back in the queue.",
+      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": "Cancel-to-edit is documented; the queue reset is our inference." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Canva docs: Connect API authentication", "url": "https://www.canva.dev/docs/connect/authentication/" },
+    { "id": "s2", "title": "Canva docs: Scopes", "url": "https://www.canva.dev/docs/connect/appendix/scopes/" },
+    { "id": "s3", "title": "Canva docs: Submitting integrations for review", "url": "https://www.canva.dev/docs/connect/submitting-integrations/" },
+    { "id": "s4", "title": "Canva docs: Submission checklist", "url": "https://www.canva.dev/docs/connect/submission-checklist/" },
+    { "id": "s5", "title": "Canva docs: Canva MCP access and permissions", "url": "https://www.canva.dev/docs/apps/mcp/access/" },
+    { "id": "s6", "title": "Canva Developers blog: Launching to all, Connect APIs (June 2024)", "url": "https://www.canva.dev/blog/developers/launching-to-all-connect-api/" },
+    { "id": "s7", "title": "Canva docs: Creating integrations", "url": "https://www.canva.dev/docs/connect/creating-integrations/" },
+    { "id": "s8", "title": "Canva docs: MCP troubleshooting and common questions", "url": "https://www.canva.dev/docs/mcp/troubleshooting/" },
+    { "id": "s9", "title": "Canva OpenID Connect discovery document", "url": "https://www.canva.com/.well-known/openid-configuration" },
+    { "id": "s10", "title": "Canva MCP OAuth authorization server metadata", "url": "https://mcp.canva.com/.well-known/oauth-authorization-server" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://www.canva.com/.well-known/openid-configuration: issuer https://www.canva.com, authorize https://www.canva.com/api/oauth/authorize, token https://api.canva.com/auth/v1/oauth/token, pairwise subjects, RS256",
+      "GET https://mcp.canva.com/.well-known/oauth-authorization-server: register endpoint, S256 and plain PKCE, client_id_metadata_document_supported true, auth method 'none' allowed",
+      "GET https://mcp.canva.com/.well-known/oauth-protected-resource: scopes include design:content:read/write, asset:read/write, brandkit:read",
+      "POST https://api.canva.com/rest/v1/oauth/token with no body: 400 'Content-Type header is missing for /rest/v1/oauth/token'",
+      "GET https://www.canva.com/api/oauth/authorize and the Developer Portal: 403 to unauthenticated curl (bot protection)"
+    ],
+    "openQuestions": [
+      "Typical Canva integration review duration (no SLA published)",
+      "Access and refresh token lifetimes (docs only say 'short period')",
+      "Whether Developer Portal apps with Canva MCP enabled need public review before other users can connect",
+      "Whether Autofill and Brand Template endpoints can now be used in submitted public integrations",
+      "Who exactly can authorize a draft public integration (just the creator, or their team)"
+    ]
+  }
+}

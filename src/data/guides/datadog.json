@@ -1,0 +1,422 @@
+{
+  "app": {
+    "name": "Datadog",
+    "slug": "datadog",
+    "website": "https://www.datadoghq.com",
+    "developerPortal": "https://app.datadoghq.com/integrations",
+    "category": "Observability"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 in Datadog",
+      "url": "https://docs.datadoghq.com/developers/authorization/oauth2_in_datadog/"
+    },
+    {
+      "kind": "api",
+      "label": "OAuth 2.0 endpoints reference",
+      "url": "https://docs.datadoghq.com/extend/authorization/oauth2_endpoints/"
+    },
+    {
+      "kind": "scopes",
+      "label": "Authorization scopes",
+      "url": "https://docs.datadoghq.com/api/latest/scopes/"
+    },
+    {
+      "kind": "review",
+      "label": "Create an API-based integration",
+      "url": "https://docs.datadoghq.com/developers/integrations/oauth_for_integrations/"
+    },
+    {
+      "kind": "review",
+      "label": "Build an integration (partner track)",
+      "url": "https://docs.datadoghq.com/extend/integrations/"
+    },
+    {
+      "kind": "console",
+      "label": "Datadog Partner Portal",
+      "url": "https://partners.datadoghq.com/s/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "Datadog says OAuth is available only to approved Technology Partners building official Datadog integrations, and standalone OAuth clients are not supported, so you have to be accepted into the Datadog Partner Network before you can even create a client. Published integrations also need an out-of-the-box dashboard and must submit telemetry to Datadog, which is a poor fit for an agent that only reads data.",
+    "timeToDev": {
+      "range": "1–4 weeks",
+      "hours": {
+        "min": 168,
+        "max": 672
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s4"],
+        "note": "Creating the client in the Developer Platform takes minutes, but it can only be done in a partner developer org, which you get after Technology Partner approval and a sandbox request. Datadog publishes no approval time, so the range is an estimate."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 months",
+      "hours": {
+        "min": 720,
+        "max": 2160
+      },
+      "assumes": "A published API-based integration tile, the only route Datadog documents for third-party OAuth. For a single customer, a scoped application key plus API key avoids OAuth entirely.",
+      "waitingOn": "Technology Partner application approval, sandbox provisioning, then Datadog's integration review before the tile is published and the OAuth client works outside your partner org.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s4", "s5"],
+        "note": "The docs say 'The Datadog team will review and respond with feedback' but give no timeline. The range is our estimate."
+      }
+    },
+    "cost": "No fee is stated in the docs for the Technology Partner track. You need a Datadog sandbox org, which partners request through the Partner Portal."
+  },
+  "prerequisites": [
+    {
+      "item": "Acceptance into the Datadog Partner Network, Technology Partner track",
+      "why": "The docs state 'OAuth is available only to approved Technology Partners developing official Datadog integrations' and standalone OAuth clients are not supported.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s4"],
+        "note": null
+      }
+    },
+    {
+      "item": "A generally available product that submits telemetry to Datadog",
+      "why": "Listed product requirements: generally available, hosts the code that calls the Datadog API, submits telemetry to Datadog, and implements OAuth.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s4"],
+        "note": "A read-only agent may not satisfy the telemetry requirement. Ask the partner team whether an exception exists."
+      }
+    },
+    {
+      "item": "A partner sandbox org and an integration listing in the Developer Platform",
+      "why": "The OAuth client is created on the listing's Configuration Method tab, and testing only works inside that partner org until publication.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s4"],
+        "note": null
+      }
+    },
+    {
+      "item": "An out-of-the-box dashboard, SVG logo, tile images, and setup/uninstall instructions",
+      "why": "'Dashboards are required for all integrations.' The listing also needs an overview, data type definitions, and support details.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s5"],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read scopes for an agent",
+      "examples": ["metrics_read", "timeseries_query", "logs_read_data", "monitors_read", "dashboards_read", "incident_read", "events_read"],
+      "reviewRequired": true,
+      "time": "1–3 months",
+      "impact": "These are ordinary authorization scopes, but no scope is usable by third parties without partner approval and a published tile. Users starting from the tile need the permissions for every requested scope.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["s6", "s2"],
+        "note": "Scope names seen in the HTML of the scopes page on 2026-10-20. That review applies to all scopes is inferred from the partner-only rule."
+      }
+    },
+    {
+      "tier": "Write scopes",
+      "examples": ["monitors_write", "dashboards_write", "incident_write"],
+      "reviewRequired": true,
+      "time": "1–3 months",
+      "impact": "Same path as read scopes. Datadog asks you to select the minimum required scopes on the listing.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s6", "s1"],
+        "note": null
+      }
+    },
+    {
+      "tier": "Private data-submission scope",
+      "examples": ["api_keys_write"],
+      "reviewRequired": true,
+      "time": "1–3 months",
+      "impact": "Needed to create an API key on the user's behalf (POST /api/v2/api_keys/marketplace) and submit metrics, logs or events. It's described as private and does not appear on the public scopes page.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s3"],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Apply to the Technology Partner track",
+      "owner": "human",
+      "detail": "Apply through the Datadog Partner Network. After approval, a member of the Technology Partner team schedules an introductory call.",
+      "url": "https://partners.datadoghq.com/s/",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4", "s7"],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for partner approval",
+      "owner": "wait",
+      "detail": "Datadog reviews the application. No approval time is published.",
+      "url": null,
+      "duration": "Unknown (days to weeks)",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s4"],
+        "note": "No timeline in the docs."
+      }
+    },
+    {
+      "title": "Request a sandbox org",
+      "owner": "human",
+      "detail": "In the Partner Portal, click Learn More under Sandbox Access, then Request Sandbox Upgrade. Switch to the new sandbox if you already belong to another Datadog org.",
+      "url": "https://partners.datadoghq.com/s/",
+      "duration": "Unknown",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4"],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the listing content",
+      "owner": "agent",
+      "detail": "Write the short description, setup steps (numbered), uninstall steps, data type definitions, support details, and a minimal scope list with justification.",
+      "url": null,
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s5"],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the listing and OAuth client",
+      "owner": "human",
+      "detail": "In Integrations > Developer Platform, create a listing, pick API with OAuth on the Configuration Method tab, enter the client name, Onboarding URL and Redirect URIs, generate the client secret (shown once), select scopes, and save.",
+      "url": "https://app.datadoghq.com/integrations",
+      "duration": "15–30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s5"],
+        "note": "The exact Developer Platform URL isn't given in the docs. The link is the Integrations page, which the docs navigate from."
+      }
+    },
+    {
+      "title": "Implement the OAuth handshake",
+      "owner": "agent",
+      "detail": "Handle the domain and site parameters passed to your Onboarding URL, build the authorize URL from site, call https://api.<domain>/api/v2/oauth2/token with PKCE (S256), refresh hourly, and call /api/v2/api_keys/marketplace if you submit data.",
+      "url": "https://docs.datadoghq.com/extend/authorization/oauth2_endpoints/",
+      "duration": "1–3 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the dashboard and telemetry",
+      "owner": "agent",
+      "detail": "Generate the out-of-the-box dashboard JSON, metadata.csv for any metrics, a log pipeline if you send logs, and a monitor template if you send metrics.",
+      "url": "https://docs.datadoghq.com/extend/integrations/build_integration/",
+      "duration": "1–3 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4", "s5"],
+        "note": null
+      }
+    },
+    {
+      "title": "Test Authorization in the sandbox",
+      "owner": "human",
+      "detail": "Click Test Authorization to simulate starting from the tile, then confirm your integration can query or submit data. Replace test URLs in Onboarding URL and Redirect URIs before submitting.",
+      "url": null,
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit for review",
+      "owner": "human",
+      "detail": "Submit the listing in Developer Platform > Publishing. Production client credentials are issued at submission; store the new secret.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s5"],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for Datadog review and publication",
+      "owner": "wait",
+      "detail": "The Datadog team reviews and responds with feedback. After approval, the integration appears as a tile and any Datadog user can authorize from it.",
+      "url": null,
+      "duration": "Unknown (weeks)",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s5", "s1"],
+        "note": "No published timeline."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Draft the partner application, listing copy and setup/uninstall instructions",
+    "Implement the PKCE OAuth flow with domain/site handling and hourly refresh",
+    "Generate the out-of-the-box dashboard JSON and metadata.csv",
+    "Pick a minimal scope set from the scopes reference",
+    "Check regional API hosts (datadoghq.com, datadoghq.eu, etc.) and token endpoints"
+  ],
+  "humanMustDo": [
+    "Apply to the Technology Partner track and take the intro call",
+    "Request and switch to the partner sandbox org",
+    "Create the listing and OAuth client, and store the one-time secret",
+    "Run Test Authorization and submit the listing for review",
+    "Contact ecosystems@datadog.com to rotate a leaked client secret"
+  ],
+  "blockers": [
+    {
+      "symptom": "Invalid client_id when a test user authorizes",
+      "cause": "Before publication, the OAuth client only works inside the partner developer org where it was created.",
+      "fix": "Test inside the partner sandbox org, or get the integration published.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "No way to create an OAuth app from a normal Datadog account",
+      "cause": "Standalone OAuth clients are not supported; OAuth is limited to approved Technology Partners.",
+      "fix": "Apply to the Partner Network, or for a single org use an API key plus a scoped application key instead of OAuth.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s6"],
+        "note": "Scoped application keys are mentioned on the scopes page as able to carry any Datadog permission."
+      }
+    },
+    {
+      "symptom": "Mismatching redirect URI after submission",
+      "cause": "Submission issues new production credentials; the testing and published clients have different IDs.",
+      "fix": "Switch to the production client ID and secret and the production redirect URI.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Hostname/IP does not match certificate's altnames",
+      "cause": "Calling the token or API endpoint on a customer subdomain instead of the base domain.",
+      "fix": "Use api.<domain> with only the base domain, such as datadoghq.eu. Use site only for the authorize step.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s2"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Data submission step fails during the handshake",
+      "cause": "The api_keys_write scope wasn't requested, so the API key can't be created on the user's behalf.",
+      "fix": "Enable api_keys_write on the listing and call POST /api/v2/api_keys/marketplace; store the key, since it's returned only once.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s2", "s3"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "PKCE token exchange errors",
+      "cause": "Wrong content-type on the token request.",
+      "fix": "Send application/json or application/x-www-form-urlencoded.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 1 hour. Refresh tokens for Marketplace OAuth clients have no expiration unless the user or partner revokes them.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3", "s1"],
+        "note": null
+      }
+    },
+    {
+      "text": "Datadog has several regional sites. The flow passes domain (for token and API calls) and site (for the authorize step) to your Onboarding URL, and Datadog wants users to start authorization from the Datadog tile rather than from your product.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s2"],
+        "note": null
+      }
+    },
+    {
+      "text": "Clients must be confidential. PKCE is recommended, with S256.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s3"],
+        "note": null
+      }
+    },
+    {
+      "text": "Users who start from the tile need permissions for all requested scopes. Users who start elsewhere can finish but are prompted to re-authorize later.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2"],
+        "note": null
+      }
+    },
+    {
+      "text": "Only one client secret is active at a time. Rotating one goes through ecosystems@datadog.com and doesn't force users to re-authorize.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "text": "OAuth clients get a limited set of authorization scopes, while scoped application keys can carry any Datadog permission. For an internal or single-customer agent, keys may be the more practical route.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s6"],
+        "note": "The 'more practical' part is our opinion."
+      }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Datadog docs: Create an API-based integration (OAuth for integrations)", "url": "https://docs.datadoghq.com/developers/integrations/oauth_for_integrations/" },
+    { "id": "s2", "title": "Datadog docs: OAuth2 in Datadog", "url": "https://docs.datadoghq.com/developers/authorization/oauth2_in_datadog/" },
+    { "id": "s3", "title": "Datadog docs: OAuth2 authorization endpoints reference", "url": "https://docs.datadoghq.com/extend/authorization/oauth2_endpoints/" },
+    { "id": "s4", "title": "Datadog docs: Build an integration", "url": "https://docs.datadoghq.com/extend/integrations/" },
+    { "id": "s5", "title": "Datadog docs: Build an integration with Datadog (listing and publishing)", "url": "https://docs.datadoghq.com/extend/integrations/build_integration/" },
+    { "id": "s6", "title": "Datadog API: Authorization scopes", "url": "https://docs.datadoghq.com/api/latest/scopes/" },
+    { "id": "s7", "title": "Datadog Partner Portal", "url": "https://partners.datadoghq.com/s/" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://app.datadoghq.com/oauth2/v1/authorize: 307 to /account/login (needs login)",
+      "POST https://api.datadoghq.com/oauth2/v1/token with no body: {\"errors\": [\"unsupported_grant_type\"]}",
+      "GET https://app.datadoghq.com/.well-known/openid-configuration: returns the SPA HTML, not an OIDC discovery document",
+      "GET https://partners.datadoghq.com/: 301 to /s/ (Partner Portal)",
+      "Scopes page HTML contains metrics_read, timeseries_query, logs_read_data, monitors_read/write, dashboards_read/write, incident_read/write, events_read, apm_read, cases_read, usage_read, user_access_read"
+    ],
+    "openQuestions": [
+      "How long Technology Partner approval and integration review take in practice",
+      "Whether a read-only AI agent that submits no telemetry can be accepted (the docs list telemetry as a requirement)",
+      "Whether there are partner program fees or tiers for Technology Partners",
+      "Rate limits that apply to OAuth tokens versus API/application keys"
+    ]
+  }
+}

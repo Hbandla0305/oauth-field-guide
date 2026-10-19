@@ -1,0 +1,300 @@
+{
+  "app": {
+    "name": "Gorgias",
+    "slug": "gorgias",
+    "website": "https://www.gorgias.com",
+    "developerPortal": "https://partners.gorgias.com/signup",
+    "category": "Ecommerce helpdesk"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth2 guide for apps", "url": "https://developers.gorgias.com/docs/oauth2-authentication-for-creating-apps-with-gorgias" },
+    { "kind": "scopes", "label": "OAuth2 scopes reference", "url": "https://developers.gorgias.com/docs/oauth2-scopes" },
+    { "kind": "review", "label": "Building a public app (overview)", "url": "https://developers.gorgias.com/docs/overview" },
+    { "kind": "review", "label": "Submit app for review", "url": "https://developers.gorgias.com/docs/5-submit-app-for-review" },
+    { "kind": "console", "label": "Developer Portal sign-up", "url": "https://partners.gorgias.com/signup" },
+    { "kind": "api", "label": "API rate limits", "url": "https://developers.gorgias.com/reference/limitations" }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Gorgias says OAuth2 is mandatory for any third-party app, and apps are created as drafts in its partner portal; the in-product connect button only appears after the tech partnership team reviews and approves the app. Getting a sandbox also needs a manual step (a draft app, then an email to techpartners@gorgias.com), and no review timeline is published.",
+    "timeToDev": {
+      "range": "2 h–3 days",
+      "hours": { "min": 2, "max": 72 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s5", "s1"],
+        "note": "Registering and creating a draft app is quick, but a sandbox account requires emailing techpartners@gorgias.com to convert a trial (new sandboxes start as Demo accounts). The turnaround for that email isn't stated."
+      }
+    },
+    "timeToProd": {
+      "range": "2–6 weeks",
+      "hours": { "min": 336, "max": 1008 },
+      "assumes": "A public OAuth2 app listed in the Gorgias App Store that reads and writes tickets and customers for merchants; there's no documented unlisted path for third parties.",
+      "waitingOn": "Gorgias tech partnership team review of the submitted app (no SLA published), plus any requested scope changes.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s4"],
+        "note": "Gorgias publishes no review duration; the range is our estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Gorgias Developer Portal account",
+      "why": "Draft apps, OAuth credentials and the review submission all live in the partner portal.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+    },
+    {
+      "item": "A sandbox (developer plan) helpdesk",
+      "why": "You test installs on a sandbox subdomain. You need a draft app before Gorgias will convert a trial into a sandbox.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s3"], "note": "New sandboxes start as Demo accounts; email techpartners@gorgias.com with the account URL to switch to a Developer plan." }
+    },
+    {
+      "item": "An HTTPS redirect URL and server-side secret storage",
+      "why": "The token exchange authenticates with client_id and client_secret, and redirect_uri must match between steps.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "A test account for your own product",
+      "why": "The submission has to include testing instructions with a test account.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Private use with API keys (your own helpdesk)",
+      "examples": ["API key (Basic auth)"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Works for a merchant's own internal scripts. Gorgias says OAuth2 is mandatory for third-party apps, so this isn't a route for serving other merchants.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6", "s7"], "note": null }
+    },
+    {
+      "tier": "Read scopes",
+      "examples": ["openid", "offline", "tickets:read", "customers:read", "events:read", "macros:read"],
+      "reviewRequired": true,
+      "time": "2–6 weeks",
+      "impact": "Enough for an agent that triages or summarizes tickets. Requires review like any public app.",
+      "evidence": { "label": "inferred", "sourceIds": ["s2", "s4"], "note": "Gorgias doesn't say scopes change review time; it says it will ask you to trim scopes your use case doesn't need." }
+    },
+    {
+      "tier": "Write scopes",
+      "examples": ["tickets:write", "customers:write", "tags:write", "macros:write"],
+      "reviewRequired": true,
+      "time": "2–6 weeks",
+      "impact": "Needed to reply to or update tickets. Reviewers check scopes against the use case.",
+      "evidence": { "label": "inferred", "sourceIds": ["s2", "s6"], "note": null }
+    },
+    {
+      "tier": "Account and automation scopes",
+      "examples": ["account:write", "rules:write", "users:write", "integrations:write"],
+      "reviewRequired": true,
+      "time": "2–6 weeks, likely with questions",
+      "impact": "Change helpdesk configuration. Expect pushback unless clearly needed (for example installing widgets or webhooks on setup).",
+      "evidence": { "label": "inferred", "sourceIds": ["s2", "s6"], "note": null }
+    },
+    {
+      "tier": "Deprecated catch-all",
+      "examples": ["write:all"],
+      "reviewRequired": true,
+      "time": "Avoid",
+      "impact": "A temporary permission that Gorgias says will be removed; use granular scopes instead.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Register on the Developer Portal",
+      "owner": "human",
+      "detail": "Sign up as a partner on the Gorgias Developer Portal.",
+      "url": "https://partners.gorgias.com/signup",
+      "duration": "10 min",
+      "evidence": { "label": "tested", "sourceIds": ["s5"], "note": "partners.gorgias.com/signup returned HTTP 200 on 2026-10-20. We did not sign up." }
+    },
+    {
+      "title": "Create a draft app",
+      "owner": "human",
+      "detail": "Create a draft app in the portal with the app name, redirect URL and requested scopes; copy the client_id and client_secret.",
+      "url": "https://partners.gorgias.com/signup",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": null }
+    },
+    {
+      "title": "Create a trial and request a sandbox",
+      "owner": "human",
+      "detail": "Create a Gorgias trial at gorgias.com/signup, then email techpartners@gorgias.com with the account URL to convert it to a Developer plan sandbox.",
+      "url": "https://www.gorgias.com/signup",
+      "duration": "15 min plus email turnaround",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s3"], "note": null }
+    },
+    {
+      "title": "Wait for sandbox conversion",
+      "owner": "wait",
+      "detail": "Gorgias converts the account manually; they say they're working on automating it.",
+      "url": null,
+      "duration": "unknown",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": "No timeframe given." }
+    },
+    {
+      "title": "Implement the OAuth2 flow",
+      "owner": "agent",
+      "detail": "Ask the merchant for their Gorgias subdomain. Redirect to https://{subdomain}.gorgias.com/oauth/authorize with response_type=code, client_id, redirect_uri, scope (include offline for a refresh token), state and nonce. Exchange the code at https://{subdomain}.gorgias.com/oauth/token with Basic auth client_id:client_secret.",
+      "url": "https://developers.gorgias.com/docs/oauth2-authentication-for-creating-apps-with-gorgias",
+      "duration": "2–4 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "That offline is what yields a refresh token is our inference; the docs show it in the granted scope string without explaining it." }
+    },
+    {
+      "title": "Implement refresh and reinstall handling",
+      "owner": "agent",
+      "detail": "Refresh 24-hour access tokens with grant_type=refresh_token. If the merchant deactivates the app, rerun the full authorization flow.",
+      "url": "https://developers.gorgias.com/docs/oauth2-authentication-for-creating-apps-with-gorgias",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Add one-click setup on install",
+      "owner": "agent",
+      "detail": "On install, create the widgets, macros, tags and webhook subscriptions the app needs, so customers don't configure HTTP integrations by hand.",
+      "url": "https://developers.gorgias.com/docs/building-a-high-quality-gorgias-app",
+      "duration": "half a day",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "title": "Test on the sandbox",
+      "owner": "human",
+      "detail": "Install via the test URL https://{sandbox}.gorgias.com/app/settings/integrations/app/{client_id} and from your own product.",
+      "url": "https://developers.gorgias.com/docs/oauth2-authentication-for-creating-apps-with-gorgias",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Complete the listing and testing instructions",
+      "owner": "agent",
+      "detail": "Fill every field in the draft app form, write listing copy and testing instructions with a test account, and justify each scope.",
+      "url": "https://developers.gorgias.com/docs/5-submit-app-for-review",
+      "duration": "2–4 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s3"], "note": null }
+    },
+    {
+      "title": "Add screenshots and submit",
+      "owner": "human",
+      "detail": "Upload screenshots (they appear on the listing) and submit the app for review in the portal.",
+      "url": "https://developers.gorgias.com/docs/5-submit-app-for-review",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Tech partnership review",
+      "owner": "wait",
+      "detail": "Gorgias checks the app works and matches their expectations, then contacts you with the result or the fixes needed. Approved apps appear in the in-product and public App Store.",
+      "url": null,
+      "duration": "unknown (no SLA)",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s1"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the subdomain-aware OAuth2 flow with state and nonce",
+    "Build token refresh and reinstall detection",
+    "Pick granular scopes and avoid write:all",
+    "Script widget, macro and webhook setup on install",
+    "Draft listing copy, testing instructions and scope justifications",
+    "Handle 429s with Retry-After and the call-limit header"
+  ],
+  "humanMustDo": [
+    "Register on the Developer Portal and create the draft app",
+    "Create a trial and email techpartners@gorgias.com for a sandbox",
+    "Provide a test account and screenshots",
+    "Submit for review and respond to feedback",
+    "Customer side: a merchant installs from the App Store or your product"
+  ],
+  "blockers": [
+    {
+      "symptom": "The Connect button doesn't appear in the merchant's App Store",
+      "cause": "The connect button only appears after the app is approved.",
+      "fix": "Test via the sandbox test-install URL until approval, then submit for review.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Gorgias won't convert your trial to a sandbox",
+      "cause": "You need a draft app in the portal before the sandbox can be approved.",
+      "fix": "Create the draft app first, then email techpartners@gorgias.com with the account URL.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s3"], "note": null }
+    },
+    {
+      "symptom": "Sandbox behaves like a demo account",
+      "cause": "New sandbox accounts are Demo accounts by default.",
+      "fix": "Email techpartners@gorgias.com with your account URL to switch it to a Developer plan.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "symptom": "Reviewers ask you to change scopes",
+      "cause": "The app requests data that isn't needed for its use case.",
+      "fix": "Request only the granular scopes you use and explain each.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "symptom": "HTTP 429 Too Many Requests",
+      "cause": "OAuth2 apps get 80 requests per 20-second window per account (10-second window on Enterprise accounts).",
+      "fix": "Read X-Gorgias-Account-Api-Call-Limit, wait Retry-after seconds, and plan for high-volume merchants during peaks like BFCM.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7", "s6"], "note": null }
+    },
+    {
+      "symptom": "Tokens stop working after the merchant deactivates the app",
+      "cause": "Deactivation on the helpdesk requires the full authorization flow again.",
+      "fix": "Detect auth failures and prompt the merchant to reconnect.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire after 24 hours (expires_in 86400); refresh tokens have no expiration time.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "OAuth2 apps get double the API-key rate limit (80 vs 40 requests per 20 seconds per account), and Enterprise accounts use a tighter 10-second window.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    },
+    {
+      "text": "OAuth endpoints are per merchant subdomain, so your connect flow needs the merchant's Gorgias subdomain.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Customers see which data an app can access and can revoke it by disconnecting the app in their settings.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "text": "Gorgias's OAuth uses OpenID scopes (openid, email, profile) and supports a nonce, but no OIDC discovery document was found at the account subdomain.",
+      "evidence": { "label": "tested", "sourceIds": ["s1", "s2"], "note": "GET https://acme.gorgias.com/.well-known/openid-configuration returned 404; acme may not be a real account, so this isn't conclusive." }
+    },
+    {
+      "text": "Approved apps are announced at Gorgias's next Product Town Hall, and the Partnerships team offers further promotion.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Gorgias developer docs: OAuth2 authentication for creating apps", "url": "https://developers.gorgias.com/docs/oauth2-authentication-for-creating-apps-with-gorgias" },
+    { "id": "s2", "title": "Gorgias developer docs: OAuth2 scopes", "url": "https://developers.gorgias.com/docs/oauth2-scopes" },
+    { "id": "s3", "title": "Gorgias developer docs: Building a public app, overview", "url": "https://developers.gorgias.com/docs/overview" },
+    { "id": "s4", "title": "Gorgias developer docs: Submit app for review", "url": "https://developers.gorgias.com/docs/5-submit-app-for-review" },
+    { "id": "s5", "title": "Gorgias developer docs: Register on Developer Portal and get a sandbox account", "url": "https://developers.gorgias.com/docs/1-register-on-developer-portal" },
+    { "id": "s6", "title": "Gorgias developer docs: Building a high-quality Gorgias app", "url": "https://developers.gorgias.com/docs/building-a-high-quality-gorgias-app" },
+    { "id": "s7", "title": "Gorgias API reference: Rate limits", "url": "https://developers.gorgias.com/reference/limitations" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://partners.gorgias.com/signup: HTTP 200",
+      "GET https://acme.gorgias.com/oauth/authorize?...: 307 to /idp/oauth/authorize (authorize endpoint pattern live)",
+      "GET https://acme.gorgias.com/.well-known/openid-configuration: 404"
+    ],
+    "openQuestions": [
+      "How long Gorgias's app review takes in practice",
+      "Whether merchants outside your sandbox can authorize a draft (unapproved) app via a direct OAuth link",
+      "How long the trial-to-sandbox conversion email takes",
+      "Whether requesting offline is required to receive a refresh token",
+      "Whether Gorgias has AI/LLM-specific data-use rules for partners"
+    ]
+  }
+}

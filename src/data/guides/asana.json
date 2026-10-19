@@ -1,0 +1,271 @@
+{
+  "app": {
+    "name": "Asana",
+    "slug": "asana",
+    "website": "https://asana.com",
+    "developerPortal": "https://app.asana.com/0/my-apps",
+    "category": "Project management"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth guide", "url": "https://developers.asana.com/docs/oauth" },
+    { "kind": "scopes", "label": "OAuth scopes reference", "url": "https://developers.asana.com/docs/oauth-scopes" },
+    { "kind": "review", "label": "Manage distribution", "url": "https://developers.asana.com/docs/manage-distribution" },
+    { "kind": "review", "label": "Publish your app (app directory)", "url": "https://developers.asana.com/docs/publish-your-app" },
+    { "kind": "console", "label": "Developer console", "url": "https://app.asana.com/0/my-apps" },
+    { "kind": "api", "label": "Rate limits", "url": "https://developers.asana.com/docs/rate-limits" }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Self-serve with no review: create the app, set distribution to 'Any workspace', and any Asana user with your authorize link can connect the same day. The required config is distribution plus scopes: granular scopes don't cover every endpoint yet, so some agents fall back to Full permissions, and Enterprise admins can approve or block your app per organization.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": { "min": 0.25, "max": 1 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s4"],
+        "note": "Create the app in the developer console, pick scopes, add an HTTPS redirect URL, and run the code flow. Development needs an HTTPS redirect (self-signed or a tunnel) because the docs don't mention localhost."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "An OAuth app shared to Any workspace that reads and writes tasks and projects; an app directory listing is optional and adds an unspecified review.",
+      "waitingOn": "Nothing — no review. Per customer: Enterprise admins approving the app where they manage apps from the admin console.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s1"],
+        "note": "The distribution page describes no review for Specific or Any workspace sharing."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "An Asana account in a workspace you belong to",
+      "why": "Apps are created in the developer console while signed in, and Specific-workspace distribution uses workspaces you belong to.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "item": "An HTTPS redirect URL (or urn:ietf:wg:oauth:2.0:oob for native/CLI apps)",
+      "why": "Non-native apps must use an https redirect URL.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs suggest a self-signed certificate or stunnel for local development." }
+    },
+    {
+      "item": "For an app directory listing: company page URL, support URL or email, test credentials, and a listing that follows the guidelines",
+      "why": "Incomplete listings delay publication and can trigger extra review cycles.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s6"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity (OpenID Connect)",
+      "examples": ["openid", "email", "profile"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Sign-in only; request id_token via response_type.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+    },
+    {
+      "tier": "Granular read scopes",
+      "examples": ["tasks:read", "projects:read", "stories:read", "workspaces:read", "users:read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Lets an agent read tasks, projects and comments with least privilege. Read, write and delete don't imply each other.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+    },
+    {
+      "tier": "Granular write/delete scopes",
+      "examples": ["tasks:write", "stories:write", "projects:write", "tasks:delete", "webhooks:write"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "For agents that create tasks, comment or register webhooks. Subsequent authorizations aren't additive, so always request the full set.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+    },
+    {
+      "tier": "Full permissions",
+      "examples": ["default"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Access to all endpoints, including ones without granular scopes yet. Broader consent, which may make Enterprise admins less likely to approve.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The admin-approval effect is our inference." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the app in the developer console",
+      "owner": "human",
+      "detail": "Sign in, open My apps > Create new app, enter the name and purpose.",
+      "url": "https://app.asana.com/0/my-apps",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "app.asana.com/0/my-apps returned 302 to the login page on 2026-10-20; we did not sign in." }
+    },
+    {
+      "title": "Choose scopes",
+      "owner": "agent",
+      "detail": "Map each endpoint the agent calls to a granular scope (e.g. tasks:read, stories:write). Use Full permissions only if a needed endpoint has no scope yet.",
+      "url": "https://developers.asana.com/docs/oauth-scopes",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+    },
+    {
+      "title": "Configure redirect URL and scopes",
+      "owner": "human",
+      "detail": "On the OAuth tab add the HTTPS redirect URL, tick the scopes (or Full permissions), and copy the client ID and secret.",
+      "url": "https://app.asana.com/0/my-apps",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Implement the code flow with PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://app.asana.com/-/oauth_authorize?client_id=...&redirect_uri=...&response_type=code&state=...&code_challenge=...&code_challenge_method=S256&scope=tasks:read%20projects:read. Exchange at POST https://app.asana.com/-/oauth_token. With Full permissions, omit scope or send scope=default.",
+      "url": "https://developers.asana.com/docs/oauth",
+      "duration": "1–3 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Handle token refresh",
+      "owner": "agent",
+      "detail": "Access tokens last one hour (expires_in 3600). Refresh with the refresh token, which keeps working as long as the user keeps the app authorized. Use /-/oauth_revoke on disconnect.",
+      "url": "https://developers.asana.com/docs/oauth",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Add rate-limit and concurrency handling",
+      "owner": "agent",
+      "detail": "Plan for 150 requests/min per token on free domains and 1,500 on paid, 60 searches/min, 50 concurrent GETs and 15 concurrent writes, plus cost-based limits. Always honor Retry-After.",
+      "url": "https://developers.asana.com/docs/rate-limits",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Set distribution to Any workspace",
+      "owner": "human",
+      "detail": "Under Manage distribution choose Any workspace so users outside your workspaces can authorize. Sharing settings can only be changed while the app is unpublished.",
+      "url": "https://app.asana.com/0/my-apps",
+      "duration": "2 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Prepare material for Enterprise admins",
+      "owner": "agent",
+      "detail": "Write clear listing details (what the app does, scopes used, data handling), since Enterprise admins review them to approve or block apps.",
+      "url": "https://developers.asana.com/docs/manage-distribution",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Optional: submit to the app directory",
+      "owner": "human",
+      "detail": "Use Submit for review in the console, complete the pre-flight checklist and listing, and provide test credentials. The app is locked for edits while in review.",
+      "url": "https://developers.asana.com/docs/publish-your-app",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s6"], "note": null }
+    },
+    {
+      "title": "Optional: app directory review",
+      "owner": "wait",
+      "detail": "Asana emails when the app is ready to publish or needs changes. Apps with app components also get a security review and QA. No timeline is published.",
+      "url": null,
+      "duration": "unknown",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Map endpoints to granular scopes and decide whether Full permissions is needed",
+    "Implement the PKCE code flow, refresh and revoke",
+    "Add Retry-After, concurrency and cost-aware throttling",
+    "Draft the listing details Enterprise admins review",
+    "Prepare app directory listing copy and the pre-flight checklist"
+  ],
+  "humanMustDo": [
+    "Sign in to the developer console and create the app",
+    "Set the redirect URL, scopes and distribution to Any workspace",
+    "Provide reviewer test credentials and submit to the app directory, if listing"
+  ],
+  "blockers": [
+    {
+      "symptom": "Users outside your workspace can't authorize the app",
+      "cause": "Distribution is set to Specific workspaces.",
+      "fix": "Switch distribution to Any workspace in the developer console (only possible while unpublished).",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": null }
+    },
+    {
+      "symptom": "forbidden_scopes error on the authorize request",
+      "cause": "The request includes scopes not registered for the app, or specific scopes while Full permissions is on.",
+      "fix": "Register the scopes in the console, or with Full permissions omit scope / send scope=default.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Calls to some endpoints are forbidden even with granular scopes",
+      "cause": "Scopes aren't yet available for every Asana API endpoint.",
+      "fix": "Enable Full permissions for those endpoints, or avoid them.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact error returned isn't documented on the page we read." }
+    },
+    {
+      "symptom": "Lost permissions after a second authorization",
+      "cause": "Scope requests aren't additive; a later request with fewer scopes replaces the earlier grant.",
+      "fix": "Always request the full set of scopes the agent needs.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Enterprise users can't use the app",
+      "cause": "Their admin manages apps from the admin console and hasn't approved yours, or blocked it.",
+      "fix": "The customer's admin approves it; give them clear listing details.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "symptom": "Frequent 429s on free-plan workspaces",
+      "cause": "Free domains allow 150 requests/min per token, plus concurrency and cost limits.",
+      "fix": "Honor Retry-After, request fewer fields with opt_fields, and use webhooks instead of polling.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "opt_fields advice is our inference from the cost-based limit." }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last one hour; refresh tokens don't have a stated expiry and keep working while the user keeps the app authorized.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Rejected requests still count against the quota, so retrying before Retry-After makes throttling worse.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "text": "Switching distribution from Any to Specific workspace blocks new authorizations from outside users, and published apps can't change sharing settings.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "Asana marks the scope list as 'subject to revision', so re-check it when adding endpoints.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Asana doesn't serve an OIDC discovery document at app.asana.com/.well-known/openid-configuration, although the authorize endpoint accepts id_token response types.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "The discovery URL returned a Not Found page on 2026-10-20." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Asana docs: OAuth", "url": "https://developers.asana.com/docs/oauth" },
+    { "id": "s2", "title": "Asana docs: OAuth scopes", "url": "https://developers.asana.com/docs/oauth-scopes" },
+    { "id": "s3", "title": "Asana docs: Manage distribution", "url": "https://developers.asana.com/docs/manage-distribution" },
+    { "id": "s4", "title": "Asana docs: Rate limits", "url": "https://developers.asana.com/docs/rate-limits" },
+    { "id": "s5", "title": "Asana docs: Publish your app", "url": "https://developers.asana.com/docs/publish-your-app" },
+    { "id": "s6", "title": "Asana docs: App listing guidelines", "url": "https://developers.asana.com/docs/app-listing-guidelines" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://app.asana.com/0/my-apps: 302 to the login page",
+      "GET https://app.asana.com/-/oauth_authorize: HTTP 200",
+      "POST https://app.asana.com/-/oauth_token with a bogus code: {\"error\":\"invalid_grant\"}",
+      "GET https://app.asana.com/.well-known/openid-configuration: Not Found"
+    ],
+    "openQuestions": [
+      "Whether http://localhost redirect URLs are accepted for development",
+      "Typical app directory review time",
+      "Which endpoints still lack granular scopes",
+      "Whether Asana applies any AI-specific data-use terms to API apps"
+    ]
+  }
+}

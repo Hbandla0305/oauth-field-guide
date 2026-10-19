@@ -1,0 +1,557 @@
+{
+  "app": {
+    "name": "Attio",
+    "slug": "attio",
+    "website": "https://attio.com",
+    "developerPortal": "https://build.attio.com",
+    "category": "CRM"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Connect an app through OAuth (tutorial)",
+      "url": "https://docs.attio.com/rest-api/tutorials/connect-an-app-through-oauth"
+    },
+    {
+      "kind": "oauth",
+      "label": "Authenticating requests (token levels)",
+      "url": "https://docs.attio.com/rest-api/guides/authentication.md"
+    },
+    {
+      "kind": "review",
+      "label": "Publication lifecycle and install limits",
+      "url": "https://docs.attio.com/share/the-publication-lifecycle.md"
+    },
+    {
+      "kind": "review",
+      "label": "Publishing to the App Store",
+      "url": "https://docs.attio.com/share/publishing-to-the-app-store.md"
+    },
+    {
+      "kind": "console",
+      "label": "Developer console",
+      "url": "https://build.attio.com"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://docs.attio.com/rest-api/guides/rate-limiting.md"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "OAuth apps are self-serve and other workspaces can install them before publication, but an unpublished app shows an 'not yet approved by the Attio team' warning and is capped at 25 workspace installs. Submitting to the App Store removes both; Attio aims to finish reviews within a week.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Create the app at build.attio.com, enable OAuth and scopes, run the code flow against your own workspace."
+      }
+    },
+    "timeToProd": {
+      "range": "1–2 weeks",
+      "hours": {
+        "min": 168,
+        "max": 336
+      },
+      "assumes": "An App Store review to lift the 25-install cap and the unapproved-app warning; the first 25 workspaces can connect the same day without review.",
+      "waitingOn": "Attio's App Store review (aim: within 1 week), plus preparing the listing, images and code-quality requirements.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": "The 1-week figure is Attio's stated aim; the upper end of the range includes prep and a resubmission, which is our estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "An Attio account and a development workspace",
+      "why": "Apps are created in the developer console and tested in a workspace; Attio offers to provide development workspaces on request.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A redirect URI registered on the app's OAuth tab",
+      "why": "redirect_uri must exactly match one of the registered redirect URLs. The official tutorial uses an http://localhost URL.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A workspace admin on the customer side for workspace-level tokens",
+      "why": "Only workspace admins can grant workspace-level tokens; non-admins can send an install request for an admin to approve.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "For the App Store: listing content, logo, listing images, and code that meets Attio's review bar",
+      "why": "Published apps have listing content, design assets and code reviewed.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read CRM data",
+      "examples": [
+        "record_permission:read",
+        "object_configuration:read",
+        "list_entry:read",
+        "list_configuration:read",
+        "note:read",
+        "task:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (≤25 workspaces)",
+      "impact": "Search and read records, lists, notes and tasks. Searching records needs record_permission:read plus object_configuration:read.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s11",
+          "s2"
+        ],
+        "note": "Scope strings read from Attio's endpoint reference pages on 2026-10-20. Scopes are not tied to review; the install cap is."
+      }
+    },
+    {
+      "tier": "Write CRM data",
+      "examples": [
+        "record_permission:read-write",
+        "list_entry:read-write",
+        "note:read-write",
+        "task:read-write",
+        "webhook:read-write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (≤25 workspaces)",
+      "impact": "Create and update records, entries, notes and tasks, and register webhooks.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s11"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Communications and members",
+      "examples": [
+        "email:read",
+        "meeting:read",
+        "call_recording:read",
+        "user_management:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (≤25 workspaces)",
+      "impact": "Emails, meetings, call recordings and workspace members. No scope-specific approval is documented, but App Store reviewers check the app overall.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s11",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Unlimited installs (any scope)",
+      "examples": [
+        "any of the above"
+      ],
+      "reviewRequired": true,
+      "time": "~1 week review",
+      "impact": "More than 25 workspaces, and no unapproved-app warning, requires submitting the app for App Store review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s7",
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the app in the developer console",
+      "owner": "human",
+      "detail": "Sign in at build.attio.com, click New app, and choose a name and a permanent slug.",
+      "url": "https://build.attio.com",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Enable OAuth, redirect URIs and scopes",
+      "owner": "human",
+      "detail": "On the OAuth tab, turn on OAuth 2.0, add redirect URIs, and copy the client ID and secret. On the Scopes tab, enable workspace scopes and any user scopes.",
+      "url": "https://build.attio.com",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Choose least-privilege scopes",
+      "owner": "agent",
+      "detail": "Map the endpoints your agent calls to their 'Required scopes' (e.g. record search needs record_permission:read and object_configuration:read) and enable only those.",
+      "url": "https://docs.attio.com/rest-api/endpoint-reference/records/search-records.md",
+      "duration": "20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s11"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the OAuth code flow",
+      "owner": "agent",
+      "detail": "Send users to https://app.attio.com/authorize with response_type=code, client_id, redirect_uri and state (add token_level=user plus PKCE S256 for user-level tokens). Exchange the code form-encoded at POST https://app.attio.com/oauth/token. Encrypt stored tokens.",
+      "url": "https://docs.attio.com/docs/oauth/authorize.md",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle rate limits and revocation",
+      "owner": "agent",
+      "detail": "Respect 100 reads/s and 25 writes/s, honour Retry-After on 429 rate_limit_exceeded, keep list queries simple (score-based limits), and treat 401s as a revoked install.",
+      "url": "https://docs.attio.com/rest-api/guides/rate-limiting.md",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "Treating 401 as revocation is our inference."
+      }
+    },
+    {
+      "title": "Share with early workspaces",
+      "owner": "human",
+      "detail": "Let customers install via your OAuth flow or a private invite link. Installers see an unapproved-app warning, and the app is capped at 25 workspaces in total.",
+      "url": null,
+      "duration": "same day",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Prepare App Store listing materials",
+      "owner": "agent",
+      "detail": "Draft listing content to Attio's listing requirements, plan screenshots to the listing-image spec, and check code against the code-review requirements.",
+      "url": "https://docs.attio.com/share/publishing-to-the-app-store.md",
+      "duration": "1–2 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create logo and screenshots, then click Publish app",
+      "owner": "human",
+      "detail": "Produce the logo and App Store images, then click 'Publish app' at the top right of the developer console.",
+      "url": "https://build.attio.com",
+      "duration": "2–4 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Attio review",
+      "owner": "wait",
+      "detail": "Attio reviews listing, design assets and code; they aim to complete reviews within 1 week. Approval lists the app publicly and removes the 25-install cap and warning.",
+      "url": null,
+      "duration": "~1 week",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Map endpoints to required scopes and pick the minimum set",
+    "Implement the code flow, PKCE for user-level tokens and encrypted storage",
+    "Add Retry-After backoff and score-aware list queries",
+    "Draft App Store listing content and check code against review requirements",
+    "Connect to Attio's MCP server through Dynamic Client Registration"
+  ],
+  "humanMustDo": [
+    "Sign in at build.attio.com, create the app and copy credentials",
+    "Produce the logo and listing screenshots",
+    "Click 'Publish app' and answer reviewer feedback",
+    "Customer side: a workspace admin approves workspace-level installs"
+  ],
+  "blockers": [
+    {
+      "symptom": "New workspaces can't install the app any more",
+      "cause": "Unpublished apps are capped at 25 workspace installs, counting both private invites and OAuth installs.",
+      "fix": "Submit the app for App Store review; submitting removes the cap.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s7"
+        ],
+        "note": "The exact error shown at the cap isn't documented."
+      }
+    },
+    {
+      "symptom": "Installers see a warning that the app 'has not yet been approved by the Attio team'",
+      "cause": "The app is unpublished.",
+      "fix": "Submit for review, or tell early customers to expect the warning.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "A non-admin user can't complete the install",
+      "cause": "Only workspace admins can grant workspace-level tokens; non-admins can only send an install request.",
+      "fix": "Have an admin approve the request, or use token_level=user with user scopes the admin has approved.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Authorize fails for token_level=user",
+      "cause": "User-level tokens require code_challenge and code_challenge_method=S256.",
+      "fix": "Add PKCE and send code_verifier at the token exchange.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 with code rate_limit_exceeded",
+      "cause": "Over 100 reads/s or 25 writes/s, or the workspace's summed list-query score in a 10-second window is too high (shared across all apps).",
+      "fix": "Sleep until Retry-After, queue writes, and simplify list filters and sorts.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Older guides say OAuth only works in your development workspace until published",
+      "cause": "The older developers.attio.com docs described that restriction; the current docs.attio.com publication lifecycle says other workspaces can install via OAuth before publication (up to 25).",
+      "fix": "Follow the current docs.attio.com pages and test a cross-workspace install early.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "The old-docs claim comes from search snippets of developers.attio.com pages we did not open."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "The documented token response contains only access_token and token_type: no expires_in and no refresh_token. Tokens appear long-lived until the app is uninstalled or revoked.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "The docs don't state a lifetime; 'long-lived' is our inference from the absent fields."
+      }
+    },
+    {
+      "text": "Two token levels: workspace (default, admin-granted, acts as the app) and user (any member, PKCE required, limited to user scopes the admin approved at install).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Attio runs a hosted MCP server at https://mcp.attio.com/mcp that acts as the signed-in user. Its OAuth metadata advertises a registration_endpoint (Dynamic Client Registration), PKCE S256, and scopes mcp, offline_access and openid.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9",
+          "s10"
+        ],
+        "note": "Metadata fetched from app.attio.com and mcp.attio.com on 2026-10-20. The MCP docs page doesn't mention DCR itself."
+      }
+    },
+    {
+      "text": "The REST API's 100 reads/s and 25 writes/s limits may be lowered temporarily during incidents or permanently for data-heavy endpoints (e.g. creating call recordings is 1 request/s).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The app slug is a permanent identifier, so choose it before sharing install links.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Attio docs: Connect an app to Attio through OAuth",
+      "url": "https://docs.attio.com/rest-api/tutorials/connect-an-app-through-oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Attio docs: Authenticating requests",
+      "url": "https://docs.attio.com/rest-api/guides/authentication.md"
+    },
+    {
+      "id": "s3",
+      "title": "Attio docs: OAuth Authorize endpoint",
+      "url": "https://docs.attio.com/docs/oauth/authorize.md"
+    },
+    {
+      "id": "s4",
+      "title": "Attio docs: OAuth Token endpoint",
+      "url": "https://docs.attio.com/docs/oauth/token.md"
+    },
+    {
+      "id": "s5",
+      "title": "Attio docs: Publishing to the App Store",
+      "url": "https://docs.attio.com/share/publishing-to-the-app-store.md"
+    },
+    {
+      "id": "s6",
+      "title": "Attio docs: The publication lifecycle",
+      "url": "https://docs.attio.com/share/the-publication-lifecycle.md"
+    },
+    {
+      "id": "s7",
+      "title": "Attio docs: Private invites",
+      "url": "https://docs.attio.com/share/private-invites.md"
+    },
+    {
+      "id": "s8",
+      "title": "Attio docs: Handling rate limits",
+      "url": "https://docs.attio.com/rest-api/guides/rate-limiting.md"
+    },
+    {
+      "id": "s9",
+      "title": "Attio docs: Attio MCP overview",
+      "url": "https://docs.attio.com/mcp/overview.md"
+    },
+    {
+      "id": "s10",
+      "title": "Attio OAuth authorization server metadata",
+      "url": "https://app.attio.com/.well-known/oauth-authorization-server"
+    },
+    {
+      "id": "s11",
+      "title": "Attio docs: Search records endpoint (required scopes)",
+      "url": "https://docs.attio.com/rest-api/endpoint-reference/records/search-records.md"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://app.attio.com/.well-known/oauth-authorization-server: issuer https://app.attio.com, registration_endpoint /oauth/register, PKCE S256, scopes mcp/offline_access/openid",
+      "GET https://mcp.attio.com/.well-known/oauth-authorization-server: same endpoints, issuer https://mcp.attio.com",
+      "POST https://app.attio.com/oauth/token with bogus credentials: HTTP 400 with empty JSON body {}",
+      "Read the scope list (record_permission, object_configuration, list_entry, note, task, email, meeting, call_recording, webhook, etc.) from the OpenAPI excerpt on Attio's endpoint reference pages"
+    ],
+    "openQuestions": [
+      "Whether REST OAuth access tokens ever expire, and how revocation is signalled",
+      "What error a workspace sees once an unpublished app hits the 25-install cap",
+      "Whether the App Store code review applies to REST-only OAuth apps or only App SDK apps",
+      "Whether customer plan tiers restrict REST API or OAuth app access"
+    ]
+  }
+}

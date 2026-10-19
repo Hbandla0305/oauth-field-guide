@@ -1,0 +1,269 @@
+{
+  "app": {
+    "name": "Trello",
+    "slug": "trello",
+    "website": "https://trello.com",
+    "developerPortal": "https://trello.com/apps/admin",
+    "category": "Project management"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth 2.0 confidential client usage", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-confidential-client-usage" },
+    { "kind": "scopes", "label": "OAuth 2.0 client configuration (scopes)", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-client-configuration" },
+    { "kind": "oauth", "label": "Legacy authorization (API key + token, OAuth 1.0a)", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/" },
+    { "kind": "review", "label": "Personal data storage and GDPR compliance", "url": "https://developer.atlassian.com/cloud/trello/guides/compliance/personal-data-storage-gdpr/" },
+    { "kind": "console", "label": "Trello apps admin", "url": "https://trello.com/apps/admin" },
+    { "kind": "changelog", "label": "Trello changelog", "url": "https://developer.atlassian.com/cloud/trello/changelog/" }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Trello now offers OAuth 2.0 (3LO) through Atlassian's auth server alongside the legacy API key + token and OAuth 1.0a flows; all are self-serve with no Trello review. The required config is the catch: you register the app in Trello's apps admin, and if you store personal data you must poll the compliance API at least every 14 days or users see a non-compliant badge.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": { "min": 0.5, "max": 1.5 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s2"],
+        "note": "Create the app in Trello's apps admin, add an OAuth 2.0 confidential client with callback URLs and scopes, then run the PKCE code flow. The legacy /1/authorize token flow is faster still."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 2, "max": 24 },
+      "assumes": "A confidential OAuth 2.0 client that reads and writes boards on behalf of users; the legacy API key + token flow is equally fast and needs no review either.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s2", "s1", "s3"],
+        "note": "None of the OAuth or authorization pages mention a review or listing requirement."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Trello account and a Trello app (Power-Up) record in the apps admin",
+      "why": "API keys and OAuth 2.0 clients are created on the app's Trello Auth and OAuth 2.0 tabs.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s2"], "note": null }
+    },
+    {
+      "item": "A backend that can keep a client secret",
+      "why": "Non-Power-Up apps use confidential clients, which must send the secret on code exchange and refresh.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+    },
+    {
+      "item": "Callback URLs on a domain you control (or allowed origins for the legacy flow)",
+      "why": "The redirect_uri must match a configured callback URL; legacy return_urls not matching an allowed origin are blocked.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "localhost works as an allowed origin in the legacy flow." }
+    },
+    {
+      "item": "A plan for the GDPR compliance API if you store personal data",
+      "why": "Apps storing personal data must poll /1/plugins/{idPlugin}/compliance/memberPrivacy at least every 14 days.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "OAuth 2.0 member scopes (not workspace-restricted)",
+      "examples": ["read:member:trello", "write:member:trello", "offline_access"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "User profile access, and offline_access for refresh tokens.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+    },
+    {
+      "tier": "OAuth 2.0 board and workspace scopes",
+      "examples": ["read:board:trello", "write:board:trello", "read:organization:trello", "write:board:membership:trello"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "What an agent needs to read and update cards and boards. For Power-Up clients these are restricted to one workspace, so users re-authorize per workspace; non-Power-Up clients don't get that restriction.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "tier": "Enterprise scopes",
+      "examples": ["read:enterprise:trello", "write:enterprise:trello"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enterprise-level data; useful only where the user belongs to a Trello Enterprise.",
+      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "The page lists these scopes but doesn't say what extra permissions they need." }
+    },
+    {
+      "tier": "Legacy token scopes",
+      "examples": ["read", "write", "account"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Coarse scopes on the /1/authorize flow with expiration 1hour, 1day, 30days or never. A token grants access to the user's entire account.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the app in Trello's apps admin",
+      "owner": "human",
+      "detail": "Sign in and create a new app (Power-Up) record. Non-Power-Up integrations still need one to hold their OAuth client.",
+      "url": "https://trello.com/apps/admin",
+      "duration": "10 min",
+      "evidence": { "label": "tested", "sourceIds": ["s3", "s2"], "note": "trello.com/apps/admin returned HTTP 200 on 2026-10-20; we did not sign in or see the form." }
+    },
+    {
+      "title": "Pick OAuth 2.0 or the legacy flow",
+      "owner": "agent",
+      "detail": "Prefer OAuth 2.0 for granular scopes and expiring tokens. The legacy API key + token flow is simpler but hands you a token for the whole account. Legacy tokens and OAuth 1.0 were described as to be deprecated later in RFC-89, with no date confirmed.",
+      "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-getting-started/",
+      "duration": "15 min",
+      "evidence": { "label": "unverified", "sourceIds": ["s6", "s5"], "note": "The deprecation plan is from the RFC thread, not current docs." }
+    },
+    {
+      "title": "Configure a confidential OAuth 2.0 client",
+      "owner": "human",
+      "detail": "On the app's OAuth 2.0 tab create a confidential client, add callback URLs and tick scopes. Copy the client ID and secret.",
+      "url": "https://trello.com/apps/admin",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Implement the PKCE code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://auth.atlassian.com/authorize with client_id, scope (e.g. read:member:trello read:board:trello offline_access), redirect_uri, response_type=code, prompt=consent, code_challenge and code_challenge_method=S256. Exchange at POST https://auth.atlassian.com/oauth/token with the verifier and client secret.",
+      "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-confidential-client-usage",
+      "duration": "2–3 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The doc also shows https://auth.atlassian.com/authorize/oauth/token in two steps, which looks like a typo." }
+    },
+    {
+      "title": "Handle expiring tokens",
+      "owner": "agent",
+      "detail": "Access tokens last 1 hour and refresh tokens 90 days by default. Refresh tokens are single-use: persist the new one after every refresh.",
+      "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-confidential-client-usage",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Add rate-limit handling",
+      "owner": "agent",
+      "detail": "Stay under 300 requests/10s per API key and 100 requests/10s per token. On 429 with API_TOKEN_LIMIT_EXCEEDED or API_KEY_LIMIT_EXCEEDED, back off; more than 200 429s blocks the key for the rest of the window.",
+      "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    },
+    {
+      "title": "Register personal-data storage and poll the compliance API",
+      "owner": "agent",
+      "detail": "Declare whether the app stores personal data. If it does, poll /1/plugins/{idPlugin}/compliance/memberPrivacy at least every 14 days (max 6 requests/min) and delete data for deleted accounts or revoked tokens.",
+      "url": "https://developer.atlassian.com/cloud/trello/guides/compliance/personal-data-storage-gdpr/",
+      "duration": "2–4 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Migrate existing legacy tokens (if any)",
+      "owner": "agent",
+      "detail": "Use the token exchange endpoint to swap a Trello Auth token for OAuth 2.0 tokens. The original token is revoked; for Power-Up clients only the user's current workspace migrates.",
+      "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-for-existing-apps",
+      "duration": "2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s8"], "note": null }
+    },
+    {
+      "title": "Ship to users",
+      "owner": "human",
+      "detail": "Share the connect link. No Trello review is needed for an OAuth integration.",
+      "url": null,
+      "duration": "minutes",
+      "evidence": { "label": "inferred", "sourceIds": ["s2", "s1"], "note": "No review step is documented." }
+    }
+  ],
+  "agentCanDo": [
+    "Choose between OAuth 2.0 and the legacy token flow and pick scopes",
+    "Implement the PKCE code flow, single-use refresh rotation and token storage",
+    "Build the compliance API poller and data-deletion job",
+    "Add per-key and per-token rate-limit handling",
+    "Migrate legacy tokens via the token exchange endpoint"
+  ],
+  "humanMustDo": [
+    "Sign in to trello.com/apps/admin and create the app",
+    "Create the OAuth 2.0 client and copy the client secret",
+    "Declare whether the app stores personal data"
+  ],
+  "blockers": [
+    {
+      "symptom": "401 'invalid token' from the API",
+      "cause": "The user revoked the token in account settings, a legacy token expired, or a migrated legacy token was revoked by the exchange.",
+      "fix": "Prompt the user to re-authorize.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": "Observed the 'invalid token' body when calling /1/members/me without credentials." }
+    },
+    {
+      "symptom": "Legacy authorize redirect is blocked",
+      "cause": "return_url doesn't match an allowed origin, or no origins are configured.",
+      "fix": "Add the origin (wildcards and localhost supported) on the Trello Auth tab.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "symptom": "Agent can only see one workspace's boards",
+      "cause": "Power-Up OAuth 2.0 clients are workspace-restricted for board and workspace scopes.",
+      "fix": "Have users authorize per workspace, or use a non-Power-Up confidential client, which isn't restricted.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "Token exchange returns 403",
+      "cause": "The API key isn't linked to the Power-Up, or no OAuth 2.0 client is configured.",
+      "fix": "Link the key to the app and create the OAuth 2.0 client first.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Users see your app flagged as storing personal data and not in compliance",
+      "cause": "The compliance API hasn't been polled in the last 14 days, or storage wasn't registered.",
+      "fix": "Register storage status and poll at least every 14 days.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "symptom": "429 API_KEY_LIMIT_EXCEEDED during bulk syncs",
+      "cause": "All tokens share 300 requests/10s per API key.",
+      "fix": "Throttle per key across users and use webhooks instead of polling.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Trello OAuth 2.0 runs on Atlassian's auth server (auth.atlassian.com) and token exchange fails with 401 if the user has no linked Atlassian account.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Trello says OAuth 2.0 'may not be the ideal authorization mechanism' for bots, automation or server-to-server integrations, which matters for background agents.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "text": "Legacy tokens can be created with expiration=never and grant access to the whole account, so they must be stored securely.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "For Power-Up clients, read:board:trello and write:board:trello are always enabled.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "The compliance endpoint is limited to 6 requests per minute and returns at most 1,000 records per call.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Trello docs: OAuth 2.0 confidential client usage", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-confidential-client-usage" },
+    { "id": "s2", "title": "Trello docs: OAuth 2.0 client configuration", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-client-configuration" },
+    { "id": "s3", "title": "Trello docs: Authorization (API key, token, OAuth 1.0)", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/" },
+    { "id": "s4", "title": "Trello docs: Personal data storage and GDPR", "url": "https://developer.atlassian.com/cloud/trello/guides/compliance/personal-data-storage-gdpr/" },
+    { "id": "s5", "title": "Trello docs: OAuth 2.0 getting started", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-getting-started/" },
+    { "id": "s6", "title": "Atlassian Developer Community: RFC-89 Introducing OAuth2 to Trello", "url": "https://community.developer.atlassian.com/t/rfc-89-introducing-oauth2-to-trello/90359" },
+    { "id": "s7", "title": "Trello docs: Rate limits", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/" },
+    { "id": "s8", "title": "Trello docs: OAuth 2.0 for existing apps", "url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/oauth-2-for-existing-apps" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://trello.com/apps/admin and https://trello.com/power-ups/admin: HTTP 200",
+      "GET https://api.trello.com/1/members/me without credentials: 400 'invalid token'",
+      "GET https://trello.com/1/authorize with a bogus key: 404"
+    ],
+    "openQuestions": [
+      "When legacy API key tokens and OAuth 1.0a will be deprecated",
+      "Whether OAuth 2.0 clients can be added to existing Power-Ups or only to new ones",
+      "Whether the 300/100 per-10s rate limits apply unchanged to OAuth 2.0 tokens",
+      "Whether listing in the public Power-Up directory involves a separate review"
+    ]
+  }
+}

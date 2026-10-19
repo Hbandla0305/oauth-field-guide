@@ -1,0 +1,247 @@
+{
+  "app": {
+    "name": "DigitalOcean",
+    "slug": "digitalocean",
+    "website": "https://www.digitalocean.com",
+    "developerPortal": "https://cloud.digitalocean.com/account/api/applications",
+    "category": "Cloud hosting"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth API reference", "url": "https://docs.digitalocean.com/reference/api/oauth/" },
+    { "kind": "scopes", "label": "Token scopes reference", "url": "https://docs.digitalocean.com/reference/api/scopes/" },
+    { "kind": "console", "label": "Register an OAuth application", "url": "https://cloud.digitalocean.com/account/api/applications/new" },
+    { "kind": "api", "label": "DigitalOcean API reference", "url": "https://docs.digitalocean.com/reference/api/reference/" },
+    { "kind": "changelog", "label": "Release note: 5,000 requests/hour per OAuth token", "url": "https://docs.digitalocean.com/notes/changelog/update-ratelimit-to-5k" }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Register an OAuth application in the DigitalOcean control panel and any DigitalOcean user can authorize it the same day, with no review, granular resource:action scopes, PKCE and a published authorization-server metadata document. The main gotchas are single-use rotating refresh tokens and that each token is tied to one team.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": { "min": 0.25, "max": 0.75 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1"],
+        "note": "Standard authorization-code flow; loopback redirect URIs match any port, which makes local testing easy."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "A confidential web app requesting granular read scopes (and create/update where the agent acts) for the user's selected team.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1"],
+        "note": "The OAuth reference describes registration and use with no review or approval step."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A DigitalOcean account that can access the control panel",
+      "why": "Confidential OAuth applications are registered under Account → API → Applications.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Whether an account needs a payment method on file before it can register apps wasn't documented." }
+    },
+    {
+      "item": "A callback URL",
+      "why": "redirect_uri must match a callback URL provided during registration. Loopback URIs (127.0.0.1, [::1], localhost) match on any port.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "Atomic storage for refresh tokens",
+      "why": "A refresh token works exactly once and rotates, so concurrent refreshes can lock you out.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Granular read scopes",
+      "examples": ["droplet:read", "app:read", "database:read", "kubernetes:read", "billing:read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "View resources without credentials. kubernetes:read excludes cluster credentials and database:read excludes database credentials.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "tier": "Granular write and credential scopes",
+      "examples": ["droplet:create", "app:create", "database:view_credentials", "kubernetes:access_cluster", "app:access_console"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Create resources, read database credentials, download kubeconfigs or open consoles. Same self-serve path, but a much bigger trust ask on the consent screen.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "tier": "Global aliases",
+      "examples": ["api:read", "api:write"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read Only or Full Access to the whole API, expanding automatically as endpoints are added.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "Documented for API tokens; that OAuth apps can request these exact aliases is our inference." }
+    },
+    {
+      "tier": "User-chosen (scope omitted)",
+      "examples": ["(no scope parameter)"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "If you omit scope, the consent screen offers 'Manage permissions' so the user picks granular scopes themselves. Your agent must then cope with whatever it gets.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to the control panel",
+      "owner": "human",
+      "detail": "Log in with the account (ideally a company team owner) that should own the OAuth application.",
+      "url": "https://cloud.digitalocean.com/login",
+      "duration": "2 min",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "The new-application URL redirected to this login page on 2026-10-20." }
+    },
+    {
+      "title": "Register a new OAuth application",
+      "owner": "human",
+      "detail": "Account → API → Applications → Register OAuth Application. Enter name, homepage, description and callback URL.",
+      "url": "https://cloud.digitalocean.com/account/api/applications/new",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Exact form fields beyond the callback URL weren't listed in the reference." }
+    },
+    {
+      "title": "Store client ID and secret",
+      "owner": "human",
+      "detail": "Copy both into your secret manager.",
+      "url": "https://cloud.digitalocean.com/account/api/applications",
+      "duration": "2 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Pick granular scopes",
+      "owner": "agent",
+      "detail": "Map agent actions to resource:action scopes from the scopes reference (for example droplet:read, monitoring:read, app:read) and avoid credential scopes unless needed.",
+      "url": "https://docs.digitalocean.com/reference/api/scopes/",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Implement authorize with PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://cloud.digitalocean.com/v1/oauth/authorize with client_id, redirect_uri, response_type=code, scope, state and an S256 code_challenge.",
+      "url": "https://docs.digitalocean.com/reference/api/oauth/",
+      "duration": "15 min",
+      "evidence": { "label": "tested", "sourceIds": ["s1", "s4"], "note": "S256 and the endpoints appear in the live authorization-server metadata." }
+    },
+    {
+      "title": "Implement token exchange and rotation",
+      "owner": "agent",
+      "detail": "POST to https://cloud.digitalocean.com/v1/oauth/token with grant_type=authorization_code (client_secret_post). Save access_token, refresh_token and info.team_uuid. Refresh with grant_type=refresh_token and replace both tokens atomically.",
+      "url": "https://docs.digitalocean.com/reference/api/oauth/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Call the API",
+      "owner": "agent",
+      "detail": "Use Authorization: Bearer <token> against https://api.digitalocean.com/v2 (for example GET /v2/droplets). Remember each token acts on one team.",
+      "url": "https://docs.digitalocean.com/reference/api/reference/",
+      "duration": "15 min",
+      "evidence": { "label": "inferred", "sourceIds": ["s1", "s5"], "note": null }
+    },
+    {
+      "title": "Test with another account and team",
+      "owner": "human",
+      "detail": "Authorize from a different DigitalOcean account and team; check the consent screen and that team_name matches what the user picked.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose least-privilege resource:action scopes",
+    "Write the PKCE authorize, callback and refresh code",
+    "Implement atomic refresh-token rotation",
+    "Register public clients via the dynamic registration endpoint",
+    "Read the authorization-server metadata to configure the client"
+  ],
+  "humanMustDo": [
+    "Sign in and register the confidential OAuth application",
+    "Store the client secret",
+    "Test consent from a second account and team"
+  ],
+  "blockers": [
+    {
+      "symptom": "Token endpoint returns {\"error\":\"invalid_request\",\"error_description\":\"The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.\"}",
+      "cause": "Bad or reused code, or redirect_uri differing from the authorize request.",
+      "fix": "Send the identical redirect_uri and exchange each code once.",
+      "evidence": { "label": "tested", "sourceIds": ["s4"], "note": "Observed with dummy values on 2026-10-20." }
+    },
+    {
+      "symptom": "Refresh fails with invalid grant and the user has to reconnect",
+      "cause": "A refresh token can be used exactly once; two workers refreshing at the same time leaves one with a dead token, and using it invalidates the old access token.",
+      "fix": "Serialize refreshes per connection with a lock and persist the new pair before using it.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact error body on a reused refresh token wasn't documented." }
+    },
+    {
+      "symptom": "Agent can't see the user's other projects or droplets",
+      "cause": "The token is issued for one team (info.team_uuid/team_name in the token response).",
+      "fix": "Let the user connect once per team and store tokens per team_uuid.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "The reference shows team info per token but doesn't explicitly say tokens are limited to one team." }
+    },
+    {
+      "symptom": "403 on some endpoints despite a successful connect",
+      "cause": "The user unticked scopes in 'Manage permissions', or you omitted scope and they chose a narrow set.",
+      "fix": "Check the scope field in the token response and degrade gracefully or ask for reconsent.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "HTTP 429 during bulk reads",
+      "cause": "The API is limited to 5,000 requests per hour per OAuth token.",
+      "fix": "Cache, paginate efficiently, and back off on 429.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "Release note last verified 2021; a per-minute limit may also apply." }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 30 days for confidential clients and one hour for public clients. Refresh tokens are single-use and rotate.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Public clients (CLIs, desktop apps, MCP servers) can self-register with POST https://cloud.digitalocean.com/v1/oauth/register and get a client_id without a secret; up to five redirect URIs.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+    },
+    {
+      "text": "DigitalOcean publishes RFC 8414 metadata at /.well-known/oauth-authorization-server with PKCE S256 and a registration endpoint, which suits MCP-style agent clients.",
+      "evidence": { "label": "tested", "sourceIds": ["s4"], "note": "Fetched live on 2026-10-20; client_id_metadata_document_supported is false." }
+    },
+    {
+      "text": "Revoke tokens with https://cloud.digitalocean.com/v1/oauth/revoke when a user disconnects.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Granular scopes separate viewing a resource from viewing its credentials (for example database:read vs database:view_credentials), so an agent can inspect infrastructure without holding secrets.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "DigitalOcean docs: OAuth API", "url": "https://docs.digitalocean.com/reference/api/oauth/" },
+    { "id": "s2", "title": "DigitalOcean docs: Token scopes", "url": "https://docs.digitalocean.com/reference/api/scopes/" },
+    { "id": "s3", "title": "DigitalOcean release note: rate limit per OAuth token raised to 5,000/hour", "url": "https://docs.digitalocean.com/notes/changelog/update-ratelimit-to-5k" },
+    { "id": "s4", "title": "DigitalOcean OAuth authorization server metadata", "url": "https://cloud.digitalocean.com/.well-known/oauth-authorization-server" },
+    { "id": "s5", "title": "DigitalOcean API reference", "url": "https://docs.digitalocean.com/reference/api/reference/" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://cloud.digitalocean.com/.well-known/oauth-authorization-server: issuer https://cloud.digitalocean.com, authorize/token/register/revoke endpoints, PKCE S256, auth methods client_secret_post and none",
+      "GET https://cloud.digitalocean.com/account/api/applications/new: 302 to /login",
+      "POST https://cloud.digitalocean.com/v1/oauth/token with dummy values: invalid_request 'The provided authorization grant is invalid...'"
+    ],
+    "openQuestions": [
+      "Whether OAuth apps can request api:read / api:write aliases, or only granular scopes",
+      "Whether a token can ever span more than one team",
+      "Current per-minute rate limit for OAuth tokens (only the 5,000/hour note was found)",
+      "Whether an account must have a verified payment method to register an OAuth app",
+      "Whether DigitalOcean restricts or reviews apps with many users"
+    ]
+  }
+}

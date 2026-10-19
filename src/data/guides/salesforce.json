@@ -1,0 +1,524 @@
+{
+  "app": {
+    "name": "Salesforce",
+    "slug": "salesforce",
+    "website": "https://www.salesforce.com",
+    "developerPortal": "https://developer.salesforce.com",
+    "category": "CRM"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OpenID Connect discovery document",
+      "url": "https://login.salesforce.com/.well-known/openid-configuration"
+    },
+    {
+      "kind": "console",
+      "label": "External Client Apps: distribution states (Trailhead)",
+      "url": "https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/use-external-client-apps-when-connected-apps-wont-do"
+    },
+    {
+      "kind": "review",
+      "label": "Packaging and distributing External Client Apps (Trailhead)",
+      "url": "https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/package-and-distribute-external-client-apps"
+    },
+    {
+      "kind": "api",
+      "label": "REST API supported editions",
+      "url": "https://developer.salesforce.com/docs/platform/api-rest/guide/intro-rest-compatible-editions.html"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "No review is required to let other orgs connect, but since Spring '26 new integrations are built as External Client Apps, which are local to your org unless you ship them in a 2GP managed package, and since September 2025 users can't authorize an app that isn't installed in their org without a special permission. In practice every customer's admin installs your package (or grants 'Approve Uninstalled Connected Apps'), and the customer needs an edition with API access (Enterprise and up, or a paid add-on on Professional).",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "A free Developer Edition org plus a Local External Client App with the api and refresh_token scopes. No review or verification for your own org."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 days",
+      "hours": {
+        "min": 24,
+        "max": 72
+      },
+      "assumes": "A Packaged External Client App in a self-built 2GP managed package that each customer admin installs via URL, with no AppExchange listing; an AppExchange listing adds a paid security review of several weeks.",
+      "waitingOn": "Nothing from Salesforce for unlisted distribution. Each customer's admin installing the package (or granting the bypass permission) before their users can connect.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s2"
+        ],
+        "note": "The range covers setting up Dev Hub + namespace orgs, packaging, and promoting a version. Customer admin turnaround is outside your control and not included."
+      }
+    },
+    "cost": "Free to build and distribute unlisted. Customers need API access (included in Enterprise, Performance, Unlimited, Developer; paid add-on for Professional). AppExchange security review is a paid, optional step for listing."
+  },
+  "prerequisites": [
+    {
+      "item": "Two free Developer Edition orgs: one with Dev Hub enabled, one with a registered namespace",
+      "why": "A Packaged External Client App lives in a 2GP managed package, which needs a Dev Hub and a linked namespace. Enabling Dev Hub can't be undone.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "The Salesforce CLI (sf)",
+      "why": "Used to retrieve the External Client App metadata, create the package and promote package versions.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Customers on an edition with API access, with users who have the API Enabled permission",
+      "why": "Group, Essentials and Professional editions don't include API access by default; Professional can buy it as an add-on. Calls from an org without it fail with API_DISABLED_FOR_ORG.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "From search snippets of Salesforce's REST API 'Supported Editions' page; the page returned HTTP 403 to our fetcher so we could not read it directly."
+      }
+    },
+    {
+      "item": "An HTTPS callback URL",
+      "why": "Configured on the External Client App's OAuth settings and matched on the authorize and token calls.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity only",
+      "examples": [
+        "openid",
+        "profile",
+        "email",
+        "id"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Sign-in and user identity. Still subject to the installed-app restriction in the customer's org.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Scopes observed in scopes_supported of login.salesforce.com's OIDC discovery document."
+      }
+    },
+    {
+      "tier": "Core data access (what most agents need)",
+      "examples": [
+        "api",
+        "refresh_token",
+        "offline_access"
+      ],
+      "reviewRequired": false,
+      "time": "1–3 days (packaging + customer install)",
+      "impact": "Read and write records through REST/SOAP/Bulk as the connecting user, limited by that user's profile and sharing rules. No Salesforce review, but the customer needs API access in their edition.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Nango lists api + refresh_token/offline_access as the minimum scopes."
+      }
+    },
+    {
+      "tier": "Product-specific APIs",
+      "examples": [
+        "cdp_query_api",
+        "pardot_api",
+        "chatter_api",
+        "einstein_gpt_api",
+        "mcp_api"
+      ],
+      "reviewRequired": false,
+      "time": "Depends on customer licences",
+      "impact": "Only useful if the customer owns the matching product (Data Cloud, Account Engagement, etc.). An mcp_api scope is advertised.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Scope names are tested from the discovery document; the licensing dependency is our inference."
+      }
+    },
+    {
+      "tier": "Full access",
+      "examples": [
+        "full"
+      ],
+      "reviewRequired": false,
+      "time": "Same as core",
+      "impact": "Grants everything the user can access. Customer admins and AppExchange security reviewers are likely to push back; prefer api.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign up for Developer Edition orgs",
+      "owner": "human",
+      "detail": "Create two free Developer Edition orgs. Enable Dev Hub in the first (irreversible) and register a namespace in the second, then link the namespace from the Dev Hub's Namespace Registries.",
+      "url": "https://developer.salesforce.com/signup",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the External Client App",
+      "owner": "human",
+      "detail": "In the Dev Hub: Setup > App Manager > New External Client App. Set Distribution State to Packaged (Local works only inside this org), enable OAuth, set the callback URL, add api and refresh_token/offline_access, enable Authorization Code and Credentials Flow, keep PKCE and secret requirements on.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": "New Connected Apps can't be created by default since Spring '26."
+      }
+    },
+    {
+      "title": "Copy credentials and set the refresh token policy",
+      "owner": "human",
+      "detail": "Settings tab > OAuth Settings > Consumer Key and Secret (identity verification may be asked). On the Policies tab, set Refresh Token Policy to 'valid until revoked' if you need long-lived access.",
+      "url": null,
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the OAuth web server flow",
+      "owner": "agent",
+      "detail": "Authorize at https://login.salesforce.com/services/oauth2/authorize (test.salesforce.com for sandboxes, or the customer's My Domain), exchange the code at /services/oauth2/token with PKCE, and store instance_url per connection: every API call goes to that customer-specific host.",
+      "url": "https://login.salesforce.com/.well-known/openid-configuration",
+      "duration": "2–4 h",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s6",
+          "s1"
+        ],
+        "note": "Endpoints observed in the discovery document; instance_url handling is from Nango's guide."
+      }
+    },
+    {
+      "title": "Generate package metadata",
+      "owner": "agent",
+      "detail": "Write package.xml with ExternalClientApplication, ExtlClntAppOauthSettings and ExtlClntAppOauthConfigurablePolicies, retrieve with sf project retrieve start, and configure sfdx-project.json with the namespace and package alias.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "OAuth consumer credentials are global settings and are not packaged."
+      }
+    },
+    {
+      "title": "Create and promote a managed package version",
+      "owner": "human",
+      "detail": "Run sf package create --package-type Managed, then sf package version create, then promote the version so it can be installed in production orgs. Keep the install URL.",
+      "url": null,
+      "duration": "30–60 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Nango shows create/version steps; the need to promote before production installs is our understanding of 2GP and wasn't stated in the sources we opened."
+      }
+    },
+    {
+      "title": "Write customer admin install instructions",
+      "owner": "agent",
+      "detail": "Explain: install the package via URL (admins only), set the app's policies (permitted users, profiles/permission sets), and confirm API access in their edition. Offer the fallback of temporarily granting 'Approve Uninstalled Connected Apps'.",
+      "url": null,
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Customer admin installs the package",
+      "owner": "wait",
+      "detail": "Each customer org's admin installs your package before end users can authorize. This is on the customer's timeline.",
+      "url": null,
+      "duration": "minutes to weeks (customer-dependent)",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Optional: AppExchange listing and security review",
+      "owner": "wait",
+      "detail": "Join the partner program, submit for security review and list on AppExchange for discoverability and customer trust. Not needed to let customers connect.",
+      "url": "https://partners.salesforce.com",
+      "duration": "several weeks",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "Search snippets of the ISVforce guide mention a report about 3–4 weeks after submission and a fee for paid apps; the pages returned HTTP 403 so we could not confirm the current figures."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the web server flow with PKCE, instance_url storage and token refresh",
+    "Generate package.xml and sfdx-project.json for the External Client App",
+    "Run sf CLI packaging commands once a human has authenticated the Dev Hub",
+    "Write customer admin install and permission instructions",
+    "Handle API_DISABLED_FOR_ORG and daily-limit errors gracefully"
+  ],
+  "humanMustDo": [
+    "Sign up for Developer Edition orgs, enable Dev Hub and register a namespace",
+    "Create the External Client App and copy the consumer key and secret",
+    "Log in to the Dev Hub from the CLI and promote package versions",
+    "Customer side: an admin installs the package and assigns access",
+    "Optionally pay for and pass the AppExchange security review"
+  ],
+  "blockers": [
+    {
+      "symptom": "OAUTH_APPROVAL_ERROR_GENERIC with error=invalid_client&error_description=app+must+be+installed+into+org",
+      "cause": "Since September 2025, users can't authorize a connected app that isn't installed in their org unless they hold 'Approve Uninstalled Connected Apps' (or 'Use Any API Client').",
+      "fix": "Have the customer admin install your package, or temporarily grant the permission to the authorizing user, authorize, then remove it.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": "Error string reported by a vendor (MoveData) support page."
+      }
+    },
+    {
+      "symptom": "No 'New Connected App' option in App Manager, or creation is refused",
+      "cause": "Spring '26 disabled creation of new Connected Apps by default in all orgs, in both UI and API.",
+      "fix": "Create an External Client App instead. Support can grant a temporary exception, which Salesforce says will go away.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7",
+          "s1"
+        ],
+        "note": "Third-party vendor docs; we didn't open Salesforce's own release note."
+      }
+    },
+    {
+      "symptom": "Users in other orgs can't use your External Client App at all",
+      "cause": "Distribution State is Local, which works only in the org where the app was created. Sandboxes support only Local.",
+      "fix": "Create the app with Distribution State Packaged in a non-sandbox org and distribute it in a 2GP managed package.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "API_DISABLED_FOR_ORG on API calls after a successful login",
+      "cause": "The customer's edition (Group, Essentials, Professional without add-on) doesn't include API access, or the user lacks API Enabled.",
+      "fix": "Tell the customer to upgrade or buy the API add-on, and to assign API Enabled to integration users.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "From search snippets of Salesforce's supported-editions page, which returned 403 to our fetcher."
+      }
+    },
+    {
+      "symptom": "Integration stops working after a few hours or days",
+      "cause": "The app's refresh token policy expires tokens, or the admin revoked the token or changed app policies.",
+      "fix": "Set Refresh Token Policy to 'valid until revoked' and handle invalid_grant by prompting reconnection.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Device-flow authorization blocked even for users who previously authorized",
+      "cause": "Uninstalled apps using the OAuth 2.0 device flow are blocked for all users under the September 2025 change.",
+      "fix": "Use the web server flow and have the app installed in the customer org.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "Seen in search-result summaries of vendor posts; not confirmed in a page we opened."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Every customer has its own instance_url (My Domain host). Store it per connection and send API calls there, not to login.salesforce.com. Sandboxes authorize via test.salesforce.com.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "OAuth consumer credentials are 'global settings' kept in your long-lived org and not packaged. A subscriber org can reuse them or generate its own, which breaks the link to your app's global settings.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Connected Apps are 'globally available by default'; External Client Apps are 'local by default'. Existing Connected Apps keep working, and Salesforce lists no deprecation date for them.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The agent acts with the connecting user's permissions and sharing. A dedicated integration user per customer org is common, which affects which data the agent can see.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [],
+        "note": null
+      }
+    },
+    {
+      "text": "Customer orgs have a daily API request allocation shared by all integrations, so a chatty agent can exhaust it.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "General Salesforce knowledge; the API limits page wasn't opened (developer.salesforce.com returned 403)."
+      }
+    },
+    {
+      "text": "Admins can enable API Access Control (requested through the account executive), which blocks uninstalled apps outright and restricts which users can use each app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Salesforce exposes dynamic client registration and introspection endpoints, plus mcp_api and a2a_api scopes, in its OIDC discovery document.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Observed 2026-10-20."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Nango docs: Salesforce OAuth app setup (External Client Apps, Local and Packaged)",
+      "url": "https://nango.dev/docs/api-integrations/salesforce/salesforce-api-oauth-app-setup.md"
+    },
+    {
+      "id": "s2",
+      "title": "Soliant Consulting: Salesforce Connected App security changes (Sept 2025)",
+      "url": "https://www.soliantconsulting.com/blog/salesforce-connected-app-security-changes-sept2025/"
+    },
+    {
+      "id": "s3",
+      "title": "MoveData docs: Salesforce connected app usage restrictions",
+      "url": "https://docs.movedata.io/troubleshooting/connection-and-authentication/salesforce-connected-app-usage-restrictions/"
+    },
+    {
+      "id": "s4",
+      "title": "Trailhead: Package and distribute External Client Apps",
+      "url": "https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/package-and-distribute-external-client-apps"
+    },
+    {
+      "id": "s5",
+      "title": "Trailhead: Use External Client Apps when Connected Apps won't do",
+      "url": "https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/use-external-client-apps-when-connected-apps-wont-do"
+    },
+    {
+      "id": "s6",
+      "title": "Salesforce OpenID Connect discovery document",
+      "url": "https://login.salesforce.com/.well-known/openid-configuration"
+    },
+    {
+      "id": "s7",
+      "title": "Striim docs: Salesforce Connected Apps and External Client Apps",
+      "url": "https://striim.com/docs/en/salesforce-connected-apps-and-external-client-apps.html"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://login.salesforce.com/.well-known/openid-configuration: issuer https://login.salesforce.com, authorize /services/oauth2/authorize, token /services/oauth2/token, registration and introspection endpoints, scopes incl. api, refresh_token, offline_access, full, mcp_api",
+      "GET https://login.salesforce.com/services/oauth2/authorize with a bogus client_id: HTTP 400"
+    ],
+    "openQuestions": [
+      "Whether an unlisted, promoted 2GP package with only an External Client App can be installed in any production org with no Salesforce involvement (Salesforce's packaging docs returned 403)",
+      "Current AppExchange security review fee and typical duration in 2026",
+      "Whether a Packaged External Client App can be authorized in a subscriber org without installing the package when the user holds 'Approve Uninstalled Connected Apps'",
+      "Exact official wording of the Spring '26 connected app creation change (only third-party docs were read)"
+    ]
+  }
+}

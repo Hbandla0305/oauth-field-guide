@@ -1,0 +1,526 @@
+{
+  "app": {
+    "name": "Microsoft Advertising",
+    "slug": "microsoft-advertising",
+    "website": "https://ads.microsoft.com",
+    "developerPortal": "https://ads.microsoft.com/cc/Settings/DevSettings",
+    "category": "Advertising"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Register an application",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-register"
+    },
+    {
+      "kind": "scopes",
+      "label": "Request user consent (msads.manage scope)",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-consent"
+    },
+    {
+      "kind": "api",
+      "label": "Get started and developer token",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/get-started"
+    },
+    {
+      "kind": "api",
+      "label": "Services protocol and throttling",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/services-protocol"
+    },
+    {
+      "kind": "console",
+      "label": "Developer settings (developer token)",
+      "url": "https://ads.microsoft.com/cc/Settings/DevSettings"
+    },
+    {
+      "kind": "review",
+      "label": "Entra publisher verification",
+      "url": "https://learn.microsoft.com/en-us/entra/identity-platform/publisher-verification-overview"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "There is no Microsoft Advertising app review: you register a multi-tenant Entra app, request the msads.manage scope, and have a Super Admin request a universal developer token that works for any advertiser. The friction is the SOAP-based Bing Ads API, a developer token with no published approval timeline, and Entra consent policies that can block an unverified multi-tenant app in customers' work tenants until you complete publisher verification.",
+    "timeToDev": {
+      "range": "1–3 hours",
+      "hours": {
+        "min": 1,
+        "max": 3
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s3"
+        ],
+        "note": "Sandbox uses a separate sandbox account and the universal sandbox developer token BBD37VB98, so you can make calls without a production token. Time covers Entra registration, consent, token exchange and a first SOAP call."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day–2 weeks",
+      "hours": {
+        "min": 4,
+        "max": 336
+      },
+      "assumes": "A multi-tenant web app with a production universal developer token, reading and managing campaigns and reports for any advertiser; adding Entra publisher verification for smooth consent in work tenants.",
+      "waitingOn": "The production developer token request (no published SLA) and, if you don't already have one, a verified Microsoft AI Cloud Partner Program account for publisher verification. No Microsoft Advertising app review.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s7",
+          "s9"
+        ],
+        "note": "Microsoft doesn't publish a turnaround time for developer tokens; a Microsoft forum moderator said the portal doesn't always show an explicit approved or denied status. Publisher verification takes minutes once Partner Program verification is done, but that verification can take longer."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A production Microsoft Advertising account where you have the Super Admin role",
+      "why": "Developer tokens are requested by a Super Admin from the developer settings page.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A Microsoft Entra work or school account to register the app",
+      "why": "Microsoft's register page says you can no longer register using a personal Microsoft account, and publisher verification needs a work-account registration.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A separate sandbox account for development",
+      "why": "Sandbox and production use separate credentials; sandbox lets you build before you have a production developer token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Sandbox sign-up: https://sandbox.bingads.microsoft.com/"
+      }
+    },
+    {
+      "item": "A Microsoft AI Cloud Partner Program account and a DNS-verified domain (for publisher verification)",
+      "why": "Unverified multi-tenant apps registered after November 2020 can be blocked from user consent in tenants with risk-based step-up consent enabled.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "Optional for personal Microsoft accounts; strongly advisable for agencies and enterprises on work tenants."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Sign-in and refresh",
+      "examples": [
+        "openid",
+        "profile",
+        "offline_access"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Standard Microsoft identity platform scopes. offline_access is what returns a refresh token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Microsoft Advertising management (the only API scope)",
+      "examples": [
+        "https://ads.microsoft.com/msads.manage"
+      ],
+      "reviewRequired": false,
+      "time": "Same day, plus developer token wait",
+      "impact": "One scope covers campaign management, reporting, bulk, ad insight and customer management. What the token can touch is set by the user's role on each account, not by the scope. Calls also need a developer token, CustomerId and CustomerAccountId headers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "There is no read-only scope; least privilege comes from the user's Microsoft Advertising role."
+      }
+    },
+    {
+      "tier": "Legacy scopes (no longer accepted)",
+      "examples": [
+        "https://ads.microsoft.com/ads.manage",
+        "bingads.manage"
+      ],
+      "reviewRequired": false,
+      "time": "Don't use",
+      "impact": "After MFA enforcement, access tokens provisioned with ads.manage or the Live Connect bingads.manage scope are rejected. Users must re-consent with msads.manage.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a sandbox account for development",
+      "owner": "human",
+      "detail": "Sign up for a Microsoft Advertising sandbox account. Use the universal sandbox developer token BBD37VB98 for sandbox calls.",
+      "url": "https://sandbox.bingads.microsoft.com/",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Register a multi-tenant web app in Entra",
+      "owner": "human",
+      "detail": "In Azure portal App registrations, choose New registration, set Supported account types to 'Any Entra ID Tenant + Personal Microsoft accounts', and add your HTTPS redirect URI as a Web platform.",
+      "url": "https://go.microsoft.com/fwlink/?linkid=2083908",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Register a Web app with a client secret for server-side agents; public-client refresh tokens are bound to one device."
+      }
+    },
+    {
+      "title": "Create a client secret",
+      "owner": "human",
+      "detail": "Under Certificates & secrets, add a client secret and copy the value immediately. Track its expiry date.",
+      "url": "https://go.microsoft.com/fwlink/?linkid=2083908",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the consent and token exchange flow",
+      "owner": "agent",
+      "detail": "Redirect to https://login.microsoftonline.com/common/oauth2/v2.0/authorize with scope 'openid offline_access https://ads.microsoft.com/msads.manage' and PKCE, then redeem the code at /common/oauth2/v2.0/token. Store and rotate the refresh token returned on each refresh.",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Discover customer and account IDs",
+      "owner": "agent",
+      "detail": "Call Customer Management GetUser with a nil UserId, then SearchAccounts by UserId to list the accounts and customer IDs the user can access. Store them; most calls need CustomerId and CustomerAccountId headers.",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/get-started",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Request a production universal developer token",
+      "owner": "human",
+      "detail": "Sign in as Super Admin on the developer settings page, choose the user to associate with the token, and select Request Token. One universal token serves all your users.",
+      "url": "https://ads.microsoft.com/cc/Settings/DevSettings",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The old Developer Portal page was replaced by this page from May 31, 2025."
+      }
+    },
+    {
+      "title": "Wait for the developer token",
+      "owner": "wait",
+      "detail": "Microsoft doesn't publish an approval timeline. Confirm the token works with a GetUser call against production; Error 105 'Authentication failed' can mean it's not approved or not linked.",
+      "url": null,
+      "duration": "Minutes to days",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "From a Microsoft Q&A thread, not official docs."
+      }
+    },
+    {
+      "title": "Complete Entra publisher verification",
+      "owner": "human",
+      "detail": "Set a publisher domain on the app (not *.onmicrosoft.com), link a verified Microsoft AI Cloud Partner Program Partner One ID, and mark the app as publisher verified so work-tenant users see the blue badge and aren't blocked.",
+      "url": "https://learn.microsoft.com/en-us/entra/identity-platform/publisher-verification-overview",
+      "duration": "Minutes if partner account is verified; days if not",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle throttling and switch endpoints to production",
+      "owner": "agent",
+      "detail": "Point to production WSDL addresses, retry error 117 CallRateExceeded after 60 seconds, wait on 207 ConcurrentRequestOverLimit for reports, and back off up to 15 minutes on Bulk 4204.",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/services-protocol",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Generate the authorize URL with msads.manage, offline_access and PKCE",
+    "Write the token exchange and refresh-token rotation code",
+    "Generate SOAP proxies from the WSDLs or wire up a Bing Ads SDK",
+    "Call GetUser and SearchAccounts to map users to accounts",
+    "Implement retry logic for error codes 117, 207 and 4204"
+  ],
+  "humanMustDo": [
+    "Sign in to Azure portal and register the Entra app",
+    "Request the developer token as a Super Admin",
+    "Create the sandbox account",
+    "Complete Partner Program verification and publisher verification",
+    "Rotate the client secret before it expires"
+  ],
+  "blockers": [
+    {
+      "symptom": "Error 105 'Authentication failed' even though OAuth works",
+      "cause": "The developer token isn't approved yet, isn't valid for that environment, or a sandbox token is used against production.",
+      "fix": "Check the token status on the developer settings page and use BBD37VB98 only with sandbox endpoints; contact support if status is unclear.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Reported on Microsoft Q&A; moderator suggested an unapproved or unlinked token."
+      }
+    },
+    {
+      "symptom": "'You don't have the right permissions to request developer tokens' on the developer settings page",
+      "cause": "The signed-in user isn't Super Admin for the account.",
+      "fix": "Sign in with a Super Admin user of the Microsoft Advertising customer.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s8"
+        ],
+        "note": "The Q&A post shows this message even for a selected Super Admin user, with no answer, so other causes are possible."
+      }
+    },
+    {
+      "symptom": "AADSTS650052 when a customer tries to connect",
+      "cause": "The Microsoft Advertising service principal (app ID d42ffc93-c136-491d-b4fd-6f18168c68fd) doesn't exist in the customer's tenant.",
+      "fix": "Ask the customer's Entra admin to POST that appId to Graph /v1.0/servicePrincipals, then grant admin consent to your client ID for the msads.manage scope.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Consent screen says the app is from an unverified publisher, or users can't consent at all",
+      "cause": "Multi-tenant app registered after November 8, 2020 without publisher verification, in a tenant with risk-based step-up consent or a restrictive user consent policy.",
+      "fix": "Complete publisher verification, or have the customer's admin grant tenant-wide admin consent.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_request 'Public clients can't send a client secret.'",
+      "cause": "Using the nativeclient redirect URI (public client) together with a client secret, or refreshing a token issued without a secret.",
+      "fix": "Register a Web platform redirect URI and use a client secret consistently for server-side agents.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Old tokens suddenly rejected by the API",
+      "cause": "Tokens were issued with ads.manage or bingads.manage; MFA enforcement accepts only msads.manage tokens.",
+      "fix": "Prompt every user to re-consent with https://ads.microsoft.com/msads.manage and check the token response scope includes it.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last about an hour. Refresh tokens have no fixed lifetime (Microsoft cites 90 days for public clients) and can be invalidated at any time, for example on password change, so handle invalid_grant by sending the user back through consent.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Users can now also sign in with Google OAuth: you exchange a Google token and send an IdentityProvider: Google header. Developer token and permission checks are unchanged.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The Bing Ads API is SOAP-first: element order in the request body must match the WSDL, and XML is case-sensitive. Official SDKs exist for C#, Java, PHP and Python.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "A developer token grants no extra permissions; the API sees exactly the accounts and roles the consenting user has in the web UI.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Campaign Management and Ad Insight throttle per user per minute on a 60-second sliding window, but Microsoft doesn't publish the numbers. Bulk and Reporting limits are also internal.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Use the 'common' tenant so both personal Microsoft accounts and work accounts can connect.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Register an application - Microsoft Advertising API",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-register"
+    },
+    {
+      "id": "s2",
+      "title": "Request user consent - Microsoft Advertising API",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-consent"
+    },
+    {
+      "id": "s3",
+      "title": "Get Started With the Bing Ads API",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/get-started"
+    },
+    {
+      "id": "s4",
+      "title": "Get access and refresh tokens - Microsoft Advertising API",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens"
+    },
+    {
+      "id": "s5",
+      "title": "Multi-factor authentication requirement - Microsoft Advertising API",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-mfa"
+    },
+    {
+      "id": "s6",
+      "title": "Bing Ads API Services Protocol (throttling)",
+      "url": "https://learn.microsoft.com/en-us/advertising/guides/services-protocol"
+    },
+    {
+      "id": "s7",
+      "title": "Microsoft Q&A: Error 105 - Authentication failed",
+      "url": "https://learn.microsoft.com/en-us/answers/questions/5579905/error-error-105-authentication-failed"
+    },
+    {
+      "id": "s8",
+      "title": "Microsoft Q&A: Developer token issued but no permissions message",
+      "url": "https://learn.microsoft.com/en-us/answers/questions/1392077/i-issued-a-developer-token-in-microsoft-ads-but-it"
+    },
+    {
+      "id": "s9",
+      "title": "Publisher verification overview - Microsoft identity platform",
+      "url": "https://learn.microsoft.com/en-us/entra/identity-platform/publisher-verification-overview"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "Fetched https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration; token endpoint is https://login.microsoftonline.com/common/oauth2/v2.0/token.",
+      "https://developers.ads.microsoft.com/Account returns 301 to https://ads.microsoft.com/cc/settings/devsettings, confirming the old Developer Portal moved.",
+      "https://ads.microsoft.com/cc/Settings/DevSettings resolves and redirects to sign-in."
+    ],
+    "openQuestions": [
+      "Typical approval time for a production universal developer token, and whether new tokens are ever reviewed manually.",
+      "Actual per-minute call limits for Campaign Management and Reporting.",
+      "Whether the 'personal Microsoft account can't register apps' change affects existing registrations.",
+      "Whether Microsoft has any policy restricting AI agents or automated bidding tools using the API."
+    ]
+  }
+}

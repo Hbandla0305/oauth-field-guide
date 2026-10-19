@@ -1,0 +1,283 @@
+{
+  "app": {
+    "name": "Linear",
+    "slug": "linear",
+    "website": "https://linear.app",
+    "developerPortal": "https://linear.app/developers",
+    "category": "Issue tracking"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth 2.0 guide", "url": "https://linear.app/developers/oauth-2-0-authentication" },
+    { "kind": "oauth", "label": "App actor authorization", "url": "https://linear.app/developers/oauth-actor-authorization" },
+    { "kind": "console", "label": "Create an OAuth app", "url": "https://linear.app/settings/api/applications/new" },
+    { "kind": "review", "label": "Integration directory submission", "url": "https://linear.app/developers/integration-directory" },
+    { "kind": "api", "label": "Rate limits", "url": "https://linear.app/developers/rate-limiting" },
+    { "kind": "api", "label": "Agents (developer preview)", "url": "https://linear.app/developers/agents" }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Creating an OAuth app is self-serve, and flipping it to Public lets any workspace install it the same day with no documented review. The required config is the April 2026 refresh-token system (24-hour access tokens, rotating refresh tokens), and agent-style installs with actor=app need a workspace admin to approve them; the integration directory is optional and only for 'formal companies'.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": { "min": 0.25, "max": 1 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s4"],
+        "note": "Create the app (optionally prefilled via a manifest URL), add a redirect URL, run the code flow against your own workspace."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 1, "max": 24 },
+      "assumes": "A Public OAuth app using actor=app for an agent that reads and writes issues; each customer needs a workspace admin to install it. User-actor apps skip the admin step.",
+      "waitingOn": "Nothing — no review. Each customer's workspace admin for actor=app installs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4", "s5"],
+        "note": "The manifest docs describe public distribution with no review step. The agents guide says admin permissions are required to complete an agent install."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Linear workspace, ideally a dedicated one for owning the app",
+      "why": "Linear recommends a separate workspace to manage the OAuth app, since each admin there has access to it.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": null }
+    },
+    {
+      "item": "Redirect callback URLs configured on the app",
+      "why": "The redirect_uri in the token exchange must match the one used in the authorize request.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "Refresh-token storage with rotation",
+      "why": "Access tokens last 24 hours and every refresh returns a new refresh token. All apps were moved to this system on April 1, 2026.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "For agents: webhooks with Agent session events enabled",
+      "why": "The Agents developer preview delivers delegation and mention events through webhooks.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read (default)",
+      "examples": ["read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Always included. Enough for an agent that searches and summarizes issues, projects and comments.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Narrow and broad write",
+      "examples": ["issues:create", "comments:create", "timeSchedule:write", "write"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Narrow scopes cover creating issues or comments. write grants broad mutation access; Linear suggests a narrower scope when possible.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Agent scopes (actor=app, admin installs)",
+      "examples": ["app:assignable", "app:mentionable"],
+      "reviewRequired": false,
+      "time": "Same day per admin",
+      "impact": "Lets users delegate issues to the agent and @mention it. A workspace admin has to complete the install. The APIs are a Developer Preview and may change.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    },
+    {
+      "tier": "Admin",
+      "examples": ["admin"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Admin-level endpoints. Linear says to request it only when absolutely needed, and apps installed with actor=app can't request it.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s7"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a dedicated workspace",
+      "owner": "human",
+      "detail": "Sign in and create (or pick) the workspace that will own the OAuth app.",
+      "url": "https://linear.app",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Draft the app manifest",
+      "owner": "agent",
+      "detail": "Build a JSON manifest with the client name, redirect URLs, webhook settings and distribution: public, then URL-encode it into the manifest query parameter of the create page.",
+      "url": "https://linear.app/developers/oauth-app-manifests",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Create the OAuth app",
+      "owner": "human",
+      "detail": "Open the prefilled create page, review it, toggle Public on, and save. Copy the client ID and secret.",
+      "url": "https://linear.app/settings/api/applications/new",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s4"], "note": "The create URL returned HTTP 200 on 2026-10-20. We didn't sign in." }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://linear.app/oauth/authorize with client_id, redirect_uri, response_type=code, scope (comma-separated), state, and actor=app for agents. Add PKCE (S256) if you want. Exchange the code at https://api.linear.app/oauth/token.",
+      "url": "https://linear.app/developers/oauth-2-0-authentication",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "title": "Handle refresh rotation",
+      "owner": "agent",
+      "detail": "Refresh before the 24-hour expiry and save the new refresh token each time. If a refresh response is lost, replay the original request within the 30-minute grace period.",
+      "url": "https://linear.app/developers/oauth-2-0-authentication",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Optional: wire up agent session webhooks",
+      "owner": "agent",
+      "detail": "Enable Agent session events, request app:assignable and app:mentionable, and respond to delegation and mention events.",
+      "url": "https://linear.app/developers/agents",
+      "duration": "2–4 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    },
+    {
+      "title": "Install into your own workspace",
+      "owner": "human",
+      "detail": "Authorize as a workspace admin and confirm the app appears and can act on issues.",
+      "url": null,
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    },
+    {
+      "title": "Launch to other workspaces",
+      "owner": "human",
+      "detail": "With Public on, share the Connect button. For actor=app, the customer's installer has to be a workspace admin.",
+      "url": null,
+      "duration": "Same day",
+      "evidence": { "label": "inferred", "sourceIds": ["s4", "s7"], "note": "No review step is documented for public distribution." }
+    },
+    {
+      "title": "Optional: prepare the directory submission",
+      "owner": "agent",
+      "detail": "Draft listing copy that follows the sample page, and prepare a 320px colour icon, a 320px white icon and 1–3 showcase images at 1600x1000.",
+      "url": "https://linear.app/developers/integration-directory",
+      "duration": "Half a day",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "title": "Optional: submit to the integration directory",
+      "owner": "wait",
+      "detail": "Submit the form and send assets to integrations@linear.app. Linear accepts integrations it finds useful and built by formal companies.",
+      "url": "https://linear.app/developers/integration-directory",
+      "duration": "Unknown",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": "No review timeline is published." }
+    }
+  ],
+  "agentCanDo": [
+    "Write the OAuth app manifest and the prefilled create URL",
+    "Implement authorize, PKCE, token exchange and refresh rotation",
+    "Build agent session webhook handlers",
+    "Budget GraphQL complexity under the hourly limits",
+    "Draft directory copy and asset specs"
+  ],
+  "humanMustDo": [
+    "Sign in and create the app, toggling Public on",
+    "Install as a workspace admin to test actor=app",
+    "Get each customer's workspace admin to approve agent installs",
+    "Submit to the integration directory if listing"
+  ],
+  "blockers": [
+    {
+      "symptom": "Users in other workspaces can't install the app",
+      "cause": "Apps default to private distribution, which limits them to the creating workspace.",
+      "fix": "Toggle Public on, or set distribution: public in the manifest.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s8"], "note": null }
+    },
+    {
+      "symptom": "Non-admin users can't finish installing the agent",
+      "cause": "Admin permissions are required to complete an agent (actor=app) installation.",
+      "fix": "Ask a workspace admin to install, or use the default user actor for per-user connections.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    },
+    {
+      "symptom": "Token endpoint returns {\"error\":\"invalid_client\",\"error_description\":\"Invalid client: client is invalid\"}",
+      "cause": "Wrong client_id or client_secret, or a rotated secret.",
+      "fix": "Re-copy the credentials from the app settings. Rotating the secret doesn't revoke existing access or refresh tokens.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed by POSTing dummy credentials to https://api.linear.app/oauth/token on 2026-10-20." }
+    },
+    {
+      "symptom": "Connections break with invalid refresh token errors",
+      "cause": "The app saved the old refresh token. Each refresh rotates it.",
+      "fix": "Always store the newest refresh token, and replay within the 30-minute grace window if a response was lost.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Requests rejected for complexity",
+      "cause": "A single query can't exceed 10,000 complexity points, and OAuth apps get 2,000,000 points per hour per user or app user.",
+      "fix": "Paginate with smaller page sizes and request fewer nested fields.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "symptom": "Requesting the admin scope fails for an agent install",
+      "cause": "Apps installed with actor=app can't also request admin.",
+      "fix": "Drop admin, or use a separate user-actor authorization for admin tasks.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 24 hours (expires_in 86399), and refresh tokens rotate on every use. All OAuth apps were migrated to this system on April 1, 2026.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "OAuth apps get 5,000 requests and 2,000,000 complexity points per hour, counted per user or app user. For workspace-level actor=app installs, Linear raises limits based on the workspace's paid seats.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The scaling formula isn't published." }
+    },
+    {
+      "text": "actor=app makes issues and comments appear as the app rather than the user. You can set a display name (createAsUser) and avatar (displayIconUrl) per mutation.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Installed agents don't count as billable users, and developing agents is free. The Agents APIs are a Developer Preview and may change before general availability.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    },
+    {
+      "text": "Use prompt=consent to show the consent screen every time, which lets one user connect several workspaces.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Client-credentials tokens (app actor, 30 days, no refresh) exist for server-to-server use in your own workspace, with up to 1,000 active tokens per scope set.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Linear developers: OAuth 2.0 authentication", "url": "https://linear.app/developers/oauth-2-0-authentication" },
+    { "id": "s2", "title": "Linear developers: OAuth actor authorization", "url": "https://linear.app/developers/oauth-actor-authorization" },
+    { "id": "s3", "title": "Linear developers: Rate limiting", "url": "https://linear.app/developers/rate-limiting" },
+    { "id": "s4", "title": "Linear developers: OAuth app manifests", "url": "https://linear.app/developers/oauth-app-manifests" },
+    { "id": "s5", "title": "Linear: Create OAuth application page", "url": "https://linear.app/settings/api/applications/new" },
+    { "id": "s6", "title": "Linear developers: Integration directory", "url": "https://linear.app/developers/integration-directory" },
+    { "id": "s7", "title": "Linear developers: Agents", "url": "https://linear.app/developers/agents" },
+    { "id": "s8", "title": "Nango: How to register your own Linear API OAuth app", "url": "https://nango.dev/docs/api-integrations/linear/how-to-register-your-own-linear-api-oauth-app" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://linear.app/oauth/authorize: HTTP 200",
+      "POST https://api.linear.app/oauth/token with dummy credentials: {\"error\":\"invalid_client\",\"error_description\":\"Invalid client: client is invalid\"}",
+      "GET https://linear.app/settings/api/applications/new: HTTP 200 (sign-in needed to use it)",
+      "GET https://linear.app/.well-known/oauth-authorization-server: HTML page, not a metadata document"
+    ],
+    "openQuestions": [
+      "Whether non-admin members can authorize user-actor apps in workspaces that restrict integrations",
+      "Whether Linear reviews or can revoke Public apps that aren't in the directory",
+      "Directory review timeline",
+      "How much rate limits scale with paid seats for actor=app installs"
+    ]
+  }
+}

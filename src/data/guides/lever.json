@@ -1,0 +1,538 @@
+{
+  "app": {
+    "name": "Lever",
+    "slug": "lever",
+    "website": "https://www.lever.co",
+    "developerPortal": "https://hire.lever.co/developer/documentation",
+    "category": "Recruiting / ATS"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth for partner integrations",
+      "url": "https://hire.sandbox.lever.co/developer/oauth"
+    },
+    {
+      "kind": "review",
+      "label": "Partner integration process",
+      "url": "https://hire.sandbox.lever.co/developer/partner"
+    },
+    {
+      "kind": "api",
+      "label": "API documentation (scopes, rate limits)",
+      "url": "https://hire.lever.co/developer/documentation"
+    },
+    {
+      "kind": "console",
+      "label": "Sandbox OAuth registration (integrations settings)",
+      "url": "https://hire.sandbox.lever.co/settings/integrations"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "Lever OAuth is only available through its partner integration program: you apply, wait for Lever's partnerships team to approve you and issue a sandbox, and Lever itself creates your OAuth client. Production credentials come only after you submit a help-center article, sandbox logins, support info and pass a live QA walkthrough with Lever.",
+    "timeToDev": {
+      "range": "1–4 weeks",
+      "hours": {
+        "min": 168,
+        "max": 672
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "There is no self-serve app console. You need partnership approval, then a sandbox account, then Lever creates the sandbox OAuth app from your form. Lever gives no timeframe for any of these; the range is our estimate."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 months",
+      "hours": {
+        "min": 720,
+        "max": 2160
+      },
+      "assumes": "A partner integration reading candidate/opportunity data for any Lever customer; there is no faster OAuth path (customer API keys are for internal use only).",
+      "waitingOn": "Partnership approval, Lever creating sandbox and production OAuth apps, scheduling the QA runthrough meeting, and Lever confirming the production switch.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "The four-step process is sourced; Lever states no review timings, so the total is an estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "Approved Lever partnership (apply via the Become a Partner form)",
+      "why": "Lever says OAuth is part of its partner integration program and apps must be registered; the sandbox is issued only once you're approved.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A product that integrates with recruiting workflows",
+      "why": "The interest form asks how your product integrates with recruiting workflows, and the partnerships team 'evaluates alignment and fit'.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Approval criteria are not published."
+      }
+    },
+    {
+      "item": "A square logo at a direct URL (150x150px recommended) and a 20–140 character description",
+      "why": "Required fields on the OAuth registration form; the description shows in Lever's integration ecosystem.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A public help-center article describing setup and use",
+      "why": "One of the four items required to move to production.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read scopes for core recruiting data",
+      "examples": [
+        "opportunities:read:admin",
+        "postings:read:admin",
+        "stages:read:admin",
+        "users:read:admin",
+        "offline_access"
+      ],
+      "reviewRequired": true,
+      "time": "1–3 months (whole partner process)",
+      "impact": "Enough for an agent that summarizes pipelines and candidates. Every scope sits behind the same partner process; there is no lighter tier. Lever suggests most use cases need 5–8 scopes, max 20.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "Time is our estimate."
+      }
+    },
+    {
+      "tier": "Write scopes (notes, feedback, stage moves)",
+      "examples": [
+        "notes:write:admin",
+        "feedback:write:admin",
+        "opportunities:write:admin",
+        "webhooks:write:admin"
+      ],
+      "reviewRequired": true,
+      "time": "Same process as read",
+      "impact": "write:admin includes the matching read:admin permissions, so registering both is redundant. Functional concerns may come up in the QA runthrough.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Requisitions (customer plan-gated)",
+      "examples": [
+        "requisitions:read:admin",
+        "requisitions:write:admin"
+      ],
+      "reviewRequired": true,
+      "time": "Same process, plus customer plan",
+      "impact": "Requisitions endpoints work only for customers with Lever TRM Enterprise or the Advanced HR feature, so they fail for some connected customers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Apply to the Lever partner program",
+      "owner": "human",
+      "detail": "Submit the Become a Partner interest form describing your product and how it integrates with recruiting workflows.",
+      "url": "https://www.lever.co/partnershipinterest",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for partnership approval and a sandbox account",
+      "owner": "wait",
+      "detail": "Lever's partnerships team reviews 'alignment and fit', then provisions a Lever sandbox. Sandbox email is disabled, so sign in via the login link rather than invite emails.",
+      "url": null,
+      "duration": "Unknown (days to weeks)",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "No timeframe is published; the duration is our guess."
+      }
+    },
+    {
+      "title": "Draft the OAuth registration",
+      "owner": "agent",
+      "detail": "Prepare name, 20–140 char description, callback URI(s) (http allowed in sandbox; extra callbacks beyond the first go through support), direct square logo URL, and a least-privilege scope list (5–8 typical, 20 max).",
+      "url": "https://hire.sandbox.lever.co/developer/oauth",
+      "duration": "20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit the sandbox OAuth registration form",
+      "owner": "human",
+      "detail": "Sign in to the sandbox and submit the form under Settings > Integrations. Keep a copy of what you submitted for debugging.",
+      "url": "https://hire.sandbox.lever.co/settings/integrations",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The URL returned 302 to hire.sandbox.lever.co/auth/login on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Wait for Lever to create the sandbox client",
+      "owner": "wait",
+      "detail": "Lever creates the OAuth app and sends a Client ID and Secret.",
+      "url": null,
+      "duration": "Unknown",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the OAuth flow against sandbox",
+      "owner": "agent",
+      "detail": "Authorize at https://sandbox-lever.auth0.com/authorize with response_type=code, state, scope (space-separated, include offline_access) and audience=https://api.sandbox.lever.co/v1/; exchange at the matching /oauth/token; call https://api.sandbox.lever.co/v1/. Lever's integrator-resources repo has an example app and Postman collection.",
+      "url": "https://github.com/lever/integrator-resources",
+      "duration": "1–3 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Write the help-center article and support info",
+      "owner": "agent",
+      "detail": "Draft a plain-language article (how to enable, screenshot of requested scopes, how to use, what it looks like in Lever) and the technical support form answers.",
+      "url": "https://hire.sandbox.lever.co/developer/partner",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create sandbox logins for Lever and submit for production",
+      "owner": "human",
+      "detail": "Add sadmin@levertest.com and integration-support@lever.co to your sandbox, capture screenshots, supply ecosystem listing info, and send everything to Lever integration support.",
+      "url": "https://hire.sandbox.lever.co/developer/partner",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "QA runthrough meeting with Lever",
+      "owner": "human",
+      "detail": "Share your screen and connect/use the integration as a customer would. Make any requested changes; Lever re-verifies in your sandbox.",
+      "url": null,
+      "duration": "1 hour + fixes",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Receive production credentials",
+      "owner": "wait",
+      "detail": "Lever issues a separate production OAuth app. Production can have a different configuration than sandbox.",
+      "url": null,
+      "duration": "Unknown",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Switch to production and confirm go-live",
+      "owner": "agent",
+      "detail": "Point auth at https://auth.lever.co (audience https://api.lever.co/v1/) and API calls at https://api.lever.co/v1/, then confirm with Lever so the ecosystem listing moves from 'coming soon' to available.",
+      "url": "https://hire.lever.co/developer/documentation",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Draft the partner application and the OAuth registration fields",
+    "Pick a least-privilege scope list (write:admin implies read:admin)",
+    "Implement the auth-code flow with audience, state and refresh-token rotation",
+    "Write the help-center article and support form answers",
+    "Add backoff for 429s around the 10 rps steady limit"
+  ],
+  "humanMustDo": [
+    "Apply to the partner program and talk to Lever's partnerships team",
+    "Sign in to the sandbox and submit the registration form",
+    "Add Lever's two test logins to the sandbox",
+    "Run the live QA walkthrough with Lever",
+    "Customer side: a Lever Super Admin authorizes the integration"
+  ],
+  "blockers": [
+    {
+      "symptom": "Auth page shows 'Oops!, something went wrong' with 'invalid_request : Unknown client'",
+      "cause": "Client ID not registered on that auth server (for example, a sandbox client used against auth.lever.co).",
+      "fix": "Use https://sandbox-lever.auth0.com for sandbox clients and auth.lever.co only for production credentials.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "auth.lever.co/authorize with client_id=x returned HTTP 400 with 'invalid_request : Unknown client: x' on 2026-10-20. Lever's docs list the related '403 ClientID not found' for the wrong auth URL."
+      }
+    },
+    {
+      "symptom": "Consent screen only lists 'offline_access'",
+      "cause": "Missing or wrong audience parameter.",
+      "fix": "Add audience=https://api.lever.co/v1/ (sandbox: https://api.sandbox.lever.co/v1/), with the trailing slash.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "403 'The key you provided does not have access to this endpoint'",
+      "cause": "Scope missing from the authorize request or not registered on the auth server.",
+      "fix": "Request the scope in the redirect and ask Lever to add it to your registered app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "403 'Unable to find a signing key that matches'",
+      "cause": "Sandbox token sent to the production API, or vice versa.",
+      "fix": "Pair sandbox tokens with api.sandbox.lever.co and production tokens with api.lever.co.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Redirect lands on a URL containing 'undefined'",
+      "cause": "Redirect parameters don't match your registration; callbacks can't vary per customer.",
+      "fix": "Use exactly a registered callback URI; request extra callbacks via support.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "No sandbox access or invite emails never arrive",
+      "cause": "Sandbox is only issued after partner approval, and sandbox email is disabled.",
+      "fix": "Get approved first; sign in via the login link instead of waiting for email.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 1 hour by default; refresh tokens (requested with offline_access) expire after one year or 90 days of inactivity, and each refresh returns a new refresh token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limit defaults to 10 requests/second steady with bursts to 20, per key; Lever says the defaults aren't guaranteed and recommends exponential backoff.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Authorization is org-wide: a Lever Super Admin connects the integration for the whole account and can revoke it in settings.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The docs don't say whether other admin roles can authorize."
+      }
+    },
+    {
+      "text": "Sandbox and production are separate OAuth apps with separate auth servers (sandbox-lever.auth0.com vs auth.lever.co); EU customers are redirected to the right data center automatically.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "API keys (Basic Auth) are for customers' internal workflows and need the Data API feature; partner integrations are expected to use OAuth.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Lever keeps using the sandbox logins you give it to check your integration for disruptions after launch, so don't delete them.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Lever API documentation",
+      "url": "https://hire.lever.co/developer/documentation"
+    },
+    {
+      "id": "s2",
+      "title": "Lever Partner Product Integration Process",
+      "url": "https://hire.sandbox.lever.co/developer/partner"
+    },
+    {
+      "id": "s3",
+      "title": "Lever OAuth for Partner Product Integrations",
+      "url": "https://hire.sandbox.lever.co/developer/oauth"
+    },
+    {
+      "id": "s4",
+      "title": "Lever partnership interest form",
+      "url": "https://www.lever.co/partnershipinterest"
+    },
+    {
+      "id": "s5",
+      "title": "Lever OpenID configuration (auth.lever.co)",
+      "url": "https://auth.lever.co/.well-known/openid-configuration"
+    },
+    {
+      "id": "s6",
+      "title": "lever/integrator-resources on GitHub",
+      "url": "https://github.com/lever/integrator-resources"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://auth.lever.co/.well-known/openid-configuration: 200, issuer https://auth.lever.co/, authorize /authorize, token /oauth/token (Auth0 tenant)",
+      "GET https://sandbox-lever.auth0.com/.well-known/openid-configuration: 200",
+      "GET https://auth.lever.co/authorize?client_id=x...: 400 'invalid_request : Unknown client: x'",
+      "GET https://hire.sandbox.lever.co/settings/integrations: 302 to sandbox login",
+      "GET https://api.lever.co/v1/opportunities unauthenticated: 401 UnauthorizedError"
+    ],
+    "openQuestions": [
+      "How long partnership approval and the production switch typically take",
+      "Approval criteria for the partner program and whether AI/agent products face extra scrutiny",
+      "Whether any Lever admin role other than Super Admin can authorize an OAuth integration",
+      "Whether there is any fee or revenue share for partners (none mentioned)"
+    ]
+  }
+}

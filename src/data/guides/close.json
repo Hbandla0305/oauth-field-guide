@@ -1,0 +1,487 @@
+{
+  "app": {
+    "name": "Close",
+    "slug": "close",
+    "website": "https://www.close.com",
+    "developerPortal": "https://developer.close.com",
+    "category": "Sales CRM"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 authentication",
+      "url": "https://developer.close.com/topics/authentication-oauth2/"
+    },
+    {
+      "kind": "console",
+      "label": "Creating an OAuth app",
+      "url": "https://developer.close.com/integrations/create-an-oauth-app"
+    },
+    {
+      "kind": "review",
+      "label": "Make your app public and get listed",
+      "url": "https://developer.close.com/integrations/publish.md"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developer.close.com/api/overview/rate-limits.md"
+    },
+    {
+      "kind": "api",
+      "label": "Close MCP server",
+      "url": "https://developer.close.com/mcp.md"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Creating an OAuth app takes minutes, but new apps are private to your own Close organization until you click 'Make Public' and Close approves it by email, with no published criteria or timeline. Scopes are all-or-nothing (all.full_access + offline_access), and Close also runs an MCP server with Dynamic Client Registration, which lets MCP-capable agents connect without any app registration at all.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Create the app in Settings, run the code flow against your own organization."
+      }
+    },
+    "timeToProd": {
+      "range": "Days–weeks",
+      "hours": {
+        "min": 24,
+        "max": 504
+      },
+      "assumes": "A REST-API OAuth app made public through Close's review; an agent that speaks MCP can instead connect to mcp.close.com via Dynamic Client Registration the same day.",
+      "waitingOn": "Close's review of the 'Make Public' request (reply by email, no stated SLA).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": "Close publishes no review timeline; the range is our estimate."
+      }
+    },
+    "cost": "Customers need a paid Close subscription; Close's docs don't mention a fee to publish or list an app."
+  },
+  "prerequisites": [
+    {
+      "item": "A Close organization where you can open Settings → Developer → OAuth Apps",
+      "why": "OAuth apps are created inside a Close organization and are private to it by default.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Which roles or plans can create apps isn't stated."
+      }
+    },
+    {
+      "item": "An HTTPS redirect URL",
+      "why": "Plain http:// redirect URLs are not accepted.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Terms of Service and Privacy Policy URLs for a public app",
+      "why": "They are optional only for internal apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Default REST scopes (every app)",
+      "examples": [
+        "all.full_access",
+        "offline_access"
+      ],
+      "reviewRequired": true,
+      "time": "Days–weeks (Make Public review)",
+      "impact": "Same access as an API key, for the user's chosen organization. There's no way to pick narrower REST scopes; other needs go through Close support. Review is about making the app public, not about scopes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "MCP read-only",
+      "examples": [
+        "mcp.read",
+        "offline_access"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read-only tools via the hosted MCP server, with clients registered dynamically.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s6",
+          "s7"
+        ],
+        "note": "Scopes observed in https://mcp.close.com/.well-known/oauth-protected-resource; the registration_endpoint was observed in api.close.com's authorization server metadata."
+      }
+    },
+    {
+      "tier": "MCP write",
+      "examples": [
+        "mcp.write_safe",
+        "mcp.write_destructive"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "write_safe allows read and write; write_destructive also allows deletes. The user chooses scopes at consent.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "reviewRequired=false is our reading: the MCP page describes no review for DCR clients."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Decide between REST OAuth and MCP",
+      "owner": "agent",
+      "detail": "If your agent speaks MCP over HTTP Streamable, it can connect to https://mcp.close.com/mcp with OAuth and Dynamic Client Registration. For a custom REST integration, register your own OAuth app.",
+      "url": "https://developer.close.com/mcp.md",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the OAuth app",
+      "owner": "human",
+      "detail": "Go to Settings → Developer → OAuth Apps → Create App. Enter name, description, HTTPS redirect URL, ToS and privacy URLs. Copy the Client ID and Client Secret.",
+      "url": "https://app.close.com/settings/developer/oauth-apps/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Send users to https://app.close.com/oauth2/authorize/?client_id=...&response_type=code&redirect_uri=...; they pick an organization. Exchange the code form-encoded at POST https://api.close.com/oauth2/token/. Store organization_id and user_id from the response. PKCE (S256) is advertised.",
+      "url": "https://developer.close.com/topics/authentication-oauth2/",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement rotating refresh tokens",
+      "owner": "agent",
+      "detail": "Access tokens last expires_in seconds (3600 in the example). Each refresh returns a new refresh token and revokes the old one, so persist it atomically.",
+      "url": "https://developer.close.com/topics/authentication-oauth2/",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle rate limits",
+      "owner": "agent",
+      "detail": "Read the RateLimit header (limit, remaining, reset) and sleep for reset seconds on 429. Limits are per endpoint group, per key, and per organization (3× the key limit).",
+      "url": "https://developer.close.com/api/overview/rate-limits.md",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test inside your own organization",
+      "owner": "human",
+      "detail": "Authorize the private app as a member of your organization and confirm API calls such as GET https://api.close.com/api/v1/me/ work.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Request to make the app public",
+      "owner": "human",
+      "detail": "In Settings → Developer → OAuth Apps, select the app, click 'Make Public' and submit it for review.",
+      "url": "https://app.close.com/settings/developer/oauth-apps/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Close reviews the app",
+      "owner": "wait",
+      "detail": "Close reviews and replies by email. After approval any Close user can authorize the app.",
+      "url": null,
+      "duration": "unstated",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "No criteria or timeline are published."
+      }
+    },
+    {
+      "title": "Optional: request an Integrations Directory listing",
+      "owner": "agent",
+      "detail": "Draft an email to support@close.com, subject 'Integration Listing Request', with name, description, product link, what it does with Close, and the Client ID. Only after the app is public.",
+      "url": "https://developer.close.com/integrations/publish.md",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the code flow, organization tracking and rotating refresh tokens",
+    "Add RateLimit-header backoff per endpoint group",
+    "Connect to the Close MCP server via Dynamic Client Registration",
+    "Draft the app description, ToS, privacy policy and listing email"
+  ],
+  "humanMustDo": [
+    "Create the OAuth app in Close Settings and copy the credentials",
+    "Click 'Make Public' and answer Close's review emails",
+    "Send the listing request email (optional)",
+    "Customer side: each user picks an organization and approves access"
+  ],
+  "blockers": [
+    {
+      "symptom": "Users outside your organization can't authorize the app",
+      "cause": "New OAuth apps are private: only members of your own Close organization can authorize them.",
+      "fix": "Click 'Make Public' and wait for Close's approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "The exact error shown to outside users wasn't documented."
+      }
+    },
+    {
+      "symptom": "Refresh fails with an invalid token after a previous refresh",
+      "cause": "Refresh tokens rotate: the old one is revoked when a new one is issued.",
+      "fix": "Persist the new refresh token from every refresh response, and serialize refreshes per connection.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "No refresh_token in the token response",
+      "cause": "The app doesn't have offline_access.",
+      "fix": "Check the app's scopes; new apps get all.full_access offline_access by default.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "{\"error\": \"invalid_client\", \"error_description\": \"The client does not exist on this server.\"}",
+      "cause": "Wrong or deleted client_id, or credentials from a different environment.",
+      "fix": "Copy the Client ID and Secret again from the OAuth Apps settings page.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed from POST https://api.close.com/oauth2/token/ with bogus credentials on 2026-10-20."
+      }
+    },
+    {
+      "symptom": "HTTP 429 with retry-after",
+      "cause": "Per-key or per-organization endpoint-group limit reached; some endpoints may 429 unpredictably.",
+      "fix": "Sleep for the RateLimit reset value and spread load across endpoint groups.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Redirect URL rejected when creating the app",
+      "cause": "Plain http:// URLs aren't accepted.",
+      "fix": "Use an HTTPS URL (a tunnel for local development).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "REST OAuth apps get all.full_access, the same access as an API key, so there's no least-privilege option for reading data; MCP connections do offer read, write_safe and write_destructive scopes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "api.close.com publishes RFC 8414 authorization server metadata with a registration_endpoint (https://api.close.com/oauth2/register/), PKCE S256 and token auth method 'none', which is what makes DCR-based MCP connections work.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Fetched 2026-10-20. Whether DCR clients can call the REST API outside MCP wasn't tested."
+      }
+    },
+    {
+      "text": "A connection is per user and per organization (the user picks one at consent). Users in several organizations need one connection each.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits are enforced per endpoint group; the organization-wide limit is 3× the per-key limit, so all integrations in an org compete for the same pool.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "There's no OIDC discovery document; this is plain OAuth 2.0 without ID tokens.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [],
+        "note": "GET https://app.close.com/.well-known/openid-configuration returned 404 on 2026-10-20."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Close developer docs: OAuth 2.0 authentication",
+      "url": "https://developer.close.com/topics/authentication-oauth2/"
+    },
+    {
+      "id": "s2",
+      "title": "Close developer docs: Creating an OAuth app",
+      "url": "https://developer.close.com/integrations/create-an-oauth-app"
+    },
+    {
+      "id": "s3",
+      "title": "Close developer docs: Publish (make public and get listed)",
+      "url": "https://developer.close.com/integrations/publish.md"
+    },
+    {
+      "id": "s4",
+      "title": "Close developer docs: Rate limits",
+      "url": "https://developer.close.com/api/overview/rate-limits.md"
+    },
+    {
+      "id": "s5",
+      "title": "Close developer docs index (llms.txt)",
+      "url": "https://developer.close.com/llms.txt"
+    },
+    {
+      "id": "s6",
+      "title": "Close developer docs: Close MCP server",
+      "url": "https://developer.close.com/mcp.md"
+    },
+    {
+      "id": "s7",
+      "title": "Close OAuth authorization server metadata",
+      "url": "https://api.close.com/.well-known/oauth-authorization-server"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://api.close.com/.well-known/oauth-authorization-server: issuer https://api.close.com, registration_endpoint /oauth2/register/, PKCE S256, auth methods none/client_secret_basic/client_secret_post",
+      "GET https://mcp.close.com/.well-known/oauth-protected-resource: scopes mcp.read, mcp.write_safe, mcp.write_destructive, offline_access",
+      "POST https://api.close.com/oauth2/token/ with bogus credentials: HTTP 400 invalid_client 'The client does not exist on this server.'",
+      "GET https://app.close.com/oauth2/authorize/ with bogus client_id: HTTP 400",
+      "GET https://app.close.com/.well-known/openid-configuration: HTTP 404"
+    ],
+    "openQuestions": [
+      "How long Close's 'Make Public' review takes and what it checks",
+      "Which Close plans and roles can create OAuth apps and use the API",
+      "Whether dynamically registered clients can call the REST API, or only the MCP server",
+      "The exact error a user outside your organization sees when authorizing a private app"
+    ]
+  }
+}

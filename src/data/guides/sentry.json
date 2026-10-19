@@ -1,0 +1,269 @@
+{
+  "app": {
+    "name": "Sentry",
+    "slug": "sentry",
+    "website": "https://sentry.io",
+    "developerPortal": "https://sentry.io/settings/account/api/applications/",
+    "category": "Error monitoring"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth 2.0 guide (API auth)", "url": "https://docs.sentry.io/api/auth/" },
+    { "kind": "scopes", "label": "Permissions and scopes", "url": "https://docs.sentry.io/api/permissions/" },
+    { "kind": "review", "label": "Public integrations and publishing", "url": "https://docs.sentry.io/organization/integrations/integration-platform/public-integration/" },
+    { "kind": "review", "label": "Partner OAuth integration (registration)", "url": "https://docs.sentry.io/product/partnership-platform/oauth-integration" },
+    { "kind": "api", "label": "API rate limits", "url": "https://docs.sentry.io/api/ratelimits/" }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Sentry offers two routes, and both officially involve Sentry before other organizations can connect: a public integration stays installable only by your own org until Sentry approves a Publish request, and the partner OAuth flow says Sentry must register your application first. Development is fast, because an unpublished integration or an internal integration works in your own org the same day.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": { "min": 0.5, "max": 1.5 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s4"],
+        "note": "Create an unpublished public integration in Developer Settings, install it in your own org, and exchange the grant code."
+      }
+    },
+    "timeToProd": {
+      "range": "1–6 weeks",
+      "hours": { "min": 168, "max": 1008 },
+      "assumes": "A public integration (or partner-registered OAuth app) reading issues and events across customer orgs; a self-created OAuth application may work sooner, but that isn't confirmed.",
+      "waitingOn": "Sentry's review after you click Publish (emails integrations-platform@sentry.io), or partner registration via partnership-platform@sentry.io. No turnaround time is published.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s5"],
+        "note": "The review step is sourced; the 1–6 week range is our estimate because Sentry states no timeline."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Sentry organization where you are an owner or manager",
+      "why": "Integrations are created under Settings → Developer Settings, and an integration can't have permissions greater than your own.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "item": "A logo PNG between 256×256 and 1024×1024",
+      "why": "Public integrations need a logo before they can be published.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "item": "Webhook URL and redirect URL endpoints",
+      "why": "The grant code arrives via the installation.created webhook and, if set, as a query parameter on your redirect URL.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "item": "Privacy policy and terms of service URLs (partner route)",
+      "why": "The partner OAuth registration request asks for them along with callback URLs, domains and needed APIs.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read issues, events and projects",
+      "examples": ["org:read", "project:read", "event:read", "team:read", "member:read"],
+      "reviewRequired": true,
+      "time": "Same day in your org; publish review for others",
+      "impact": "Enough for an agent that triages errors, reads stack traces and lists projects. The review path is the same for every scope; Sentry's review is about the integration, not a scope.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "reviewRequired reflects the publish step for other orgs, not a per-scope rule." }
+    },
+    {
+      "tier": "Write issues and releases",
+      "examples": ["event:write", "project:releases", "org:ci", "alerts:write"],
+      "reviewRequired": true,
+      "time": "Same as above",
+      "impact": "Resolve, assign or ignore issues, create releases and upload source maps. Users see these on the install consent screen.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s6"], "note": null }
+    },
+    {
+      "tier": "Admin scopes",
+      "examples": ["org:admin", "project:admin", "event:admin", "member:admin"],
+      "reviewRequired": true,
+      "time": "Same as above",
+      "impact": "Delete issues, projects or members. Only users with that much access can install an integration requesting them, which shrinks who can connect.",
+      "evidence": { "label": "inferred", "sourceIds": ["s2", "s4"], "note": "Inferred from 'You can't create an integration ... greater than your own user settings' and the install approval prompt." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in and open Developer Settings",
+      "owner": "human",
+      "detail": "In your Sentry org, go to Settings → Developer Settings → Custom Integrations and choose Create New Integration → Public Integration.",
+      "url": "https://sentry.io/settings/developer-settings/",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "title": "Draft integration config",
+      "owner": "agent",
+      "detail": "Pick the smallest scope set (for example org:read project:read event:read), webhook URL, redirect URL, Verify Install, authorized JS origins (no protocol, no wildcards) and overview text.",
+      "url": "https://docs.sentry.io/api/permissions/",
+      "duration": "20 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "title": "Create the integration and copy credentials",
+      "owner": "human",
+      "detail": "Save the form, upload the logo, and copy the client ID and client secret into your secret store.",
+      "url": "https://sentry.io/settings/developer-settings/",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Build the install handler",
+      "owner": "agent",
+      "detail": "On the redirect (code, installationId), POST grant_type=authorization_code, code, client_id and client_secret to https://sentry.io/api/0/sentry-app-installations/{installationId}/authorizations/. Store token and refreshToken, then PUT {\"status\":\"installed\"} to /api/0/sentry-app-installations/{id}/ if Verify Install is on.",
+      "url": "https://docs.sentry.io/organization/integrations/integration-platform/public-integration/",
+      "duration": "1 hour",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Build token refresh",
+      "owner": "agent",
+      "detail": "Integration tokens expire every eight hours. Refresh with a JWT signed by the client secret (1-minute validity) using grant_type urn:sentry:params:oauth:grant-type:jwt-bearer, the recommended method.",
+      "url": "https://docs.sentry.io/organization/integrations/integration-platform/public-integration/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Install in your own org and test",
+      "owner": "human",
+      "detail": "Install via https://sentry.io/sentry-apps/<slug>/external-install/, accept permissions, and confirm your agent can call /api/0/organizations/{org}/issues/.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Submit for publication",
+      "owner": "human",
+      "detail": "Click Publish next to the integration in Custom Integrations; this emails integrations-platform@sentry.io for review.",
+      "url": "https://sentry.io/settings/developer-settings/",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Wait for Sentry review",
+      "owner": "wait",
+      "detail": "Until approved, only your own organization can see or install the integration. Respond to any reviewer requests.",
+      "url": null,
+      "duration": "Unknown (no SLA published)",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Alternative: register as an OAuth partner",
+      "owner": "human",
+      "detail": "For a 'Connect to Sentry' button using https://sentry.io/oauth/authorize/ with PKCE, email partnership-platform@sentry.io with platform name, callback URLs, domains, homepage, privacy policy, ToS and needed APIs.",
+      "url": "https://docs.sentry.io/product/partnership-platform/oauth-integration",
+      "duration": "Unknown",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s1"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose minimal scopes from the permissions list",
+    "Write the install handler, code exchange and Verify Install call",
+    "Implement JWT-bearer token refresh",
+    "Draft the partner registration email and overview text",
+    "Handle the X-Sentry-Rate-Limit-* headers"
+  ],
+  "humanMustDo": [
+    "Create the integration in Developer Settings",
+    "Upload the logo and copy the client secret",
+    "Run a test install in your own org",
+    "Click Publish and answer Sentry's reviewers"
+  ],
+  "blockers": [
+    {
+      "symptom": "Customers can't find or install your integration",
+      "cause": "Unpublished integrations are visible and installable only by the organization that created them.",
+      "fix": "Click Publish and wait for Sentry's approval.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "symptom": "API calls fail about eight hours after install",
+      "cause": "Integration tokens expire every eight hours and must be refreshed manually.",
+      "fix": "Refresh with the JWT-bearer grant before expiry.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "symptom": "Installation stays pending and your app has no token",
+      "cause": "The user must click Accept & Install in Sentry; until then the connection isn't complete.",
+      "fix": "Guide users through the Sentry install page and wait for the installation.created webhook.",
+      "evidence": { "label": "unverified", "sourceIds": ["s7"], "note": "Reported by Nango's integration docs, not Sentry." }
+    },
+    {
+      "symptom": "Token endpoint returns {\"error\":\"invalid_client\"}",
+      "cause": "Unknown or wrong client_id/client_secret on https://sentry.io/oauth/token/.",
+      "fix": "Use the credentials Sentry issued for your registered app.",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed with dummy values on 2026-10-20." }
+    },
+    {
+      "symptom": "Requests rejected under load even with several tokens",
+      "cause": "Rate limits apply per caller identity and endpoint, not per token, with both per-window and concurrency limits.",
+      "fix": "Use webhooks instead of polling and back off using X-Sentry-Rate-Limit-Reset.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": "The page doesn't name the HTTP status code returned." }
+    },
+    {
+      "symptom": "Can't create the integration with the scopes you need",
+      "cause": "An integration can't have permissions greater than the creating user's own.",
+      "fix": "Have an org owner create the integration.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Token lifetimes differ by route: integration tokens expire every 8 hours, while plain OAuth access tokens expire after 30 days with a refresh token.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "text": "Each grant is limited to one organization: with OAuth the user picks one org, and integrations are installed per org. Agents serving multi-org users need one connection per org.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+    },
+    {
+      "text": "Sentry's OAuth server supports PKCE S256 and the device authorization flow, useful for CLI or headless agents.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "The live OAuth metadata lists newer scopes not on the permissions page, including seer:read, seer:write, dashboard:read and project:distribution, plus openid/profile/email.",
+      "evidence": { "label": "tested", "sourceIds": ["s8"], "note": "Fetched https://sentry.io/.well-known/oauth-authorization-server on 2026-10-20." }
+    },
+    {
+      "text": "Internal integrations are the fastest option for a single org and also work on self-hosted Sentry, but they can't be installed by other organizations.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+    },
+    {
+      "text": "OAuth applications can also be created under Account → API → Applications; whether these can be authorized by unrelated orgs without partner registration isn't documented.",
+      "evidence": { "label": "unverified", "sourceIds": ["s5", "s9"], "note": "Third-party connector guides show self-created apps; Sentry's partner page says Sentry must register your application first." }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Sentry docs: API Authentication (OAuth)", "url": "https://docs.sentry.io/api/auth/" },
+    { "id": "s2", "title": "Sentry docs: Permissions & Scopes", "url": "https://docs.sentry.io/api/permissions/" },
+    { "id": "s3", "title": "Sentry docs: Public Integrations", "url": "https://docs.sentry.io/organization/integrations/integration-platform/public-integration/" },
+    { "id": "s4", "title": "Sentry docs: Integration Platform", "url": "https://docs.sentry.io/organization/integrations/integration-platform/" },
+    { "id": "s5", "title": "Sentry docs: Partnership platform OAuth integration", "url": "https://docs.sentry.io/product/partnership-platform/oauth-integration" },
+    { "id": "s6", "title": "Sentry docs: Rate Limits", "url": "https://docs.sentry.io/api/ratelimits/" },
+    { "id": "s7", "title": "Nango docs: Sentry (public integrations)", "url": "https://nango.dev/docs/integrations/all/sentry-oauth" },
+    { "id": "s8", "title": "Sentry OAuth authorization server metadata", "url": "https://sentry.io/.well-known/oauth-authorization-server" },
+    { "id": "s9", "title": "Frontegg: Sentry connector setup", "url": "https://developers.frontegg.com/agen-for-work/connectors/marketplace/sentry" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://sentry.io/.well-known/oauth-authorization-server: issuer https://sentry.io, authorize /oauth/authorize/, token /oauth/token/, PKCE S256, 33 scopes listed",
+      "GET https://sentry.io/settings/account/api/applications/: 302 to /auth/login/",
+      "GET https://sentry.io/oauth/authorize/?client_id=x...: HTTP 400",
+      "POST https://sentry.io/oauth/token/ with dummy values: {\"error\":\"invalid_client\"}",
+      "GET https://sentry.io/.well-known/openid-configuration: empty response"
+    ],
+    "openQuestions": [
+      "Whether a self-created OAuth application can be authorized by any Sentry org without partner registration",
+      "Typical turnaround for public integration publish review",
+      "What criteria Sentry applies when reviewing a public integration",
+      "How the EU region (de.sentry.io) affects OAuth endpoints and integration installs",
+      "The HTTP status returned when rate limited"
+    ]
+  }
+}

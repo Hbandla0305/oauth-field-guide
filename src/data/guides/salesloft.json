@@ -1,0 +1,289 @@
+{
+  "app": {
+    "name": "Salesloft",
+    "slug": "salesloft",
+    "website": "https://www.salesloft.com",
+    "developerPortal": "https://accounts.salesloft.com/oauth/applications",
+    "category": "Sales engagement"
+  },
+  "officialDocs": [
+    { "kind": "oauth", "label": "OAuth authorization code guide", "url": "https://developer.salesloft.com/docs/platform/api-basics/oauth-authentication/" },
+    { "kind": "scopes", "label": "Scopes reference", "url": "https://developer.salesloft.com/docs/platform/api-basics/scopes/" },
+    { "kind": "review", "label": "How to submit your app (partner program and allowlisting)", "url": "https://developer.salesloft.com/docs/platform/marketplace/how-to-submit-your-app/" },
+    { "kind": "review", "label": "Marketplace submission checklist", "url": "https://developer.salesloft.com/docs/platform/marketplace/submission-checklist/" },
+    { "kind": "api", "label": "Rate limits", "url": "https://developer.salesloft.com/docs/platform/api-basics/rate-limits/" },
+    { "kind": "console", "label": "OAuth applications console", "url": "https://accounts.salesloft.com/oauth/applications" }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "Any Salesloft user can create an OAuth app in their account and test it within their own team in under an hour. For other Salesloft teams to use it, the app has to be allowlisted, which means being accepted into the Salesloft Partner Program, creating a Marketplace listing and passing a technical review that Salesloft says takes up to 2 weeks.",
+    "timeToDev": {
+      "range": "30 min–2 h",
+      "hours": { "min": 0.5, "max": 2 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1"],
+        "note": "App creation is self-serve in an existing Salesloft account, and there's a Test Authorization button. The time is our estimate. It assumes you already have a Salesloft seat."
+      }
+    },
+    "timeToProd": {
+      "range": "2–5 weeks",
+      "hours": { "min": 336, "max": 840 },
+      "assumes": "A multi-tenant agent that reads people, cadences, calls and emails across customer teams, which needs allowlisting; a Client Credentials app for one customer's team is the faster but private-only path.",
+      "waitingOn": "Partner Program application acceptance (no SLA published), then Marketplace listing approval and allowlisting review (up to 2 weeks; the decision is emailed 7–10 days after submission).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": "The up-to-2-weeks and 7–10 day figures are Salesloft's. The partner-acceptance wait is our estimate, which widens the range."
+      }
+    },
+    "cost": "No partner or review fee mentioned. You need a Salesloft account to build and test, and front-end integrations ask for sandbox license details in the technical review form."
+  },
+  "prerequisites": [
+    {
+      "item": "A Salesloft account (a seat on a Salesloft team) to create the OAuth application",
+      "why": "Apps are created under Your Applications > OAuth Applications in the Salesloft account.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs don't say whether admin rights are needed to create the app." }
+    },
+    {
+      "item": "Acceptance into the Salesloft Partner Program",
+      "why": "Allowlisting (use by other Salesloft instances) runs through the partner portal: the Join form, then an invite email, then the listing and technical review.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "item": "OAuth (not API keys) for the integration",
+      "why": "Salesloft says Partner Applications submitted using API Keys will not be approved.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "A public English privacy policy, a distinctive icon, and test accounts for reviewers",
+      "why": "These are on the Marketplace submission checklist.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Common read scopes (your own team)",
+      "examples": ["people:read", "accounts:read", "activities:read", "cadences:read", "calls:read", "emails:read", "team:read"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Works immediately for users on your own Salesloft team. Other teams need the app allowlisted.",
+      "evidence": { "label": "inferred", "sourceIds": ["s2", "s3"], "note": "Scope strings are from the scopes page. That allowlisting gates other teams is stated, and the same-day timing for your own team is our inference." }
+    },
+    {
+      "tier": "Write scopes and multi-team distribution",
+      "examples": ["people:write", "accounts:write", "cadences:write", "crm:read"],
+      "reviewRequired": true,
+      "time": "2–5 weeks",
+      "impact": "Any app used by other Salesloft instances must pass partner acceptance, a Marketplace listing and the allowlisting review against the API Terms, Design and Brand Guidelines.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": "accounts:write appears in Salesloft's example token response. people:write and cadences:write are inferred from the naming pattern." }
+    },
+    {
+      "tier": "Privileged scopes (sensitive data)",
+      "examples": ["email_contents:read", "crm_id_person:write", "crm_id_account:write", "data_control:read", "data_control:write", "external_emails:write"],
+      "reviewRequired": true,
+      "time": "2–5 weeks, more scrutiny likely",
+      "impact": "Salesloft says these grant elevated access to sensitive data and should be requested with extreme caution and only when absolutely necessary. An agent that reads email bodies needs email_contents:read.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "No separate approval process for privileged scopes is documented. Extra review scrutiny is our inference." }
+    },
+    {
+      "tier": "Client Credentials (private, single team)",
+      "examples": ["grant_type=client_credentials"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "An admin enables it for private application use only. It acts with the permissions of the admin who created it and can't be allowlisted, so it's a per-customer path, not a SaaS connect button.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to a Salesloft account",
+      "owner": "human",
+      "detail": "Sign in and open Your Applications > OAuth Applications.",
+      "url": "https://accounts.salesloft.com/oauth/applications",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "https://accounts.salesloft.com/oauth/applications returned a 302 to /sign_in on 2026-10-20. We didn't sign in." }
+    },
+    {
+      "title": "Prepare app config",
+      "owner": "agent",
+      "detail": "Pick least-privilege scopes (avoid privileged scopes unless essential), a non-Salesloft HTTPS redirect URI, a name and description, and a 1:1 SVG logo.",
+      "url": "https://developer.salesloft.com/docs/platform/api-basics/scopes/",
+      "duration": "20 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "title": "Create the OAuth application",
+      "owner": "human",
+      "detail": "Click Create New, set Application Type (public Frontend Integration or private team app) and Grant Type = Authorization Code. These two fields can't be edited later. Copy the Application Id and Secret.",
+      "url": "https://accounts.salesloft.com/oauth/applications",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://accounts.salesloft.com/oauth/authorize?client_id=...&redirect_uri=...&response_type=code&state=... and exchange the code at POST https://accounts.salesloft.com/oauth/token with grant_type=authorization_code.",
+      "url": "https://developer.salesloft.com/docs/platform/api-basics/oauth-authentication/",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Handle refresh with rotation",
+      "owner": "agent",
+      "detail": "Access tokens expire after 7200 seconds. Each refresh issues a new refresh token and revokes all old ones, so persist it atomically and serialize refreshes per user.",
+      "url": "https://developer.salesloft.com/docs/platform/api-basics/oauth-authentication/",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Build API calls within the cost budget",
+      "owner": "agent",
+      "detail": "Call https://api.salesloft.com/v2/... The budget is 600 cost per minute per team, shared by all integrations on that team. Deep pagination (page > 100) costs extra points, up to 30 for page 501+. Prefer filters and webhooks over deep paging.",
+      "url": "https://developer.salesloft.com/docs/platform/api-basics/rate-limits/",
+      "duration": "varies",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "title": "Apply to the Salesloft Partner Program",
+      "owner": "human",
+      "detail": "Fill out the Join the Salesloft Partner Program form. After acceptance, you get an invite email to create a partner portal account.",
+      "url": "https://developer.salesloft.com/docs/platform/marketplace/how-to-submit-your-app/",
+      "duration": "30 min + wait",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Draft listing content and technical review answers",
+      "owner": "agent",
+      "detail": "Write the tagline, how-it-works and data-flow text, features, permissions, FAQs and privacy policy, plus answers for the Application Technical Review Form (OAuth setup, endpoints and webhooks used, support contact).",
+      "url": "https://developer.salesloft.com/docs/platform/marketplace/submission-checklist/",
+      "duration": "half a day",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "title": "Build the listing and submit for approval",
+      "owner": "human",
+      "detail": "Upload the tile and listing images and screenshots (at least one showing the product working with Salesloft), request listing approval, and submit the technical review form with reviewer test accounts.",
+      "url": "https://developer.salesloft.com/docs/platform/marketplace/how-to-submit-your-app/",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "title": "Allowlisting review",
+      "owner": "wait",
+      "detail": "Salesloft's development team approves or denies (with reasons). The decision is emailed 7–10 days after submission, and the whole process takes up to 2 weeks.",
+      "url": null,
+      "duration": "up to 2 weeks",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Go live on the Marketplace",
+      "owner": "human",
+      "detail": "Once the listing and app are both approved, the profile is published and other Salesloft teams can authorize the app.",
+      "url": null,
+      "duration": "minutes",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose least-privilege scopes and avoid privileged ones",
+    "Implement the code flow and rotating refresh-token handling",
+    "Budget API calls against the 600 cost/min team limit",
+    "Draft listing copy, data-flow description and privacy policy",
+    "Fill in the technical review form answers"
+  ],
+  "humanMustDo": [
+    "Hold a Salesloft seat and create the OAuth app",
+    "Apply to and get accepted into the Partner Program",
+    "Upload listing images and screenshots and request approval",
+    "Provide reviewer test accounts and respond to denials"
+  ],
+  "blockers": [
+    {
+      "symptom": "Users on other Salesloft teams can't use your app",
+      "cause": "The app isn't allowlisted. Allowlisting is what lets an app be used by other Salesloft instances.",
+      "fix": "Join the Partner Program, create a Marketplace listing and pass the allowlisting review.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The exact error users see wasn't documented." }
+    },
+    {
+      "symptom": "Token exchange fails with \"does not match the redirection URI used in the authorization request\"",
+      "cause": "The redirect_uri differs from the one registered or from the one sent to /oauth/authorize.",
+      "fix": "Send the identical registered URI in both the authorize and token calls.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Refresh fails with invalid_grant after a parallel refresh",
+      "cause": "Getting a new refresh token revokes all old ones, so a second concurrent refresh uses a revoked token.",
+      "fix": "Serialize refreshes per user and store the newest refresh token atomically.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "The revocation rule is sourced. The invalid_grant symptom is our inference." }
+    },
+    {
+      "symptom": "HTTP 429 even though your integration makes few calls",
+      "cause": "The 600 cost/min limit is per team, not per integration, so other tools on the customer's team share it. Deep pages cost extra.",
+      "fix": "Use backoff, avoid page > 100, and use filters or webhooks.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "symptom": "Can't change an app from private to public (or switch grant type)",
+      "cause": "Application Type and Grant Type can't be edited after creation.",
+      "fix": "Create a new app with the right type.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Partner submission rejected for using API keys",
+      "cause": "Salesloft doesn't approve partner applications that use API keys.",
+      "fix": "Switch to the OAuth authorization code flow.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 2 hours (expires_in 7200). The docs don't state a refresh-token lifetime, but refresh tokens rotate and old ones are revoked on each refresh.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "The rate limit is a cost budget of 600/min shared at the team level by every integration, so a noisy neighbour on the customer's team can starve your agent.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    },
+    {
+      "text": "Salesloft publishes an OpenID Connect discovery document (issuer https://accounts.salesloft.com, /oidc/authorize, /oidc/token) whose advertised scopes are only system:all, external_emails:create and openid. That's separate from the /oauth/ endpoints the API guide uses.",
+      "evidence": { "label": "tested", "sourceIds": ["s7"], "note": "We fetched the discovery document on 2026-10-20. How the OIDC endpoints relate to partner apps isn't documented." }
+    },
+    {
+      "text": "Customer security teams are likely to scrutinize Salesloft integrations closely: in August 2025, attackers stole OAuth and refresh tokens from Salesloft's own Drift integration and used them to pull Salesforce data. Expect questions on token storage and encryption.",
+      "evidence": { "label": "sourced", "sourceIds": ["s8"], "note": "The incident is sourced. The effect on reviews and customer scrutiny is our inference." }
+    },
+    {
+      "text": "Client Credentials apps act with the creating admin's permissions and are private-only, which suits a single customer that wants a headless agent but can't be distributed.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Salesloft developer docs: OAuth authorization code", "url": "https://developer.salesloft.com/docs/platform/api-basics/oauth-authentication/" },
+    { "id": "s2", "title": "Salesloft developer docs: Scopes", "url": "https://developer.salesloft.com/docs/platform/api-basics/scopes/" },
+    { "id": "s3", "title": "Salesloft developer docs: How to submit your app", "url": "https://developer.salesloft.com/docs/platform/marketplace/how-to-submit-your-app/" },
+    { "id": "s4", "title": "Salesloft developer docs: Submission checklist", "url": "https://developer.salesloft.com/docs/platform/marketplace/submission-checklist/" },
+    { "id": "s5", "title": "Salesloft developer docs: Client credentials", "url": "https://developer.salesloft.com/docs/platform/api-basics/client-creds/" },
+    { "id": "s6", "title": "Salesloft developer docs: Rate limits", "url": "https://developer.salesloft.com/docs/platform/api-basics/rate-limits/" },
+    { "id": "s7", "title": "Salesloft OpenID Connect discovery document", "url": "https://accounts.salesloft.com/.well-known/openid-configuration" },
+    { "id": "s8", "title": "BleepingComputer: Salesloft breached to steal OAuth tokens for Salesforce data theft attacks", "url": "https://www.bleepingcomputer.com/news/security/salesloft-breached-to-steal-oauth-tokens-for-salesforce-data-theft-attacks" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://accounts.salesloft.com/oauth/authorize?client_id=test&...: 302 to https://accounts.salesloft.com/sign_in?return_to=...",
+      "POST https://accounts.salesloft.com/oauth/token with only grant_type: 400 {\"error\":\"invalid_request\",\"error_description\":\"Missing required parameter: code.\"}",
+      "GET https://api.salesloft.com/v2/me without auth: 401 {\"error\":\"No Bearer Token attached to request...\"}",
+      "GET https://accounts.salesloft.com/.well-known/openid-configuration: 200, issuer https://accounts.salesloft.com, scopes system:all/external_emails:create/openid, RS256",
+      "GET https://accounts.salesloft.com/oauth/applications: 302 to /sign_in"
+    ],
+    "openQuestions": [
+      "What error a non-allowlisted app returns when a user from another team authorizes it",
+      "How long Partner Program application acceptance takes, and its eligibility criteria",
+      "Whether privileged scopes get a separate or stricter review",
+      "The refresh token lifetime",
+      "Whether partners get a free sandbox Salesloft team for development"
+    ]
+  }
+}

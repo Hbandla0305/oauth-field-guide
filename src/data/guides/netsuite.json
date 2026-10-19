@@ -1,0 +1,348 @@
+{
+  "app": {
+    "name": "Oracle NetSuite",
+    "slug": "netsuite",
+    "website": "https://www.netsuite.com",
+    "developerPortal": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157771733782.html",
+    "category": "ERP"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 authorization code grant flow",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_158074210415.html"
+    },
+    {
+      "kind": "console",
+      "label": "Create an OAuth 2.0 integration record",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157771733782.html"
+    },
+    {
+      "kind": "scopes",
+      "label": "Authorization endpoint and scopes",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_160855585734.html"
+    },
+    {
+      "kind": "review",
+      "label": "Distributing integration records",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4389835426.html"
+    },
+    {
+      "kind": "api",
+      "label": "Concurrency governance limits",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_1500275603.html"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "There's no provider review: one integration record created in your NetSuite account can be used from customers' accounts. But there's no free self-serve developer account (you need a paid NetSuite account, a customer's sandbox or SuiteCloud Developer Network membership), and every customer's admin has to enable OAuth 2.0 and grant a role with the OAuth permission. Auth-code refresh tokens also expire after 7 days for confidential clients (up to 30 days for public ones), so users have to re-consent on a schedule.",
+    "timeToDev": {
+      "range": "1–4 h (with an account)",
+      "hours": { "min": 1, "max": 4 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s2", "s3"],
+        "note": "Assumes you already have admin access to a NetSuite account or sandbox. Without one, getting a development account through SDN or a sales rep can take weeks, and we found no published timeline or price."
+      }
+    },
+    "timeToProd": {
+      "range": "1–5 days per customer",
+      "hours": { "min": 24, "max": 120 },
+      "assumes": "An authorization-code integration record in your account, used by customers whose admins enable the OAuth 2.0 feature and assign a suitable role. There's no Oracle review on this path.",
+      "waitingOn": "Nothing from Oracle. Each customer's NetSuite admin has to enable features, create or adjust a role, and enable the auto-installed integration record if their account requires approval.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s6", "s7"],
+        "note": "No review step appears in Oracle's docs. The per-customer time depends on how quickly their admin acts, so the range is our estimate."
+      }
+    },
+    "cost": "No fee to create an integration record. You need access to a NetSuite account, which is paid. Developer accounts come through SDN membership or a NetSuite sales rep, at prices that aren't published."
+  },
+  "prerequisites": [
+    {
+      "item": "Admin access to a NetSuite account (production, sandbox or SDN development account)",
+      "why": "Integration records are created inside a NetSuite account by an administrator or a user with the Integration Application permission. There's no standalone developer console.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": "We didn't find an official free developer account. Forum reports say free dev accounts were discontinued, but we couldn't open or confirm them."
+      }
+    },
+    {
+      "item": "The OAuth 2.0 and REST Web Services features enabled in each account (Setup > Company > Enable Features > SuiteCloud)",
+      "why": "Without these features the authorize and REST endpoints won't work for that account.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s5", "s10"],
+        "note": "Oracle's flow overview assumes the features are enabled. The exact checkbox names come from third-party setup guides."
+      }
+    },
+    {
+      "item": "A non-Administrator role in each customer account with 'Log in using OAuth 2.0 Access Tokens', REST Web Services and the record permissions your agent needs",
+      "why": "Tokens are granted for the role the user picks on the consent screen, so data access is limited to that role's permissions.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s10"],
+        "note": "Role selection and the returned role parameter come from Oracle. The permission list and the Administrator restriction (for the AI Connector/MCP scope) come from Dust's setup docs."
+      }
+    },
+    {
+      "item": "An HTTPS redirect URI (or a custom scheme)",
+      "why": "http:// redirect URIs aren't supported. URIs are validated when the record is saved.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Sign-in only (OIDC)",
+      "examples": ["openid", "email"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Identifies the NetSuite user. No business data.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["s9", "s2"],
+        "note": "Both appear in scopes_supported in the live discovery document."
+      }
+    },
+    {
+      "tier": "Data APIs (REST, RESTlets, SuiteAnalytics)",
+      "examples": ["rest_webservices", "restlets", "suite_analytics"],
+      "reviewRequired": false,
+      "time": "Same day once the customer admin has set up a role",
+      "impact": "Read and write records via REST and SuiteQL, call RESTlets, or query via SuiteAnalytics Connect. What the agent can touch depends on the role the user picks, not on the scope.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s9"],
+        "note": "The scope checkboxes must be ticked on the integration record. The scope strings were seen in the live discovery document."
+      }
+    },
+    {
+      "tier": "NetSuite AI Connector Service (MCP)",
+      "examples": ["mcp"],
+      "reviewRequired": false,
+      "time": "Same day, plus customer setup",
+      "impact": "Lets an MCP client call NetSuite's AI Connector tools. On the integration record, it has to be the only scope ticked (other scopes and Client Credentials cleared), and 'Never Ask' consent isn't available. Third-party guides say the Administrator role is blocked, so a custom role is needed.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s9", "s10"],
+        "note": "The exclusivity and consent rules come from Oracle. The Administrator block comes from Dust's docs only."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Get a NetSuite account you can administer",
+      "owner": "human",
+      "detail": "Use your company's NetSuite account or sandbox, a design partner's sandbox, or a development account through the SuiteCloud Developer Network or your NetSuite sales rep.",
+      "url": null,
+      "duration": "Days to weeks if you don't have one",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "netsuite.com's SDN page returned 403 to our fetch, so we couldn't confirm the membership terms or cost."
+      }
+    },
+    {
+      "title": "Enable OAuth 2.0 and REST Web Services",
+      "owner": "human",
+      "detail": "Go to Setup > Company > Enable Features > SuiteCloud and tick OAuth 2.0 and REST Web Services (and SuiteAnalytics Connect or the AI Connector if you need them).",
+      "url": null,
+      "duration": "5 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s5", "s10"],
+        "note": "The menu path is account-specific (https://<accountID>.app.netsuite.com), so we link no URL."
+      }
+    },
+    {
+      "title": "Create the integration record",
+      "owner": "human",
+      "detail": "Go to Setup > Integration > Manage Integrations > New. Set State to Enabled and tick Authorization Code Grant. Add the HTTPS redirect URI(s), tick the scopes (REST Web Services, RESTlets, SuiteAnalytics Connect, or the AI Connector Service on its own), and set the consent policy. Copy the client ID and secret, which are shown only once.",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157771733782.html",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Decide between a confidential and a public client",
+      "owner": "agent",
+      "detail": "Confidential client: secret via HTTP Basic, refresh token valid 7 days. Public client: no secret, PKCE required, single-use refresh tokens valid 48 h by default (configurable 1–720 h), plus a 'maximum time for token rotation' (default 168 h) after which the user must reauthenticate.",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_158081952044.html",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "title": "Implement the authorization code flow with PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://<accountID>.app.netsuite.com/app/login/oauth2/authorize.nl (or https://system.netsuite.com/app/login/oauth2/authorize.nl when the account ID is unknown) with response_type=code, client_id, redirect_uri, scope, state (22–1024 chars), code_challenge and code_challenge_method=S256. Read the role, entity and company params on the callback. Exchange the code at https://<accountID>.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token.",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_160855585734.html",
+      "duration": "2-4 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s3"],
+        "note": "Oracle says PKCE is required for public clients and for all new integrations as of NetSuite 2027.1, so build it in now."
+      }
+    },
+    {
+      "title": "Store tokens per account and role, and handle forced re-consent",
+      "owner": "agent",
+      "detail": "Key tokens by company (account ID) and role. Refresh the 60-minute access token. When the refresh token expires the token endpoint returns invalid_grant: prompt the user to reconnect, ideally before day 7.",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_158082518856.html",
+      "duration": "1-2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "title": "Write the customer admin setup guide",
+      "owner": "agent",
+      "detail": "Draft step-by-step admin instructions: enable features, create a custom role (not Administrator) with OAuth 2.0 token login, REST Web Services and the record permissions you need, assign it to users, and check the auto-installed integration record is Enabled.",
+      "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4429293934.html",
+      "duration": "1-2 h",
+      "evidence": { "label": "inferred", "sourceIds": ["s6", "s10"], "note": null }
+    },
+    {
+      "title": "Customer admin prepares their account",
+      "owner": "human",
+      "detail": "In each customer account, an admin enables the features and sets up the role. If 'Require Approval during Auto-Installation of Integration' is on, they also have to set your integration record to Enabled after the first authorization attempt.",
+      "url": null,
+      "duration": "30 min-days (customer-dependent)",
+      "evidence": { "label": "sourced", "sourceIds": ["s6", "s7"], "note": null }
+    },
+    {
+      "title": "First user connects and the record auto-installs",
+      "owner": "human",
+      "detail": "The user signs in (possibly through their SSO), picks the role on the consent screen, and clicks Allow. Your integration record is installed into their account automatically.",
+      "url": null,
+      "duration": "2 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s6", "s2"],
+        "note": "Oracle's auto-installation page says OAuth 2.0 triggers auto-install."
+      }
+    },
+    {
+      "title": "Optional: apply for Built for NetSuite",
+      "owner": "human",
+      "detail": "SDN partners can seek the 'Integrated' Built for NetSuite badge (questionnaire, references, demo, renewed each major release). It's a marketing and trust badge, not something OAuth requires.",
+      "url": null,
+      "duration": "Weeks",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "netsuite.com's BFN page returned 403 to our fetch. These details come from search snippets only."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Generate the PKCE authorize URL and token exchange code",
+    "Pick confidential vs public client and token-lifetime settings",
+    "Draft the customer admin role and feature setup guide",
+    "Build reconnect reminders before refresh tokens expire",
+    "Check endpoints via the OIDC discovery document"
+  ],
+  "humanMustDo": [
+    "Obtain access to a NetSuite account or SDN development account",
+    "Enable OAuth 2.0 and REST features and create the integration record",
+    "Copy the client secret (shown only once)",
+    "Get each customer's admin to create a non-Administrator role",
+    "Re-consent through the NetSuite login when tokens expire"
+  ],
+  "blockers": [
+    {
+      "symptom": "invalid_grant from the token endpoint after about a week",
+      "cause": "The refresh token has expired (7 days for confidential clients; default 48 h, max 720 h for public clients).",
+      "fix": "Send the user back through Step One. For unattended jobs, consider the Client Credentials (M2M) grant set up per customer.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "symptom": "Requests rejected after a customer's first authorization; the integration shows 'Waiting for Approval'",
+      "cause": "The account has 'Require Approval during Auto-Installation of Integration' turned on.",
+      "fix": "The customer admin edits the integration record in their account and sets State to Enabled.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6", "s7"], "note": null }
+    },
+    {
+      "symptom": "Authorization fails when the user connects as Administrator to the AI Connector (mcp) scope",
+      "cause": "Third-party guides report the Administrator role and full-access roles are blocked for the AI Connector Service.",
+      "fix": "Create a custom role with MCP Server Connection, OAuth 2.0 token login and REST Web Services permissions, and pick it on the consent screen.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": ["s10"],
+        "note": "Only from a vendor's docs. Oracle's own AI Connector page wasn't opened."
+      }
+    },
+    {
+      "symptom": "Redirect URI rejected when saving the integration record",
+      "cause": "http:// URIs aren't supported.",
+      "fix": "Use an https:// URI (a tunnel for local dev) or a custom scheme.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Concurrency errors on bursts of REST calls",
+      "cause": "Each account has a shared concurrency limit across web services and RESTlets (5 on the shared tier, up to 20 base, +10 per SuiteCloud Plus license; always 5 on development accounts).",
+      "fix": "Queue requests per account, retry with backoff, and read the limit via the REST governanceLimits operation.",
+      "evidence": { "label": "sourced", "sourceIds": ["s8"], "note": null }
+    },
+    {
+      "symptom": "Lost client secret",
+      "cause": "The client ID and secret are shown only once on save.",
+      "fix": "Reset the credentials on the integration record in your account, then redeploy. Bundled records can only be reset in the owning account.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s7"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 60 minutes. Confidential-client refresh tokens last 7 days. Public-client refresh tokens are single-use, 48 h by default (1–720 h), with a 'maximum time for token rotation' (default 168 h) that forces reauthentication.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s3", "s4"],
+        "note": "Oracle's Step Two page mentions both 7 days and 2 days; we read 7 days as confidential and 2 days as the public-client default."
+      }
+    },
+    {
+      "text": "The endpoints are per account: https://<accountID>.app.netsuite.com for authorize and https://<accountID>.suitetalk.api.netsuite.com for tokens and REST. system.netsuite.com works for authorize when you don't know the account, and the callback returns company=<accountID>.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3", "s9"], "note": null }
+    },
+    {
+      "text": "Data access follows the NetSuite role the user picks at consent, not the OAuth scope. The same user can connect with different roles, and each role gets its own token.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "PKCE (S256 only) is optional for confidential clients today, but Oracle says it's required for new integrations as of NetSuite 2027.1.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Distribution has no Oracle review. Your integration record auto-installs into a customer account on first OAuth use, or you can ship it inside a SuiteBundler bundle (installed Enabled regardless of the approval preference).",
+      "evidence": { "label": "sourced", "sourceIds": ["s6", "s7"], "note": null }
+    },
+    {
+      "text": "Concurrency is capped per customer account and shared with the customer's other integrations, so a busy account can throttle your agent.",
+      "evidence": { "label": "sourced", "sourceIds": ["s8"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "NetSuite Help: Create Integration Records for Applications to Use OAuth 2.0", "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157771733782.html" },
+    { "id": "s2", "title": "NetSuite Help: Step One GET Request to the Authorization Endpoint", "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_160855585734.html" },
+    { "id": "s3", "title": "NetSuite Help: Step Two POST Request to the Token Endpoint", "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_158081952044.html" },
+    { "id": "s4", "title": "NetSuite Help: Refresh Token POST Request to the Token Endpoint", "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_158082518856.html" },
+    { "id": "s5", "title": "NetSuite Help: OAuth 2.0 Authorization Code Grant Flow", "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_158074210415.html" },
+    { "id": "s6", "title": "NetSuite Help: Auto-Installation of Integration Records", "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4429293934.html" },
+    { "id": "s7", "title": "NetSuite Help: Distributing Integration Records", "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4389835426.html" },
+    { "id": "s8", "title": "NetSuite Help: Concurrency Governance Limits Based on Service Tiers and SuiteCloud Plus Licenses", "url": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_1500275603.html" },
+    { "id": "s9", "title": "NetSuite OpenID Connect discovery document", "url": "https://system.netsuite.com/.well-known/openid-configuration" },
+    { "id": "s10", "title": "Third-party: Dust docs, NetSuite AI Connector setup", "url": "https://docs.dust.tt/docs/netsuite" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://system.netsuite.com/.well-known/openid-configuration: issuer https://system.netsuite.com, scopes_supported email/openid/suite_analytics/mcp/restlets/rest_webservices, code_challenge_methods S256, grant types authorization_code and refresh_token, token auth client_secret_basic or none",
+      "GET https://system.netsuite.com/app/login/oauth2/authorize.nl with no params: HTTP 500",
+      "POST https://system.netsuite.com/services/rest/auth/oauth2/v1/token with no body: HTTP 411"
+    ],
+    "openQuestions": [
+      "Whether free NetSuite developer accounts still exist, and the current SDN membership cost (netsuite.com returned 403)",
+      "Whether the confidential-client 7-day refresh token can be configured on the integration record (Oracle's docs only describe settings for public clients)",
+      "Whether the Administrator role is blocked for the REST and RESTlet scopes too, or only for the AI Connector (mcp) scope",
+      "Whether the Client Credentials (M2M) grant, which needs per-customer certificate setup, is practical for a multi-tenant agent"
+    ]
+  }
+}

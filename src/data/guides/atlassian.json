@@ -1,0 +1,592 @@
+{
+  "app": {
+    "name": "Atlassian (Jira, Confluence)",
+    "slug": "atlassian",
+    "website": "https://www.atlassian.com",
+    "developerPortal": "https://developer.atlassian.com/console/myapps/",
+    "category": "Project management"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 (3LO) apps guide",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/"
+    },
+    {
+      "kind": "scopes",
+      "label": "Jira scopes for OAuth 2.0 (3LO) and Forge",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/"
+    },
+    {
+      "kind": "review",
+      "label": "Managing OAuth apps (sharing and approval)",
+      "url": "https://developer.atlassian.com/cloud/oauth/getting-started/managing-oauth-apps/"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limiting",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/rate-limiting/"
+    },
+    {
+      "kind": "console",
+      "label": "Developer console",
+      "url": "https://developer.atlassian.com/console/myapps/"
+    },
+    {
+      "kind": "changelog",
+      "label": "OAuth changelog",
+      "url": "https://developer.atlassian.com/cloud/oauth/changelog/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "An OAuth 2.0 (3LO) integration is self-serve: create it in the developer console, toggle sharing, and any Atlassian user can authorize it the same day, though unapproved apps show a 'not reviewed by Atlassian' warning. The real constraint for an agent is rate limits enforced since March 2026: by default your app shares one 65,000-point hourly quota across all customer sites, and a per-tenant quota needs Atlassian review.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Create the integration, add Jira/Confluence APIs and scopes on Permissions, set a callback URL, run the code flow, then call accessible-resources to get the cloudid."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day–3 weeks",
+      "hours": {
+        "min": 4,
+        "max": 504
+      },
+      "assumes": "A shared 3LO integration that reads and writes Jira/Confluence data; sharing alone is same day with a warning, and the upper bound covers Atlassian approval to remove the warning and a per-tenant rate-limit pool.",
+      "waitingOn": "Nothing to go live. Optionally, Atlassian app approval (a staff post cited a 10-business-day objective) and review for the per-tenant rate-limit pool.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4",
+          "s8"
+        ],
+        "note": "Sharing needs no review per the docs. The approval timing is from a community post and may be outdated; Atlassian publishes no review SLA for 3LO apps or the per-tenant pool."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "An Atlassian account and an Atlassian Cloud site (a free Jira/Confluence site works) for testing",
+      "why": "The consent screen makes the user pick a site, and API calls are made against that site's cloudid.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A single distributable app for all customers, not one 3LO app per customer and not customer-generated API tokens",
+      "why": "Atlassian's June 2025 guidance says per-customer 3LO apps and stored customer API tokens violate its standards, and non-compliant apps may lose platform access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A decision between OAuth 2.0 (3LO), Forge and Connect",
+      "why": "3LO is hosted by you and suits accessing data on behalf of a user from an external service. Forge is Atlassian-hosted, installed by site admins, and the only type accepted for new Marketplace submissions since Sep 17, 2025. Connect is legacy and not recommended for new apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A test instance of your product for reviewers, if you seek approval or a listing",
+      "why": "Marketplace reviewers need to run through setup and configuration.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity and offline access",
+      "examples": [
+        "offline_access",
+        "openid",
+        "email",
+        "profile"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "offline_access is needed for a refresh token. Identity scopes come from the User identity API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10",
+          "s9"
+        ],
+        "note": "Scopes observed in the live OIDC discovery document."
+      }
+    },
+    {
+      "tier": "Classic read/write scopes (recommended)",
+      "examples": [
+        "read:jira-work",
+        "write:jira-work",
+        "read:jira-user",
+        "read:confluence-content.all",
+        "search:confluence"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enough for an agent that searches, reads and edits issues and pages. Atlassian says to use classic scopes when available. The user's own Jira/Confluence permissions still constrain the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s11"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Granular scopes",
+      "examples": [
+        "read:issue:jira",
+        "read:page:confluence"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Use only when a classic scope doesn't cover the API. Atlassian recommends fewer than 50 scopes per app, and adding scopes forces existing users to re-consent.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s11",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Admin/configuration scopes",
+      "examples": [
+        "manage:jira-project",
+        "manage:jira-configuration",
+        "manage:jira-webhook"
+      ],
+      "reviewRequired": false,
+      "time": "Same day, admin users only",
+      "impact": "Calls only succeed for users with the matching Jira admin permissions.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Choose 3LO vs Forge",
+      "owner": "agent",
+      "detail": "For an external agent acting on behalf of users, pick an OAuth 2.0 (3LO) integration. Choose Forge instead if you need in-product UI, admin-level installs or a Marketplace listing.",
+      "url": "https://developer.atlassian.com/developer-guide/cloud-development-platform-overview/",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the OAuth 2.0 integration",
+      "owner": "human",
+      "detail": "In the developer console choose Create > OAuth 2.0 integration and pick a grant type: account-level (can cover multiple sites) or resource-level (limited to the sites the user picks).",
+      "url": "https://developer.atlassian.com/console/myapps/",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The console URL returned HTTP 200 on 2026-10-20; we did not sign in."
+      }
+    },
+    {
+      "title": "Add APIs and scopes on Permissions",
+      "owner": "human",
+      "detail": "Add the Jira and/or Confluence API, then the classic scopes the agent needs. Set the callback URL under Authorization.",
+      "url": "https://developer.atlassian.com/console/myapps/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=...&scope=read:jira-work%20offline_access&redirect_uri=...&state=...&response_type=code&prompt=consent. Exchange at POST https://auth.atlassian.com/oauth/token. PKCE S256 is supported.",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/",
+      "duration": "1–3 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s9"
+        ],
+        "note": "PKCE support observed in the live discovery document."
+      }
+    },
+    {
+      "title": "Resolve the cloudid and call the APIs",
+      "owner": "agent",
+      "detail": "GET https://api.atlassian.com/oauth/token/accessible-resources, then call https://api.atlassian.com/ex/jira/{cloudid}/rest/api/3/... or /ex/confluence/{cloudid}/.... Infer the product from each resource's scopes, since ids aren't unique across containers.",
+      "url": "https://developer.atlassian.com/cloud/oauth/getting-started/making-calls-to-api/",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle rotating refresh tokens",
+      "owner": "agent",
+      "detail": "Store the new refresh token after every refresh. Rotating tokens expire after 90 days of inactivity, and an old token can be reused for 10 minutes. invalid_grant 'Unknown or invalid refresh token' means re-authorize.",
+      "url": "https://developer.atlassian.com/cloud/oauth/getting-started/refresh-tokens/",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s10"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Design for the points-based rate limits",
+      "owner": "agent",
+      "detail": "Budget against the default Global Pool of 65,000 points/hour shared across all tenants. Read RateLimit-Reason and Retry-After, pause on quota errors, and back off with jitter on burst errors.",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/rate-limiting/",
+      "duration": "2–4 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Enable sharing",
+      "owner": "human",
+      "detail": "Under Distribution toggle Enable sharing. The app is private by default, so only you can authorize it until then. No review is required to share.",
+      "url": "https://developer.atlassian.com/console/myapps/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Distribution may also ask for a personal data declaration; we couldn't confirm the current form fields."
+      }
+    },
+    {
+      "title": "Optional: request app approval to remove the warning",
+      "owner": "human",
+      "detail": "Unapproved integrations show users a 'not yet reviewed by Atlassian' warning. Approval follows the third-party integration listing process, and a Marketplace listing isn't needed to submit.",
+      "url": "https://developer.atlassian.com/platform/marketplace/knowledge-base/listing-a-third-party-integration-on-the-atlassian-marketplace/",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Atlassian approval review",
+      "owner": "wait",
+      "detail": "A Marketplace team member reviews and may test against your instance. An Atlassian staff member cited a 10-business-day objective in 2025.",
+      "url": null,
+      "duration": "~2 weeks",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "Community forum statement, not official policy."
+      }
+    },
+    {
+      "title": "Request the per-tenant rate-limit pool when scaling",
+      "owner": "human",
+      "detail": "The Per-Tenant Pool gives a separate hourly quota per customer site (scaled by edition and user count, up to 500,000 points/hour) and is assigned only after Atlassian review.",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/rate-limiting/",
+      "duration": "unknown",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "The request process and timing weren't documented on the page."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Choose between 3LO and Forge and pick classic scopes",
+    "Implement the code flow with prompt=consent, PKCE and offline_access",
+    "Resolve cloudids via accessible-resources and route Jira vs Confluence calls",
+    "Build rotating refresh-token storage and points-aware rate limiting",
+    "Draft the approval/listing description and reviewer test instructions"
+  ],
+  "humanMustDo": [
+    "Sign in to the developer console and create the integration",
+    "Add APIs, scopes and the callback URL, then enable sharing",
+    "Submit for approval and give reviewers a test instance",
+    "Request the per-tenant rate-limit pool from Atlassian when scaling"
+  ],
+  "blockers": [
+    {
+      "symptom": "Users see a warning that the app has not yet been reviewed by Atlassian",
+      "cause": "The integration is shared but not approved.",
+      "fix": "Submit it for approval through the third-party integration process; a Marketplace listing isn't required.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 with RateLimit-Reason: jira-quota-global-based across many customers at once",
+      "cause": "The default Global Pool shares 65,000 points/hour across all tenants of your app, enforced since March 2, 2026.",
+      "fix": "Pause until reset, cut object-heavy reads, and request the Per-Tenant Pool via Atlassian review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Outside users can't authorize; only the developer can",
+      "cause": "3LO apps are private by default.",
+      "fix": "Enable sharing under Distribution in the developer console.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "403 invalid_grant 'Unknown or invalid refresh token'",
+      "cause": "The refresh token expired (90 days inactive), the user changed their password, or the app didn't store the rotated token.",
+      "fix": "Persist each new refresh token; on this error send the user through authorization again.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Agent only sees one site when the customer has several",
+      "cause": "The consent screen makes the user pick one site per authorization.",
+      "fix": "Have users repeat the flow per site, or use an account-level grant type where available.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Existing users lose access or are prompted again after you change scopes",
+      "cause": "Adding or removing scopes requires users who previously consented to re-consent.",
+      "fix": "Settle scopes before sharing and batch scope changes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "3LO apps are installed per user, not per site. A site admin can't restrict an individual user's access except by uninstalling the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Atlassian's docs conflict on listings: the platform overview says 3LO integrations can't be listed on the Marketplace, while the 3LO guide says they can have informational listings with limited features.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Connect is legacy: since Sep 17, 2025 only Forge apps can be submitted to the Marketplace, and new extensibility features ship only on Forge.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate-limit costs are per object returned (e.g. users cost 2 points, issues 1) plus 1 base point per request, so large JQL searches burn quota fast.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Asking customers to generate and paste API tokens for your service to store is a policy violation per Atlassian's 2025 guidance, so 3LO or Forge is the sanctioned path.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The authorization server publishes OIDC discovery with PKCE (S256), a device authorization endpoint and a revocation endpoint.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "Fetched auth.atlassian.com/.well-known/openid-configuration on 2026-10-20."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Atlassian: OAuth 2.0 (3LO) apps (Jira platform)",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/"
+    },
+    {
+      "id": "s2",
+      "title": "Atlassian: Managing OAuth apps",
+      "url": "https://developer.atlassian.com/cloud/oauth/getting-started/managing-oauth-apps/"
+    },
+    {
+      "id": "s3",
+      "title": "Atlassian: Scopes for OAuth 2.0 (3LO) and Forge apps (Jira)",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/"
+    },
+    {
+      "id": "s4",
+      "title": "Atlassian: Jira Cloud rate limiting",
+      "url": "https://developer.atlassian.com/cloud/jira/platform/rate-limiting/"
+    },
+    {
+      "id": "s5",
+      "title": "Atlassian blog: Building secure and scalable integrations (June 2025)",
+      "url": "https://www.atlassian.com/blog/developer/building-secure-and-scalable-integrations-our-guidance-for-third-party-apps"
+    },
+    {
+      "id": "s6",
+      "title": "Atlassian: Cloud development platform overview",
+      "url": "https://developer.atlassian.com/developer-guide/cloud-development-platform-overview/"
+    },
+    {
+      "id": "s7",
+      "title": "Atlassian: Listing a third-party integration on the Marketplace",
+      "url": "https://developer.atlassian.com/platform/marketplace/knowledge-base/listing-a-third-party-integration-on-the-atlassian-marketplace/"
+    },
+    {
+      "id": "s8",
+      "title": "Atlassian Developer Community: Marketplace OAuth app submission process",
+      "url": "https://community.developer.atlassian.com/t/marketplace-oauth-app-submission-process/91172"
+    },
+    {
+      "id": "s9",
+      "title": "Atlassian OpenID Connect discovery document",
+      "url": "https://auth.atlassian.com/.well-known/openid-configuration"
+    },
+    {
+      "id": "s10",
+      "title": "Atlassian: Refresh token flow",
+      "url": "https://developer.atlassian.com/cloud/oauth/getting-started/refresh-tokens/"
+    },
+    {
+      "id": "s11",
+      "title": "Atlassian: Scopes for OAuth 2.0 (3LO) and Forge apps (Confluence)",
+      "url": "https://developer.atlassian.com/cloud/confluence/scopes-for-oauth-2-3LO-and-forge-apps/"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://auth.atlassian.com/.well-known/openid-configuration: issuer https://auth.atlassian.com, PKCE S256, offline_access, device and revocation endpoints",
+      "GET https://auth.atlassian.com/authorize: 302 to id.atlassian.com/login",
+      "POST https://auth.atlassian.com/oauth/token with a bogus code: {\"error\":\"invalid_request\",\"error_description\":\"authorization_code is invalid\"}",
+      "GET https://api.atlassian.com/oauth/token/accessible-resources without a token: 401",
+      "GET https://developer.atlassian.com/console/myapps/: HTTP 200"
+    ],
+    "openQuestions": [
+      "The current approval SLA for 3LO apps and how to request the per-tenant rate-limit pool",
+      "Whether enabling sharing still requires a personal data declaration and what it asks",
+      "Whether Confluence uses the same points-based quota numbers as Jira",
+      "When account-level grants are available and how they change the one-site-per-consent rule",
+      "Which statement on 3LO Marketplace listings is current (informational listing vs not listable)"
+    ]
+  }
+}

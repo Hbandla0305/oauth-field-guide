@@ -16,7 +16,9 @@
     "check-links": "tsx scripts/check-links.ts",
     "inspect": "tsx --env-file=.env.local scripts/inspect-generated.ts",
     "generated": "tsx --env-file=.env.local scripts/list-generated.ts",
-    "delete-generated": "tsx --env-file=.env.local scripts/delete-generated.ts"
+    "delete-generated": "tsx --env-file=.env.local scripts/delete-generated.ts",
+    "runs": "tsx --env-file=.env.local scripts/runs.ts",
+    "try-attempts": "tsx scripts/try-attempts.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

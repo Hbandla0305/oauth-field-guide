@@ -11,6 +11,8 @@ const STAGES: { id: StageId; label: string }[] = [
   { id: "screen", label: "Identify the app" },
   { id: "probe", label: "Probe live OAuth endpoints" },
   { id: "research", label: "Find and read official docs" },
+  { id: "attempt", label: "Try the first setup steps, logged out" },
+  { id: "gaps", label: "Look into what's still unclear" },
   { id: "links", label: "Check every cited link" },
   { id: "audit", label: "Audit claims against sources" },
   { id: "save", label: "Save a shareable guide" },
@@ -83,6 +85,8 @@ export function GenerateRun() {
     return () => clearInterval(timer);
   }, [app, router]);
 
+  // Searches and reads show under whichever reading step is current.
+  const stageForReading: StageId = stages.gaps ? "gaps" : "research";
   // The live run has started only once the server streams its first stage.
   const researching = Object.keys(stages).length > 0;
 
@@ -135,7 +139,7 @@ export function GenerateRun() {
                   <div>
                     <p className={st === "pending" ? "text-muted" : "font-medium"}>{s.label}</p>
                     {stages[s.id]?.detail && <p className="text-sm text-muted">{stages[s.id]?.detail}</p>}
-                    {s.id === "research" && (searches.length > 0 || reads.length > 0) && (
+                    {s.id === stageForReading && (searches.length > 0 || reads.length > 0) && (
                       <ul className="mt-2 space-y-1 text-sm text-muted">
                         {searches.map((q, i) => (
                           <li key={i} className="truncate">

@@ -47,6 +47,46 @@ function searchName(name: string): string {
   return name.replace(/\s*\(.*\)\s*/g, " ").trim() || name;
 }
 
+// Follow-up reading for the gap-filling step: the agent picks the questions, our code runs the
+// searches with the same filters and returns only pages it hasn't read yet.
+export async function readMore(
+  name: string,
+  website: string,
+  questions: string[],
+  alreadyRead: string[],
+  firstId: number,
+  signal: AbortSignal,
+  onQuery: (q: string) => void,
+): Promise<{ pages: Page[]; credits: number }> {
+  const root = host(website).split(".").slice(-2).join(".");
+  const brand = root.split(".")[0];
+  const term = searchName(name);
+  const seen = new Set(alreadyRead.map((u) => u.replace(/[#?].*$/, "").replace(/\/$/, "")));
+  let credits = 0;
+  const found: SearchResult[] = [];
+  for (const question of questions.slice(0, LIMITS.agent.maxGapSearches)) {
+    const q = `${term} ${question}`.slice(0, 200);
+    onQuery(q);
+    const { results, credits: used } = await search(q, signal);
+    credits += used;
+    for (const r of results) {
+      const key = r.url.replace(/[#?].*$/, "").replace(/\/$/, "");
+      if (seen.has(key) || !r.markdown || (r.metadata?.statusCode ?? 200) >= 400) continue;
+      const official = host(r.url) === root || host(r.url).endsWith(`.${root}`);
+      if (!official && (NOISE.test(host(r.url)) || !/oauth|api|app/i.test(r.markdown) || !r.markdown.toLowerCase().includes(brand))) continue;
+      seen.add(key);
+      found.push(r);
+    }
+  }
+  const pages = found.slice(0, LIMITS.agent.maxNewPages).map((r, i) => ({
+    id: `s${firstId + i}`,
+    url: r.url,
+    title: (r.title ?? r.url).slice(0, 160),
+    markdown: r.markdown!.slice(0, LIMITS.firecrawl.maxCharsPerPage),
+  }));
+  return { pages, credits };
+}
+
 export async function readOfficialDocs(
   name: string,
   website: string,

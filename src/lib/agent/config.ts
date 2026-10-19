@@ -17,7 +17,7 @@ export const LIMITS = {
   totalBudgetUsd: 1.8, // hard stop, $0.20 under the $2 ceiling
   reservePerRunUsd: 0.2, // worst case for one run, held until the run settles
   maxSearchesPerRun: 6,
-  maxOutputTokens: { screen: 2_000, research: 24_000, audit: 16_000 },
+  maxOutputTokens: { screen: 2_000, research: 24_000, audit: 16_000, gaps: 2_000 },
   runsPerIpPerHour: 3,
   runsPerDay: 25,
   runTimeoutMs: 240_000,
@@ -30,9 +30,14 @@ export const LIMITS = {
     maxQuestionLength: 500,
     maxOutputTokens: 1_200,
   },
+  // The investigate loop: after drafting, the agent may ask up to this many follow-up questions.
+  agent: {
+    maxGapSearches: 2,
+    maxNewPages: 4,
+  },
   firecrawl: {
     totalCredits: 400, // hard cap across all runs; free tier is enough for dev + demo
-    reservePerRun: 20,
+    reservePerRun: 30,
     resultsPerQuery: 4,
     maxPages: 8,
     maxCharsPerPage: 12_000,

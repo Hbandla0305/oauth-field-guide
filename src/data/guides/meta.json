@@ -56,12 +56,12 @@
       }
     },
     "timeToProd": {
-      "range": "2–8 weeks",
+      "range": "2–6 weeks",
       "hours": {
         "min": 336,
-        "max": 1344
+        "max": 1008
       },
-      "assumes": "A Business-type app serving other people's Pages or Instagram professional accounts with Advanced Access (for example instagram_business_basic, instagram_business_manage_messages, pages_read_engagement). There's no faster path for non-role users.",
+      "assumes": "A Business-type app serving other people's Pages or Instagram professional accounts with Advanced Access (for example instagram_business_basic, instagram_business_manage_messages, pages_read_engagement). There's no faster path for non-role users. Business Verification, App Review and Access Verification run in sequence; a rejection restarts the queue, and 2026 vendor reports describe App Review waits of about 20 days.",
       "waitingOn": "Business Verification (days to 2+ weeks), then App Review (Meta says under a week, often 2–3 days; 2026 reports say up to about 20 days), then Access Verification for Tech Providers (about 5 business days, by Meta's 2022 estimate).",
       "evidence": {
         "label": "inferred",
@@ -71,7 +71,7 @@
           "m6",
           "m13"
         ],
-        "note": "Each stage's official estimate is short, but they run in sequence and rejections restart the queue. The 2026 slowdown figures come from a vendor blog and are unverified."
+        "note": "Meta's App Review page: 'It typically takes us less than one week to process your submission, and often takes only 2–3 days'. Access Verification is about 5 business days by Meta's 2022 estimate. Meta publishes no Business Verification time. The total is our estimate for the three steps in sequence with one resubmission; the 20-day vendor figure is tail risk, not typical."
       }
     },
     "cost": null
@@ -173,7 +173,7 @@
         "instagram_business_manage_messages"
       ],
       "reviewRequired": true,
-      "time": "2–8 weeks",
+      "time": "2–6 weeks",
       "impact": "Read profile and media, publish, and manage comments and DMs for any professional account. Needs Business Verification and App Review. Tech Providers serving multiple businesses also go through Access Verification.",
       "evidence": {
         "label": "sourced",
@@ -196,7 +196,7 @@
         "ads_management"
       ],
       "reviewRequired": true,
-      "time": "2–8 weeks",
+      "time": "2–6 weeks",
       "impact": "Gives you user tokens, or business-integration system-user tokens that don't expire by default, for client Pages, Instagram accounts, ads and catalogs. If the user declines any permission in the configuration, the app gets none of them.",
       "evidence": {
         "label": "sourced",

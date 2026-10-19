@@ -57,20 +57,20 @@
       }
     },
     "timeToProd": {
-      "range": "2–8 weeks",
+      "range": "2–6 weeks",
       "hours": {
         "min": 336,
-        "max": 1344
+        "max": 1008
       },
-      "assumes": "A published Marketplace app (can be unlisted via 'install from your landing page') that reads meetings, recordings or transcripts for any Zoom user; a beta share to up to 100 external users takes 3–4 business days.",
+      "assumes": "A published Marketplace app (can be unlisted via 'install from your landing page') that reads meetings, recordings or transcripts for any Zoom user; a beta share to up to 100 external users takes 3–4 business days. Zoom's docs give no review timeline; remediation rounds can push it to 8 weeks or more, as forum reports describe.",
       "waitingOn": "Marketplace functional review, then security review (technical design document review, scope evaluation, OWASP testing), plus any remediation rounds.",
       "evidence": {
-        "label": "unverified",
+        "label": "inferred",
         "sourceIds": [
           "s1",
           "s7"
         ],
-        "note": "Zoom staff (Dec 2024) cite a 72-hour SLA per submission and up to 2 weeks for security review; forum reports through 2026 describe 6–8+ weeks. The official review page gives no timeframe."
+        "note": "Estimate. Zoom's review page gives no timeframe. A Zoom staff reply (Dec 2024) cites 'a 72-hour SLA for every submission' and security review that 'can take up to 2 weeks'. The range allows for functional review, security review and one or two fix rounds; 6-8+ week forum reports are tail risk."
       }
     },
     "cost": "Free to build and submit; no review fee found. API rate limits depend on the customer's Zoom plan (Free accounts have low daily caps)."
@@ -155,7 +155,7 @@
         "webinar:write:registrant"
       ],
       "reviewRequired": true,
-      "time": "2–8 weeks",
+      "time": "2–6 weeks",
       "impact": "Any Zoom user can install after Marketplace approval. Security review evaluates whether each scope is necessary.",
       "evidence": {
         "label": "sourced",
@@ -173,7 +173,7 @@
         "meeting:read:meeting:master"
       ],
       "reviewRequired": true,
-      "time": "2–8 weeks",
+      "time": "2–6 weeks",
       "impact": "Gives access across the whole account, so an account admin has to install it. Expect more scrutiny in scope evaluation.",
       "evidence": {
         "label": "inferred",

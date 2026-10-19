@@ -52,21 +52,21 @@
       }
     },
     "timeToProd": {
-      "range": "1–4 months",
+      "range": "1–3 months",
       "hours": {
         "min": 720,
-        "max": 2880
+        "max": 2160
       },
-      "assumes": "A Marketplace listing, which an agent that reads messages needs. Unlisted installs work the same day but are throttled.",
+      "assumes": "A Marketplace listing, which an agent that reads messages needs. Unlisted installs work the same day but are throttled. Slack states review maximums: up to 10 business days for preliminary review and up to 10 weeks for functional review of new apps, and says turnaround 'can vary depending on volume'. Time to reach 10 active workspaces first is not included.",
       "waitingOn": "Getting 10+ active workspaces through unlisted installs, then Marketplace preliminary review (up to 10 business days) and functional review (up to 10 weeks for new apps). Separately, each customer's workspace admin approval if their workspace restricts apps.",
       "evidence": {
-        "label": "sourced",
+        "label": "inferred",
         "sourceIds": [
           "s3",
           "s4",
           "s5"
         ],
-        "note": "Review windows are Slack's stated maximums. The time to reach 10 active workspaces depends on your own go-to-market, so the total range is an estimate."
+        "note": "Slack's review guide: preliminary review 'takes up to 10 business days' and functional review 'takes up to 10 weeks for new submissions'. These are maximums, not typical times, and Slack gives no typical figure, so the range is our estimate bounded by those maximums. Reaching 10 active workspaces depends on your own go-to-market and is excluded."
       }
     },
     "cost": "Free to create and distribute apps and to submit to the Marketplace (no fee mentioned in the review docs). Semantic search via RTS needs customer plans that include Slack AI Search."
@@ -163,7 +163,7 @@
         "search:read.users"
       ],
       "reviewRequired": true,
-      "time": "1–4 months (Marketplace)",
+      "time": "1–3 months (Marketplace)",
       "impact": "The Real-time Search API (assistant.search.context) and the Slack MCP server are not available to unlisted distributed apps. Private, IM and MPIM search need a user token. Bot-token RTS calls need an action_token from an event.",
       "evidence": {
         "label": "sourced",
@@ -182,7 +182,7 @@
         "user_scope: files:read"
       ],
       "reviewRequired": true,
-      "time": "1–4 months (Marketplace)",
+      "time": "1–3 months (Marketplace)",
       "impact": "Marketplace reviewers return apps that use user tokens unnecessarily. Broad *:history user scopes need a clear use case such as real-time search or MCP. Legacy search:read is on the 'avoid' list.",
       "evidence": {
         "label": "sourced",

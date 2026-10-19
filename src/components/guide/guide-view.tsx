@@ -33,7 +33,7 @@ export const OWNER = {
     cls: "bg-trivial-bg text-trivial",
     hint: "An AI assistant (ChatGPT, Claude, Copilot) can do this for you: drafting a privacy policy or scope justification, generating config, or checking endpoints. Use Copy prompt to get a ready-made prompt.",
   },
-  human: { label: "You", cls: "bg-ink text-surface", hint: "Needs you: signing in, clicking through a console, a decision, verification or payment." },
+  human: { label: "You (Developer)", cls: "bg-ink text-surface", hint: "Needs you: signing in, clicking through a console, a decision, verification or payment." },
   wait: { label: "Provider review", cls: "border border-dashed border-muted text-muted", hint: "Nothing to do but wait for the provider." },
 } as const;
 
@@ -160,15 +160,13 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
 
         <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="max-w-4xl pt-6">
           {tab === "intro" && <IntroPanel guide={guide} sources={sources} />}
-          {tab === "steps" && <StepsPanel guide={guide} onStart={() => document.getElementById("checklist")?.scrollIntoView({ behavior: "smooth" })} />}
+          {tab === "steps" && <StepsPanel guide={guide} sources={sources} />}
           {tab === "permissions" && <PermissionsPanel guide={guide} sources={sources} />}
           {tab === "know" && <KnowPanel guide={guide} sources={sources} />}
           {tab === "troubleshoot" && <TroubleshootPanel guide={guide} sources={sources} />}
           {tab === "resources" && <ResourcesPanel guide={guide} />}
         </div>
       </div>
-
-      <Checklist guide={guide} sources={sources} />
 
       <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} guide={guide} />
     </>
@@ -240,7 +238,6 @@ function PanelTitle({ children, tip }: { children: React.ReactNode; tip?: React.
 }
 
 function IntroPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
-  const waits = guide.steps.filter((s) => s.owner === "wait");
   return (
     <div className="space-y-10">
       <section>
@@ -249,7 +246,7 @@ function IntroPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) 
           {guide.prerequisites.map((p) => (
             <li key={p.item} className="rounded-xl border border-line bg-surface p-4">
               <p className="font-medium">{p.item}</p>
-              <p className="mt-1 text-sm text-ink/75">{p.why}</p>
+              <p className="mt-1 text-sm [overflow-wrap:anywhere] text-ink/75">{p.why}</p>
               <div className="mt-2">
                 <EvidenceTag evidence={p.evidence} sources={sources} />
               </div>
@@ -260,80 +257,147 @@ function IntroPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) 
 
       <section>
         <PanelTitle
-          tip={
-            <>
-              <span className="block font-medium">AI can do</span>
-              {OWNER.agent.hint}
-              <span className="mt-2 block font-medium">You</span>
-              {OWNER.human.hint}
-              <span className="mt-2 block font-medium">Provider review</span>
-              {OWNER.wait.hint}
-            </>
-          }
+          tip="How the steps split between an AI assistant, you, and waiting on the provider. Hover each for the details."
         >
           Who does what
         </PanelTitle>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <OwnerColumn owner="agent" items={guide.agentCanDo} guide={guide} />
-          <OwnerColumn owner="human" items={guide.humanMustDo} />
-          <OwnerColumn owner="wait" items={waits.length ? waits.map((s) => s.title) : ["Nothing. There's no provider review."]} />
-        </div>
+        <WhoDoesWhat guide={guide} />
       </section>
     </div>
   );
 }
 
-function OwnerColumn({ owner, items, guide }: { owner: keyof typeof OWNER; items: string[]; guide?: Guide }) {
+// Three counts; the detail is one hover away so the Intro stays light.
+function WhoDoesWhat({ guide }: { guide: Guide }) {
+  const rows: { owner: keyof typeof OWNER; items: string[] }[] = [
+    { owner: "agent", items: guide.agentCanDo },
+    { owner: "human", items: guide.humanMustDo },
+    { owner: "wait", items: guide.steps.filter((s) => s.owner === "wait").map((s) => s.title) },
+  ];
   return (
-    <div className="rounded-xl border border-line bg-surface p-4">
-      <OwnerTag owner={owner} />
-      <p className="mt-2 text-xs text-muted">{OWNER[owner].hint}</p>
-      <ul className="mt-3 space-y-1.5 text-sm">
-        {items.map((x) => (
-          <li key={x} className="flex gap-2">
-            <span className="mt-2 size-1 shrink-0 rounded-full bg-muted" aria-hidden />
-            <span className="min-w-0 flex-1">
-              {x}
-              {owner === "agent" && guide && (
-                <span className="ml-2 inline-block align-middle">
-                  <CopyPrompt compact prompt={buildPrompt(guide, x)} />
-                </span>
-              )}
-            </span>
+    <ul className="mt-4 grid grid-cols-3 gap-3">
+      {rows.map(({ owner, items }) => {
+        const steps = guide.steps.filter((s) => s.owner === owner).length;
+        return (
+          <li key={owner} className="rounded-xl border border-line bg-surface p-4">
+            <p className="font-display text-2xl font-semibold">{steps}</p>
+            <p className="mt-0.5 flex flex-wrap items-center text-sm">
+              <span className="font-medium">{OWNER[owner].label}</span>
+              <InfoTip label={`What ${OWNER[owner].label} covers`} align={owner === "wait" ? "end" : "start"}>
+                <span className="block text-surface/80">{OWNER[owner].hint}</span>
+                {items.length > 0 && (
+                  <span className="mt-2 block space-y-1 border-t border-surface/15 pt-2">
+                    {items.map((x) => (
+                      <span key={x} className="block">
+                        – {x}
+                      </span>
+                    ))}
+                  </span>
+                )}
+              </InfoTip>
+            </p>
+            <p className="text-xs text-muted">{steps === 1 ? "step" : "steps"}</p>
           </li>
-        ))}
-      </ul>
-    </div>
+        );
+      })}
+    </ul>
   );
 }
 
-// Overview of the path; the interactive walkthrough lives in the checklist below the tabs.
-function StepsPanel({ guide, onStart }: { guide: Guide; onStart: () => void }) {
+// The steps double as a checklist: tick each one off as you go. Progress is a per-browser
+// convenience, so localStorage is enough.
+function StepsPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
+  const key = `checklist:${guide.app.slug}`;
+  const [done, setDone] = useState<number[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) ?? "[]");
+      if (Array.isArray(saved)) setDone(saved.filter((n) => Number.isInteger(n)));
+    } catch {
+      // storage unavailable (private mode): start empty
+    }
+  }, [key]);
+
+  function toggle(i: number) {
+    const next = done.includes(i) ? done.filter((n) => n !== i) : [...done, i];
+    setDone(next);
+    try {
+      localStorage.setItem(key, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  }
+
+  const total = guide.steps.length;
+  const pct = Math.round((done.length / total) * 100);
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <PanelTitle tip="The whole path at a glance. Use the step-by-step checklist below to work through it and track your progress.">Steps involved</PanelTitle>
-        <button type="button" onClick={onStart} className="rounded-lg border border-ink px-3 py-1.5 text-sm font-medium hover:bg-ink hover:text-surface">
-          Open the checklist
-        </button>
-      </div>
-      <ol className="relative mt-5 space-y-0 border-l border-line pl-6">
-        {guide.steps.map((s, i) => (
-          <li key={i} className="relative pb-4 last:pb-0">
-            <span
-              className={`absolute top-0.5 -left-[2.0625rem] flex size-5 items-center justify-center rounded-full text-[11px] font-semibold ${s.owner === "wait" ? "border border-dashed border-muted bg-paper text-muted" : "bg-ink text-surface"}`}
-              aria-hidden
+        <PanelTitle tip="Tick each step off as you go. Your progress is saved in this browser. Expand a step for details and links.">Steps involved</PanelTitle>
+        <div className="flex items-center gap-3 text-sm text-muted">
+          <span>
+            {done.length} of {total} done
+          </span>
+          <span className="relative h-1.5 w-28 rounded-full bg-faint" aria-hidden>
+            <span className="absolute inset-y-0 left-0 rounded-full bg-trivial transition-[width]" style={{ width: `${pct}%` }} />
+          </span>
+          {done.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setDone([]);
+                try {
+                  localStorage.removeItem(key);
+                } catch {}
+              }}
+              className="underline underline-offset-2 hover:text-ink"
             >
-              {i + 1}
-            </span>
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="font-medium">{s.title}</span>
-              <OwnerTag owner={s.owner} />
-              {s.owner === "agent" && <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />}
-              {s.duration && <span className="text-sm text-muted">{s.duration}</span>}
-            </div>
-          </li>
-        ))}
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+      <ol className="mt-4 divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
+        {guide.steps.map((s, i) => {
+          const checked = done.includes(i);
+          return (
+            <li key={i} className={`flex gap-3 px-4 py-3 transition-colors ${checked ? "bg-trivial-bg/60" : ""}`}>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => toggle(i)}
+                aria-label={`Mark step ${i + 1} done: ${s.title}`}
+                className="mt-1 size-4 shrink-0 cursor-pointer accent-trivial"
+              />
+              <details className="group/step min-w-0 flex-1">
+                <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
+                  <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className={`font-medium ${checked ? "text-trivial line-through decoration-trivial/60" : ""}`}>
+                      {i + 1}. {s.title}
+                    </span>
+                    <OwnerTag owner={s.owner} />
+                    {s.owner === "agent" && !checked && <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />}
+                    {s.duration && <span className="text-sm text-muted">{s.duration}</span>}
+                  </span>
+                  <svg viewBox="0 0 20 20" className="mt-1 size-4 shrink-0 text-muted transition-transform group-open/step:rotate-180" aria-hidden>
+                    <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </summary>
+                <div className="mt-2 space-y-2 pb-1">
+                  <p className="leading-relaxed [overflow-wrap:anywhere] text-ink/85">{s.detail}</p>
+                  {s.url && (
+                    <a href={s.url} target="_blank" rel="noreferrer" className="block truncate text-sm text-cobalt underline underline-offset-2">
+                      {s.url.replace(/^https:\/\//, "")}
+                    </a>
+                  )}
+                  <EvidenceTag evidence={s.evidence} sources={sources} />
+                </div>
+              </details>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );
@@ -351,12 +415,12 @@ function PermissionsPanel({ guide, sources }: { guide: Guide; sources: SourceInd
               <p className="font-medium">{t.tier}</p>
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {t.examples.slice(0, 5).map((x) => (
-                  <code key={x} className="rounded bg-faint px-1.5 py-0.5 text-xs" title={x}>
+                  <code key={x} className="max-w-full rounded bg-faint px-1.5 py-0.5 text-xs [overflow-wrap:anywhere]" title={x}>
                     {x.replace(/^https:\/\/www\.googleapis\.com\/auth\//, "")}
                   </code>
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-ink/80">{t.impact}</p>
+              <p className="mt-2 text-sm leading-relaxed [overflow-wrap:anywhere] text-ink/80">{t.impact}</p>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm sm:flex-col sm:items-end">
               {t.reviewRequired ? <span className="font-medium text-hard">Review required</span> : <span className="font-medium text-trivial">No review</span>}
@@ -398,7 +462,7 @@ function KnowPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
               {g.items.map((n) => (
                 <li key={n.text} className="flex gap-3 rounded-lg bg-surface px-4 py-3 shadow-[inset_3px_0_0_var(--color-line)]">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[0.9375rem] leading-relaxed text-ink/85">{n.text}</p>
+                    <p className="text-[0.9375rem] leading-relaxed [overflow-wrap:anywhere] text-ink/85">{n.text}</p>
                   </div>
                   <div className="shrink-0 pt-0.5">
                     <EvidenceTag evidence={n.evidence} sources={sources} align="end" />
@@ -442,11 +506,11 @@ function TroubleshootPanel({ guide, sources }: { guide: Guide; sources: SourceIn
                   <Chevron />
                 </summary>
                 <div className="space-y-2 px-4 pb-4">
-                  <p className="text-ink/85">
+                  <p className="[overflow-wrap:anywhere] text-ink/85">
                     <span className="text-muted">Why: </span>
                     {b.cause}
                   </p>
-                  <p className="text-ink/85">
+                  <p className="[overflow-wrap:anywhere] text-ink/85">
                     <span className="font-medium text-trivial">Fix: </span>
                     {b.fix}
                   </p>
@@ -512,95 +576,6 @@ function ResourcesPanel({ guide }: { guide: Guide }) {
         </ol>
       </section>
     </div>
-  );
-}
-
-// Interactive walkthrough. Progress is a per-browser convenience, so localStorage is enough.
-function Checklist({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
-  const key = `checklist:${guide.app.slug}`;
-  const [done, setDone] = useState<number[]>([]);
-
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(key) ?? "[]");
-      if (Array.isArray(saved)) setDone(saved.filter((n) => Number.isInteger(n)));
-    } catch {
-      // storage unavailable (private mode): start empty
-    }
-  }, [key]);
-
-  function toggle(i: number) {
-    const next = done.includes(i) ? done.filter((n) => n !== i) : [...done, i];
-    setDone(next);
-    try {
-      localStorage.setItem(key, JSON.stringify(next));
-    } catch {
-      // ignore
-    }
-  }
-
-  const total = guide.steps.length;
-  const pct = Math.round((done.length / total) * 100);
-
-  return (
-    <section id="checklist" className="mt-12 max-w-4xl scroll-mt-16">
-      <details className="group rounded-xl border border-line bg-surface">
-        <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 [&::-webkit-details-marker]:hidden">
-          <span className="font-display text-xl font-semibold tracking-tight">Step-by-step checklist</span>
-          <span className="text-sm text-muted">
-            {done.length} of {total} done
-          </span>
-          <span className="relative h-1.5 w-32 rounded-full bg-faint" aria-hidden>
-            <span className="absolute inset-y-0 left-0 rounded-full bg-trivial" style={{ width: `${pct}%` }} />
-          </span>
-          <span className="ml-auto flex items-center gap-2 text-sm text-muted">
-            <span className="group-open:hidden">Open</span>
-            <span className="hidden group-open:inline">Close</span>
-            <Chevron />
-          </span>
-        </summary>
-        <ol className="divide-y divide-line border-t border-line">
-          {guide.steps.map((s, i) => {
-            const checked = done.includes(i);
-            return (
-              <li key={i} className="flex gap-3 px-5 py-3">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggle(i)}
-                  aria-label={`Mark step ${i + 1} done: ${s.title}`}
-                  className="mt-1 size-4 shrink-0 accent-trivial"
-                />
-                <details className="group/step min-w-0 flex-1">
-                  <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
-                    <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className={`font-medium ${checked ? "text-muted line-through" : ""}`}>
-                        {i + 1}. {s.title}
-                      </span>
-                      <OwnerTag owner={s.owner} />
-                      {s.owner === "agent" && <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />}
-                      {s.duration && <span className="text-sm text-muted">{s.duration}</span>}
-                    </span>
-                    <svg viewBox="0 0 20 20" className="mt-1 size-4 shrink-0 text-muted transition-transform group-open/step:rotate-180" aria-hidden>
-                      <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </summary>
-                  <div className="mt-2 space-y-2 pb-1">
-                    <p className="leading-relaxed text-ink/85">{s.detail}</p>
-                    {s.url && (
-                      <a href={s.url} target="_blank" rel="noreferrer" className="block truncate text-sm text-cobalt underline underline-offset-2">
-                        {s.url.replace(/^https:\/\//, "")}
-                      </a>
-                    )}
-                    <EvidenceTag evidence={s.evidence} sources={sources} />
-                  </div>
-                </details>
-              </li>
-            );
-          })}
-        </ol>
-      </details>
-    </section>
   );
 }
 

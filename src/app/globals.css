@@ -39,6 +39,8 @@ body {
   font-feature-settings: "tnum" 1;
   /* Hidden hover cards are positioned absolutely; clip (not hidden) so they never cause sideways scroll and sticky still works. */
   overflow-x: clip;
+  /* Long URLs, scope strings and error messages wrap instead of overflowing their cards. */
+  overflow-wrap: break-word;
 }
 
 :focus-visible {

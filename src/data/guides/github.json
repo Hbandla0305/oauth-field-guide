@@ -535,15 +535,16 @@
       }
     },
     {
-      "text": "Expiring user tokens (8h access, 6-month refresh) are on by default for new GitHub Apps and, per current docs, new OAuth Apps too; you can opt out at registration. OAuth Apps can also request offline_access per sign-in.",
+      "text": "Expiring user tokens (8h access, 6-month refresh) are on by default for all new GitHub Apps and OAuth Apps since 2026-08-14; you can opt out at registration.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [
+          "s18",
           "s4",
           "s5",
           "s7"
         ],
-        "note": "Older guidance says OAuth App tokens never expire; current docs describe an 'Expire user access tokens' checkbox enabled by default."
+        "note": null
       }
     },
     {
@@ -684,6 +685,11 @@
       "id": "s17",
       "title": "GitHub Docs: Rate limits for the REST API",
       "url": "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api"
+    },
+    {
+      "id": "s18",
+      "title": "GitHub changelog: Multiple redirect URIs and token refresh for OAuth apps (2026-08-14)",
+      "url": "https://github.blog/changelog/2026-08-14-multiple-redirect-uris-and-token-refresh-for-oauth-apps"
     }
   ],
   "verification": {
@@ -697,7 +703,6 @@
       "HEAD https://api.github.com/user unauthenticated -> 401; CORS exposes X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-GitHub-SSO headers"
     ],
     "openQuestions": [
-      "When exactly 'Expire user access tokens' became default-on for new OAuth Apps; no changelog entry found, only current docs.",
       "Whether GitHub ever suspends or reviews high-volume public GitHub Apps proactively (only application_suspended for abuse is documented).",
       "Exact current UI text of the 403 shown when OAuth app access restrictions block access (only third-party reports seen).",
       "Marketplace / publisher verification review times (not documented).",

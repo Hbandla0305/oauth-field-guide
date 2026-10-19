@@ -59,7 +59,7 @@
     },
     {
       "item": "Node.js and HubSpot CLI v7.6.0 or later (npm install -g @hubspot/cli@latest)",
-      "why": "New apps can only be created as projects through the CLI. Creating legacy public apps in the UI was disabled in May/June 2026.",
+      "why": "New apps are built as developer-platform projects; creating legacy public apps in the UI was disabled in May/June 2026. The CLI is the documented path.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [

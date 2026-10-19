@@ -658,7 +658,7 @@
       }
     },
     {
-      "text": "CASA is needed only if restricted data is stored on or transmitted through your servers, according to the restricted scope verification page. Purely client-side apps may avoid it, but agents almost always process server-side.",
+      "text": "CASA applies when restricted data is stored on or transmitted through your servers, per the restricted scope verification page. Agents almost always process data server-side, so plan for it.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [

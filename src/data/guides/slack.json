@@ -539,16 +539,13 @@
       }
     },
     {
-      "text": "Existing installs of unlisted apps: Slack's current changelog and rate-limits page say the new limits are NOT applied to existing installations. Earlier versions of the notice, and many third-party posts, cited enforcement on 2025-09-02 and then 2026-03-03. Treat existing-install status as uncertain and test it directly.",
+      "text": "Existing installs of unlisted apps keep their old limits; the throttle applies to new apps and new installs. Older third-party posts cited later enforcement dates for existing installs, but the current official changelog says they are exempt.",
       "evidence": {
-        "label": "unverified",
+        "label": "sourced",
         "sourceIds": [
-          "s1",
-          "s2",
-          "s15",
-          "s14"
+          "s1"
         ],
-        "note": "Conflicting sources. We couldn't retrieve the superseded changelog text directly, because the old URL now redirects to the current version."
+        "note": null
       }
     },
     {
@@ -711,7 +708,6 @@
       "GET https://slack.com/openid/connect/keys: HTTP 200"
     ],
     "openQuestions": [
-      "Are existing installs of unlisted apps throttled? The current official pages say no, but earlier notices and third parties said yes from 2026-03-03.",
       "What exactly counts as 'commercially distributed' vs 'internal customer-built', and how Slack detects it (install count? listing status only?)",
       "The exact current Manage Distribution checklist wording ('Remove Hard Coded Information' is only confirmed by third-party guides)",
       "Whether http://localhost redirect URLs are accepted for development (docs only show http:// as invalid)",

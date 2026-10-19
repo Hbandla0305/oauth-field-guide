@@ -236,7 +236,7 @@
     {
       "title": "Create (or pick) a LinkedIn Page you administer",
       "owner": "human",
-      "detail": "Every app must be associated with a Page. Use your company's Page if one exists, or create a basic one. The person creating the app should be a Page admin, or have the super admin available to approve verification.",
+      "detail": "The create-app form asks for a LinkedIn Page, and LinkedIn requires one for certain products. Use your company's Page if one exists, or create a basic one. The person creating the app should be a Page admin, or have the super admin available to approve verification.",
       "url": "https://www.linkedin.com/help/linkedin/answer/a543852",
       "duration": "5–15 min",
       "evidence": {
@@ -245,7 +245,7 @@
           "s16",
           "s17"
         ],
-        "note": null
+        "note": "LinkedIn Help says a Page is needed “for certain functionality and products”; the form requires one in practice."
       }
     },
     {
@@ -576,11 +576,11 @@
       "cause": "Reading member posts requires r_member_social, which is restricted to approved users. w_member_social is write-only.",
       "fix": "Design the agent so it never needs to read the feed, or apply via Developer Support (approval is unlikely for general developers).",
       "evidence": {
-        "label": "sourced",
+        "label": "inferred",
         "sourceIds": [
           "s12"
         ],
-        "note": null
+        "note": "The docs say the scope is for approved users only; how unlikely approval is is our judgment."
       }
     },
     {

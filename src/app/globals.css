@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Colour carries meaning here: difficulty tiers and evidence labels. Everything else is ink on paper. */
+@theme {
+  --color-paper: #f3f5f8;
+  --color-surface: #ffffff;
+  --color-ink: #142033;
+  --color-muted: #536074;
+  --color-line: #d8dde5;
+  --color-faint: #e9edf2;
+  --color-cobalt: #2450b8;
+
+  --color-trivial: #2b7a4b;
+  --color-trivial-bg: #e6f2ea;
+  --color-moderate: #9a6200;
+  --color-moderate-bg: #fbf0d9;
+  --color-hard: #b0372b;
+  --color-hard-bg: #f9e5e2;
+  --color-gated: #6a3fb5;
+  --color-gated-bg: #eee7f8;
+
+  --color-tested: #2b7a4b;
+  --color-sourced: #2450b8;
+  --color-inferred: #5f6b7d;
+  --color-unverified: #9a6200;
+
+  --font-display: var(--font-bricolage);
+  --font-sans: var(--font-public-sans);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-cobalt);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

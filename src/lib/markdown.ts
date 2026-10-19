@@ -1,0 +1,51 @@
+import type { Evidence, Guide } from "./guide-schema";
+
+const OWNER = { agent: "Agent can do", human: "You", wait: "Waiting" } as const;
+
+// Plain-Markdown export so a guide can be pasted into a ticket, doc or Slack thread.
+export function guideToMarkdown(g: Guide, url: string): string {
+  const idx = new Map(g.sources.map((s, i) => [s.id, i + 1]));
+  const ev = (e: Evidence) => {
+    const cites = e.sourceIds.filter((id) => idx.has(id)).map((id) => `[${idx.get(id)}]`).join("");
+    return ` _(${e.label}${cites ? ` ${cites}` : ""})_`;
+  };
+  const v = g.verdict;
+  const lines = [
+    `# ${g.app.name}: OAuth app setup guide`,
+    "",
+    `**Difficulty:** ${v.difficulty} · **Working in dev:** ${v.timeToDev.range} · **Any user can connect:** ${v.timeToProd.range} (${v.timeToProd.assumes} Waiting on: ${v.timeToProd.waitingOn})${v.cost ? ` · **Cost:** ${v.cost}` : ""}`,
+    "",
+    v.summary,
+    "",
+    `> ${g.verification.status === "human-verified" ? "Human-verified" : "Agent-generated, not human-reviewed"} · last checked ${g.verification.lastChecked} · ${url}`,
+    "",
+    "## What you need first",
+    ...g.prerequisites.map((p) => `- **${p.item}**: ${p.why}${ev(p.evidence)}`),
+    "",
+    "## Permission tiers",
+    ...g.scopeTiers.map((t) => `- **${t.tier}**${t.reviewRequired ? " (review required)" : ""}, ${t.time}: ${t.impact} Examples: ${t.examples.map((x) => `\`${x}\``).join(", ")}${ev(t.evidence)}`),
+    "",
+    "## Steps",
+    ...g.steps.map((s, i) => `${i + 1}. **${s.title}** [${OWNER[s.owner]}${s.duration ? `, ${s.duration}` : ""}]: ${s.detail}${s.url ? ` (${s.url})` : ""}${ev(s.evidence)}`),
+    "",
+    "## Who does what",
+    "**An agent can:**",
+    ...g.agentCanDo.map((x) => `- ${x}`),
+    "",
+    "**You must:**",
+    ...g.humanMustDo.map((x) => `- ${x}`),
+    "",
+    "## If you get stuck",
+    ...g.blockers.map((b) => `- **${b.symptom}**: ${b.cause} Fix: ${b.fix}${ev(b.evidence)}`),
+    "",
+    "## Good to know",
+    ...g.nuances.map((n) => `- ${n.text}${ev(n.evidence)}`),
+    "",
+    "## Still uncertain",
+    ...(g.verification.openQuestions.length ? g.verification.openQuestions.map((q) => `- ${q}`) : ["- Nothing outstanding."]),
+    "",
+    "## Sources",
+    ...g.sources.map((s, i) => `${i + 1}. [${s.title}](${s.url})`),
+  ];
+  return lines.join("\n");
+}

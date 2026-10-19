@@ -1,103 +1,158 @@
-import Image from "next/image";
+import Link from "next/link";
+import type { Guide } from "@/lib/guide-schema";
+import { CURATED, recentGenerated } from "@/lib/guides";
+import { DifficultyBadge, DIFFICULTY } from "@/components/difficulty";
+import { EvidenceLegend } from "@/components/evidence";
+import { TimelineCompact } from "@/components/timeline";
+import { GenerateForm } from "@/components/generate-form";
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const generated = await recentGenerated();
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
+      <section className="max-w-3xl pt-14 pb-10 sm:pt-20">
+        <h1 className="font-display text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-6xl">
+          How long until your users can connect?
+        </h1>
+        <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+          Before your agent can act in someone&rsquo;s Gmail, Slack or CRM, you need your own OAuth app with that provider, and some won&rsquo;t let real users in until
+          they&rsquo;ve reviewed it. Look up an app to see the steps, the waits and the blockers, with the evidence behind each claim.
+        </p>
+        <div className="mt-8">
+          <GenerateForm />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      <section aria-labelledby="library">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 id="library" className="font-display text-2xl font-semibold tracking-tight">
+              Checked guides
+            </h2>
+            <p className="mt-1 text-muted">Researched by agents, then checked and corrected by a person.</p>
+          </div>
+          <TimelineKey />
+        </div>
+        <GuideTable guides={CURATED} />
+      </section>
+
+      {generated.length > 0 && (
+        <section aria-labelledby="generated" className="mt-14">
+          <h2 id="generated" className="font-display text-2xl font-semibold tracking-tight">
+            Recently generated
+          </h2>
+          <p className="mt-1 text-muted">Written live by the agent. Not reviewed by a person yet.</p>
+          <GuideTable guides={generated} />
+        </section>
+      )}
+
+      <section id="how" aria-labelledby="how-title" className="mt-20 grid scroll-mt-6 gap-10 border-t border-line pt-12 lg:grid-cols-[1fr_1.4fr]">
+        <div>
+          <h2 id="how-title" className="font-display text-2xl font-semibold tracking-tight">
+            How guides are made
+          </h2>
+          <p className="mt-3 leading-relaxed text-muted">
+            Provider rules change often and a wrong guide can cost weeks, so every claim says how we know it.
+          </p>
+        </div>
+        <div className="space-y-8">
+          <ol className="space-y-4">
+            {[
+              ["Identify", "Confirm the app exists and offers OAuth to third-party developers."],
+              ["Probe", "Fetch the provider's live OAuth metadata. This is the only thing a generated guide can call tested."],
+              ["Research", "Search official developer docs and policy pages, keeping every source."],
+              ["Audit", "Check that every cited link resolves, then downgrade claims the sources don't support."],
+            ].map(([title, text], i) => (
+              <li key={title} className="grid grid-cols-[1.75rem_1fr] gap-3">
+                <span className="font-display text-lg font-semibold text-muted">{i + 1}</span>
+                <p>
+                  <span className="font-medium">{title}.</span> <span className="text-muted">{text}</span>
+                </p>
+              </li>
+            ))}
+          </ol>
+          <EvidenceLegend />
+          <dl className="grid gap-3 text-sm sm:grid-cols-2">
+            {Object.values(DIFFICULTY).map((d) => (
+              <div key={d.label} className="flex items-start gap-2">
+                <dt className={`rounded px-1.5 py-0.5 font-medium ${d.badge}`}>{d.label}</dt>
+                <dd className="pt-0.5 text-muted">{d.meaning}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function TimelineKey() {
+  return (
+    <div className="flex items-center gap-4 text-sm text-muted" aria-hidden>
+      <span className="flex items-center gap-1.5">
+        <span className="h-2 w-5 rounded-full bg-ink" /> Working in dev
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="flex h-2 w-5 overflow-hidden rounded-full">
+          <span className="flex-1 bg-trivial" />
+          <span className="flex-1 bg-moderate" />
+          <span className="flex-1 bg-hard" />
+          <span className="flex-1 bg-gated" />
+        </span>
+        Any user can connect, coloured by difficulty
+      </span>
+    </div>
+  );
+}
+
+function GuideTable({ guides }: { guides: Guide[] }) {
+  return (
+    <div className="mt-5 overflow-hidden rounded-xl border border-line bg-surface">
+      <table className="w-full text-left">
+        <thead className="hidden border-b border-line text-sm text-muted md:table-header-group">
+          <tr>
+            <th className="px-5 py-3 font-medium">App</th>
+            <th className="px-5 py-3 font-medium">Difficulty</th>
+            <th className="px-5 py-3 font-medium">Working in dev</th>
+            <th className="px-5 py-3 font-medium">Any user can connect</th>
+            <th className="w-[22%] px-5 py-3 font-medium">
+              <span className="sr-only">Timeline</span>
+              <span aria-hidden className="flex justify-between text-xs font-normal">
+                <span>5 min</span>
+                <span>6 months</span>
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-line">
+          {guides.map((g) => (
+            <tr key={g.app.slug} className="group relative block hover:bg-paper md:table-row">
+              <td className="block px-5 pt-4 md:table-cell md:py-4">
+                <Link href={`/guides/${g.app.slug}`} className="font-medium after:absolute after:inset-0 group-hover:underline">
+                  {g.app.name}
+                </Link>
+                <p className="text-sm text-muted">{g.app.category}</p>
+              </td>
+              <td className="block px-5 pt-2 md:table-cell md:py-4">
+                <DifficultyBadge difficulty={g.verdict.difficulty} />
+              </td>
+              <td className="inline-block px-5 pt-2 text-sm md:table-cell md:py-4 md:text-base">
+                <span className="text-muted md:hidden">Dev </span>
+                {g.verdict.timeToDev.range}
+              </td>
+              <td className="inline-block pt-2 text-sm md:table-cell md:px-5 md:py-4 md:text-base">
+                <span className="text-muted md:hidden">Production </span>
+                <span className="font-medium">{g.verdict.timeToProd.range}</span>
+              </td>
+              <td className="block px-5 pt-3 pb-4 md:table-cell md:py-4">
+                <TimelineCompact guide={g} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -58,7 +58,7 @@
         "max": 24
       },
       "assumes": "A Server-based client with Multi-DC enabled and ZohoCRM.modules scopes, distributed from your own site; a Zoho Marketplace listing is a separate, optional path.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": [

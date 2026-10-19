@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
           { signal: AbortSignal.timeout(45_000) },
         );
         for await (const event of res) {
-          if (event.type === "response.output_text.delta") controller.enqueue(encoder.encode(event.delta));
+          if (event.type === "response.output_text.delta") controller.enqueue(encoder.encode(event.delta.replace(/\s*—\s*/g, ", ")));
         }
         const final = await res.finalResponse();
         usd = costOf(MODELS.research, final.usage);

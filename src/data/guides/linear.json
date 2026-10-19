@@ -30,7 +30,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "A Public OAuth app using actor=app for an agent that reads and writes issues; each customer needs a workspace admin to install it. User-actor apps skip the admin step.",
-      "waitingOn": "Nothing — no review. Each customer's workspace admin for actor=app installs.",
+      "waitingOn": "No review needed. Each customer's workspace admin for actor=app installs.",
       "evidence": {
         "label": "sourced",
         "sourceIds": ["s4", "s5"],

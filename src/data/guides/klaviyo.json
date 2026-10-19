@@ -58,7 +58,7 @@
         "max": 24
       },
       "assumes": "An unlisted app installed via its shared install URL, reading and writing profiles, lists and campaigns; customers see an unreviewed-app warning. Removing the warning and getting listed needs 5 active installs and then a review of unknown length (over a month reported in 2026).",
-      "waitingOn": "Nothing — no review for unlisted installs. For the Marketplace listing: 5 real customer installs, then Klaviyo's app review.",
+      "waitingOn": "No review needed for unlisted installs. For the Marketplace listing: 5 real customer installs, then Klaviyo's app review.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [

@@ -55,7 +55,7 @@
         "max": 24
       },
       "assumes": "A self-published OAuth app that manages projects or runs SQL via the Management API. A Partner Catalog listing is optional and only adds visibility (Supabase's partner review is a separate track).",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s3", "s5"],

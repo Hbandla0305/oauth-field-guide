@@ -44,7 +44,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "Your agent reads and writes user docs through the Coda MCP server using OAuth; the REST API has no OAuth path, so the only alternative is asking each user to paste a personal API token.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s4", "s5"],

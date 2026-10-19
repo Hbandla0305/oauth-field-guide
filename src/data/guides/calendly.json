@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 2, "max": 8 },
       "assumes": "A Production OAuth app reading scheduled events and invitees (and webhooks for paid-plan users); no listing in Calendly's integrations directory.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s2"],

@@ -49,7 +49,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "An agent that reads or writes posts, media, comments or stats on users' WordPress.com or Jetpack sites via REST API tokens.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s3"],
@@ -167,7 +167,7 @@
       "owner": "agent",
       "detail": "Switch to production redirect URIs. No submission or review is described, so any WordPress.com user can connect.",
       "url": null,
-      "duration": "—",
+      "duration": ", ",
       "evidence": { "label": "inferred", "sourceIds": ["s1", "s3"], "note": null }
     }
   ],

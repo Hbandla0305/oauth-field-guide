@@ -30,7 +30,7 @@
       "range": "Same day",
       "hours": { "min": 2, "max": 24 },
       "assumes": "A confidential OAuth 2.0 client that reads and writes boards on behalf of users; the legacy API key + token flow is equally fast and needs no review either.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s2", "s1", "s3"],

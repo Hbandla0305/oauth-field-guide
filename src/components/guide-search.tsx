@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 import type { Difficulty } from "@/lib/guide-schema";
 import type { GuideSummary } from "@/lib/guides";
 import { DIFFICULTY, DifficultyBadge } from "./difficulty";
-import { TimelineCompact } from "./timeline";
 
 const FILTERS: (Difficulty | "all")[] = ["all", "trivial", "moderate", "hard", "gated"];
 const PAGE = 25;
@@ -92,7 +91,13 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
 
       {results.length === 0 ? (
         <div className="mt-5 rounded-xl border border-dashed border-muted/50 bg-surface p-6">
-          <p className="font-medium">{query.trim() ? `No guide for “${query.trim()}” yet.` : "No guides match these filters."}</p>
+          <p className="font-medium">
+            {query.trim()
+              ? `No guide for “${query.trim()}” yet.`
+              : checkedOnly && !guides.some((g) => g.status === "human-verified")
+                ? "No guides have been checked by a person yet. Every guide is agent-researched; untick the box to see them all."
+                : "No guides match these filters."}
+          </p>
           {query.trim() && (
             <>
               <p className="mt-1 text-muted">An agent can research it now. It reads the provider&rsquo;s docs, checks its live OAuth endpoints and writes a guide in about two minutes.</p>
@@ -136,7 +141,10 @@ const STATUS = {
   "agent-generated": { label: "Live agent", cls: "text-moderate" },
 } as const;
 
+// Whole row is clickable via onClick (a stretched ::after link breaks in browsers that
+// ignore position on <tr> and swallows clicks elsewhere). The link keeps keyboard access.
 function ResultsTable({ guides }: { guides: GuideSummary[] }) {
+  const router = useRouter();
   return (
     <div className="mt-4 overflow-hidden rounded-xl border border-line bg-surface">
       <table className="w-full text-left">
@@ -146,20 +154,13 @@ function ResultsTable({ guides }: { guides: GuideSummary[] }) {
             <th className="px-5 py-3 font-medium">Difficulty</th>
             <th className="px-5 py-3 font-medium">Working in dev</th>
             <th className="px-5 py-3 font-medium">Any user can connect</th>
-            <th className="w-[22%] px-5 py-3 font-medium">
-              <span className="sr-only">Timeline</span>
-              <span aria-hidden className="flex justify-between text-xs font-normal">
-                <span>5 min</span>
-                <span>6 months</span>
-              </span>
-            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-line">
           {guides.map((g) => (
-            <tr key={g.slug} className="group relative block hover:bg-paper md:table-row">
+            <tr key={g.slug} onClick={() => router.push(`/guides/${g.slug}`)} className="group block cursor-pointer hover:bg-paper md:table-row">
               <td className="block px-5 pt-4 md:table-cell md:py-3.5">
-                <Link href={`/guides/${g.slug}`} className="font-medium after:absolute after:inset-0 group-hover:underline">
+                <Link href={`/guides/${g.slug}`} onClick={(e) => e.stopPropagation()} className="font-medium group-hover:underline">
                   {g.name}
                 </Link>
                 <p className="text-sm text-muted">
@@ -170,16 +171,13 @@ function ResultsTable({ guides }: { guides: GuideSummary[] }) {
               <td className="block px-5 pt-2 md:table-cell md:py-3.5">
                 <DifficultyBadge difficulty={g.difficulty} />
               </td>
-              <td className="inline-block px-5 pt-2 text-sm md:table-cell md:py-3.5 md:text-base">
+              <td className="inline-block px-5 pt-2 pb-4 text-sm md:table-cell md:py-3.5 md:text-base">
                 <span className="text-muted md:hidden">Dev </span>
                 {g.dev}
               </td>
-              <td className="inline-block pt-2 text-sm md:table-cell md:px-5 md:py-3.5 md:text-base">
-                <span className="text-muted md:hidden">Production </span>
+              <td className="inline-block pt-2 pb-4 text-sm md:table-cell md:px-5 md:py-3.5 md:text-base">
+                <span className="text-muted md:hidden">Any user </span>
                 <span className="font-medium">{g.prod}</span>
-              </td>
-              <td className="block px-5 pt-3 pb-4 md:table-cell md:py-3.5">
-                <TimelineCompact {...g} />
               </td>
             </tr>
           ))}

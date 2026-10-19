@@ -28,7 +28,7 @@
       "range": "Same day",
       "hours": { "min": 2, "max": 24 },
       "assumes": "A server-side agent reading and replying to conversations across customers' Help Scout accounts via the authorization code flow.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s3"],

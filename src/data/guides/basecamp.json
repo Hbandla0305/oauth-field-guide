@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "A standard Launchpad integration reading and writing project data with full-access tokens; the read-only path via app.basecamp.com is equally self-serve but less documented.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["b1", "b2"],

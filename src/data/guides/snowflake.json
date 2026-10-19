@@ -49,7 +49,7 @@
       "range": "Same day",
       "hours": { "min": 2, "max": 24 },
       "assumes": "Each customer's Snowflake admin creates a custom OAuth security integration for your agent and shares the client credentials; the time per customer depends on how fast their admin acts.",
-      "waitingOn": "Nothing — no review. Each customer's ACCOUNTADMIN has to create the integration (and may need internal security sign-off).",
+      "waitingOn": "No review needed. Each customer's ACCOUNTADMIN has to create the integration (and may need internal security sign-off).",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s3"],

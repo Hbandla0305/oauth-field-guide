@@ -30,7 +30,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "An OAuth app shared to Any workspace that reads and writes tasks and projects; an app directory listing is optional and adds an unspecified review.",
-      "waitingOn": "Nothing — no review. Per customer: Enterprise admins approving the app where they manage apps from the admin console.",
+      "waitingOn": "No review needed. Per customer: Enterprise admins approving the app where they manage apps from the admin console.",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s3", "s1"],

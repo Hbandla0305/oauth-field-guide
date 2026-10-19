@@ -28,7 +28,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "A standard OAuth app that reads and writes tasks for any ClickUp user who authorizes their Workspaces; there is no slower path to choose.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s2"],

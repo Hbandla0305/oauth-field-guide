@@ -458,7 +458,7 @@
       }
     },
     {
-      "text": "Client Credentials tokens last about 10 days, return no refresh token, and act with no user context — suitable only for your own business.",
+      "text": "Client Credentials tokens last about 10 days, return no refresh token, and act with no user context, suitable only for your own business.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [
@@ -561,7 +561,7 @@
     "lastChecked": "2026-10-20",
     "tested": [
       "https://app.ramp.com/v1/authorize returned HTTP 200 (no login attempted)",
-      "https://api.ramp.com/.well-known/openid-configuration returned 'Not Authorized' — no public OIDC discovery document found",
+      "https://api.ramp.com/.well-known/openid-configuration returned 'Not Authorized', no public OIDC discovery document found",
       "docs.ramp.com guide pages return a JS shell; https://docs.ramp.com/llms-guides.txt returned full guide text"
     ],
     "openQuestions": [

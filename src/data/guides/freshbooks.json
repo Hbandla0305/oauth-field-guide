@@ -58,7 +58,7 @@
         "max": 24
       },
       "assumes": "An unlisted app that customers authorize through your own link with user:invoices/clients/expenses scopes; an App Store listing adds a FreshBooks review of unknown length.",
-      "waitingOn": "Nothing — no review for unlisted use. Optional App Store review (Pending → In Review → Approved) only for a listing.",
+      "waitingOn": "No review needed for unlisted use. Optional App Store review (Pending → In Review → Approved) only for a listing.",
       "evidence": {
         "label": "inferred",
         "sourceIds": [

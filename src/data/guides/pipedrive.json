@@ -58,7 +58,7 @@
         "max": 24
       },
       "assumes": "A Private app shared via its unlisted install link, which is enough for an agent reading and writing CRM data; a Marketplace (Public) listing adds up to 21 business days of review.",
-      "waitingOn": "Nothing — no review for Private apps",
+      "waitingOn": "No review needed for Private apps",
       "evidence": {
         "label": "sourced",
         "sourceIds": [

@@ -57,7 +57,7 @@
         "max": 8
       },
       "assumes": "An agent that reads or edits content via the Content Management API on behalf of any Contentful user; a Marketplace App Framework listing is a separate, optional path.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": [
@@ -424,7 +424,7 @@
     "tested": [
       "https://be.contentful.com/oauth/authorize returned HTTP 200 (with and without dummy parameters; no login attempted)",
       "https://app.contentful.com/account/profile/developers/applications returned HTTP 200",
-      "https://be.contentful.com/.well-known/openid-configuration returned a 'Page Not Found' page — no OIDC discovery",
+      "https://be.contentful.com/.well-known/openid-configuration returned a 'Page Not Found' page, no OIDC discovery",
       "contentful.com HTML docs returned HTTP 429; the .md variants returned 200"
     ],
     "openQuestions": [

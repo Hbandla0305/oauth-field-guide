@@ -266,7 +266,7 @@
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Withings API — Complete Reference for AI Agents (llms.md)", "url": "https://developer.withings.com/llms.md" },
+    { "id": "s1", "title": "Withings API, Complete Reference for AI Agents (llms.md)", "url": "https://developer.withings.com/llms.md" },
     { "id": "s2", "title": "Withings API plans (embedded plan table and FAQ)", "url": "https://static.withings.com/content/api/plans/plans.html" },
     { "id": "s3", "title": "Withings API plans page", "url": "https://developer.withings.com/developer-guide/v3/withings-solutions/withings-api-plans/" },
     { "id": "s4", "title": "Open Wearables: Withings API integration (third-party)", "url": "https://openwearables.io/docs/providers/withings-api-integration" }

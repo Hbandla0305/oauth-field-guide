@@ -44,7 +44,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "A standard OAuth app reading and writing tasks with data:read_write; listing in Todoist's integrations directory is optional and not needed for users to connect.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "sourced",
         "sourceIds": ["s1"],

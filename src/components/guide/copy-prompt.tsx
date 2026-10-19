@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Guide } from "@/lib/guide-schema";
 
-// A ready-to-paste prompt for the user's own AI assistant, for steps marked "AI can do".
+// A ready-to-paste prompt for the user's own AI assistant, for steps marked "AI can help".
 export function buildPrompt(guide: Guide, task: string, detail?: string, url?: string | null): string {
   const docs = [url, ...guide.officialDocs.slice(0, 3).map((d) => d.url)].filter((u, i, a): u is string => Boolean(u) && a.indexOf(u) === i);
   return [

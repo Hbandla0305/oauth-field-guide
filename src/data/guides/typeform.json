@@ -49,7 +49,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 8 },
       "assumes": "An agent that reads forms and responses (forms:read, responses:read, offline) for users on the default US region.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s3"],

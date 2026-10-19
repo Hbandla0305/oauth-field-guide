@@ -58,7 +58,7 @@
         "max": 24
       },
       "assumes": "An unlisted OAuth app reading employee data, connected by customers who enter their company domain; Marketplace listing is optional and only for companies with 100+ customers.",
-      "waitingOn": "Nothing — no review documented for unlisted OAuth apps. Marketplace listing waits on Partner Team review with no published timeline.",
+      "waitingOn": "No review needed documented for unlisted OAuth apps. Marketplace listing waits on Partner Team review with no published timeline.",
       "evidence": {
         "label": "inferred",
         "sourceIds": [

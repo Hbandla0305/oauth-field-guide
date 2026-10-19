@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 2, "max": 24 },
       "assumes": "A connectable-account (Community) integration shared via https://vercel.com/integrations/<slug>/new, which is what an agent reading projects or deployments needs; a Marketplace listing is optional and takes far longer.",
-      "waitingOn": "Nothing — no review for Community integrations. Marketplace listing waits on 500 active installs, then a manual review by integrations@vercel.com.",
+      "waitingOn": "No review needed for Community integrations. Marketplace listing waits on 500 active installs, then a manual review by integrations@vercel.com.",
       "evidence": {
         "label": "sourced",
         "sourceIds": ["s1", "s4"],
@@ -89,7 +89,7 @@
       "tier": "Sign in with Vercel API permissions (private beta)",
       "examples": ["Projects (Read Only)", "Deployments (Read and Write)", "Production Environment Variables", "AI Gateway (Use)"],
       "reviewRequired": true,
-      "time": "Unknown — private beta",
+      "time": "Unknown, private beta",
       "impact": "Fine-grained team and project permissions for 1-hour OAuth access tokens. Not generally available; you need Vercel to admit you to the beta.",
       "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": "'Permissions for issuing API requests and interacting with team resources are currently in private beta.' How to join wasn't documented." }
     }

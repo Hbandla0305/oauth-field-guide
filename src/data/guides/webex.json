@@ -53,7 +53,7 @@
         "max": 24
       },
       "assumes": "A user-level integration reading the user's own messages, rooms and meetings (spark:messages_read, meeting:schedules_read); admin or compliance scopes work the same day but only for users who hold those roles.",
-      "waitingOn": "Nothing — no review. Customer side, a Control Hub admin may need to allow the integration if their org blocks integrations.",
+      "waitingOn": "No review needed. Customer side, a Control Hub admin may need to allow the integration if their org blocks integrations.",
       "evidence": {
         "label": "inferred",
         "sourceIds": [

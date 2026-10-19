@@ -49,7 +49,7 @@
       "range": "Same day",
       "hours": { "min": 4, "max": 24 },
       "assumes": "Web sign-in for an agent product whose users already have a membership-backed App ID and Services ID. It doesn't cover user-data access, which Apple doesn't offer via OAuth.",
-      "waitingOn": "Nothing — no review for web sign-in. New organizations wait on Apple Developer Program enrollment verification, and iOS apps go through normal App Review.",
+      "waitingOn": "No review needed for web sign-in. New organizations wait on Apple Developer Program enrollment verification, and iOS apps go through normal App Review.",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s9", "s10"],
@@ -217,7 +217,7 @@
       "owner": "agent",
       "detail": "If the agent needs iCloud mail, calendar or contacts, don't plan on OAuth. The documented route is IMAP/CalDAV/CardDAV with a user-created app-specific password, which has security and UX trade-offs to weigh with the product owner.",
       "url": "https://support.apple.com/en-us/102654",
-      "duration": "—",
+      "duration": ", ",
       "evidence": { "label": "inferred", "sourceIds": ["s8"], "note": null }
     }
   ],

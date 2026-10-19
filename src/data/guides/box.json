@@ -30,7 +30,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "An unpublished OAuth 2.0 app with root_readwrite that reads and writes user files; enterprise customers that block unpublished apps add their own admin approval time, and an Integrations listing adds an unspecified partner review.",
-      "waitingOn": "Nothing — no review. Per customer: an enterprise admin enabling the app where unpublished apps are disabled.",
+      "waitingOn": "No review needed. Per customer: an enterprise admin enabling the app where unpublished apps are disabled.",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s3", "s5", "s6"],

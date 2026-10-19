@@ -30,7 +30,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "An OAuth app requesting wsReadOnly or wsReadWrite to read and write a user's tasks and folders; no listing in Wrike's integrations directory.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["w1", "w2"],

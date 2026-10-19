@@ -55,6 +55,8 @@ Flag a claim when:
 - It is labelled "sourced" but the cited source titles/URLs are clearly unrelated to the claim, or are not official docs and the claim is a hard requirement.
 - It states precise numbers (timelines, fees, user caps, rate limits) that look guessed rather than documented.
 - Two claims in the guide contradict each other (downgrade the weaker one).
+- It uses absolutes ("every", "always", "only if", "never", "must") that sources rarely state that strongly.
+- It is labelled "sourced" but is really a judgment ("unlikely", "easy", "rarely approved").
 
 For each, return the dotted path to the object that holds the evidence, e.g. "verdict.timeToProd", "steps.2", "blockers.0", "scopeTiers.1", "nuances.3", "prerequisites.0", and the new label ("inferred" if it is reasonable reasoning, "unverified" if it may be wrong) with a one-sentence reason.
 Also return up to 3 openQuestions a developer should confirm before relying on this guide.

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { findGuide, LIBRARY } from "@/lib/guides";
 import { guideToMarkdown } from "@/lib/markdown";
 import { GuideView } from "@/components/guide/guide-view";
+import { PageTour } from "@/components/page-tour";
+import { TOURS } from "@/lib/tours";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -38,6 +40,7 @@ export default async function GuidePage({ params }: Props) {
         </Link>
       </div>
       <GuideView guide={guide} markdown={guideToMarkdown(guide, url)} />
+      <PageTour id="guide" steps={TOURS.guide} />
     </main>
   );
 }

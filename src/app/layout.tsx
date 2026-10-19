@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Bricolage_Grotesque, Public_Sans } from "next/font/google";
 import "./globals.css";
+import { ShowTipsButton } from "@/components/page-tour";
 
 const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] });
 const publicSans = Public_Sans({ variable: "--font-public-sans", subsets: ["latin"] });
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Link href="/#how" className="hover:text-ink">
                 How guides are made
               </Link>
+              <ShowTipsButton />
             </nav>
           </div>
         </footer>

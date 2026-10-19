@@ -7,7 +7,7 @@ import { EvidenceLegend, EvidenceTag, EVIDENCE, type SourceIndex } from "../evid
 import { InfoTip } from "../info-tip";
 import { TimelineBand, TimelineTicks } from "../timeline";
 import { ShareBar } from "../share-bar";
-import { ChatPanel } from "./chat-panel";
+import { ChatPanel, type AssistantTask } from "./chat-panel";
 import { ResearchTrail } from "./research-trail";
 import { ErrorBoundary } from "../error-boundary";
 import { CopyPrompt, buildPrompt } from "./copy-prompt";
@@ -42,6 +42,11 @@ export const OWNER = {
 export function GuideView({ guide, markdown }: { guide: Guide; markdown: string }) {
   const [tab, setTab] = useState<TabId>("intro");
   const [chatOpen, setChatOpen] = useState(false);
+  const [chatTask, setChatTask] = useState<AssistantTask | null>(null);
+  const doWithAI = (task: AssistantTask) => {
+    setChatTask(task);
+    setChatOpen(true);
+  };
   const sources: SourceIndex = useMemo(() => new Map(guide.sources.map((s, i) => [s.id, { n: i + 1, title: s.title, url: s.url }])), [guide]);
   const v = guide.verdict;
 
@@ -92,9 +97,18 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
             </button>
           </p>
         </div>
-        <button type="button" onClick={() => setChatOpen(true)} className="rounded-lg bg-ink px-4 py-2.5 font-medium text-surface hover:bg-ink/90">
-          Chat about this guide
-        </button>
+        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+          <button type="button" onClick={() => setChatOpen(true)} className="rounded-lg bg-ink px-4 py-2.5 font-medium text-surface hover:bg-ink/90">
+            Chat about this guide
+          </button>
+          <button
+            type="button"
+            onClick={() => setChatOpen(true)}
+            className="rounded-lg border border-trivial/40 bg-trivial-bg/50 px-4 py-2 text-sm font-medium text-trivial hover:border-trivial"
+          >
+            ▶ Have the AI do the work
+          </button>
+        </div>
       </header>
 
       <section aria-label="How long it takes" className="mt-6 rounded-xl border border-line bg-surface p-5 sm:p-6">
@@ -165,8 +179,8 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
         </div>
 
         <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="max-w-4xl pt-6">
-          {tab === "intro" && <IntroPanel guide={guide} sources={sources} />}
-          {tab === "steps" && <StepsPanel guide={guide} sources={sources} />}
+          {tab === "intro" && <IntroPanel guide={guide} sources={sources} onDo={doWithAI} />}
+          {tab === "steps" && <StepsPanel guide={guide} sources={sources} onDo={doWithAI} />}
           {tab === "permissions" && <PermissionsPanel guide={guide} sources={sources} />}
           {tab === "know" && <KnowPanel guide={guide} sources={sources} />}
           {tab === "troubleshoot" && <TroubleshootPanel guide={guide} sources={sources} />}
@@ -183,7 +197,7 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
           ) : null
         }
       >
-        <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} guide={guide} />
+        <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} guide={guide} task={chatTask} onTaskStarted={() => setChatTask(null)} />
       </ErrorBoundary>
     </>
   );
@@ -259,7 +273,7 @@ function PanelTitle({ children, tip }: { children: React.ReactNode; tip?: React.
   );
 }
 
-function IntroPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
+function IntroPanel({ guide, sources, onDo }: { guide: Guide; sources: SourceIndex; onDo: (t: AssistantTask) => void }) {
   return (
     <div className="space-y-10">
       <section>
@@ -283,14 +297,14 @@ function IntroPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) 
         >
           Who does what
         </PanelTitle>
-        <WhoDoesWhat guide={guide} />
+        <WhoDoesWhat guide={guide} onDo={onDo} />
       </section>
     </div>
   );
 }
 
 // Three counts; click one to see which steps fall to it.
-function WhoDoesWhat({ guide }: { guide: Guide }) {
+function WhoDoesWhat({ guide, onDo }: { guide: Guide; onDo: (t: AssistantTask) => void }) {
   const [open, setOpen] = useState<keyof typeof OWNER | null>(null);
   const owners = ["agent", "human", "wait"] as const;
   const steps = (o: keyof typeof OWNER) => guide.steps.map((s, i) => ({ ...s, n: i + 1 })).filter((s) => s.owner === o);
@@ -334,7 +348,12 @@ function WhoDoesWhat({ guide }: { guide: Guide }) {
                     {s.n}. {s.title}
                   </span>
                   {s.duration && <span className="text-sm text-muted">{s.duration}</span>}
-                  {open === "agent" && <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />}
+                  {open === "agent" && (
+                    <>
+                      <DoButton onClick={() => onDo({ kind: "draft", title: s.title, detail: s.detail })} />
+                      <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
@@ -347,7 +366,7 @@ function WhoDoesWhat({ guide }: { guide: Guide }) {
 
 // The steps double as a checklist: tick each one off as you go. Progress is a per-browser
 // convenience, so localStorage is enough.
-function StepsPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
+function StepsPanel({ guide, sources, onDo }: { guide: Guide; sources: SourceIndex; onDo: (t: AssistantTask) => void }) {
   const key = `checklist:${guide.app.slug}`;
   const [done, setDone] = useState<number[]>([]);
 
@@ -419,7 +438,12 @@ function StepsPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) 
                       {i + 1}. {s.title}
                     </span>
                     <OwnerTag owner={s.owner} />
-                    {s.owner === "agent" && !checked && <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />}
+                    {s.owner === "agent" && !checked && (
+                      <>
+                        <DoButton onClick={() => onDo({ kind: "draft", title: s.title, detail: s.detail })} />
+                        <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />
+                      </>
+                    )}
                     {s.duration && <span className="text-sm text-muted">{s.duration}</span>}
                   </span>
                   <svg viewBox="0 0 20 20" className="mt-1 size-4 shrink-0 text-muted transition-transform group-open/step:rotate-180" aria-hidden>
@@ -636,6 +660,23 @@ function ResourcesPanel({ guide }: { guide: Guide }) {
         </ol>
       </section>
     </div>
+  );
+}
+
+function DoButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
+      title="The AI does this step for you here, using the guide and your product details"
+      className="inline-flex shrink-0 items-center gap-1 rounded bg-trivial px-1.5 py-0.5 text-xs font-medium text-surface hover:bg-trivial/90"
+    >
+      ▶ Do it with AI
+    </button>
   );
 }
 

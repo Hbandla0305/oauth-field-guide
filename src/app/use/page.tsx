@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CopyBox } from "@/components/copy-box";
+import { PageTour } from "@/components/page-tour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = {
   title: "Use it anywhere",
@@ -69,6 +71,7 @@ const PROMPTS: { title: string; prompt: string }[] = [
 export default function UsePage() {
   return (
     <main className="mx-auto max-w-4xl px-4 pb-24 sm:px-6">
+      <PageTour id="use" steps={TOURS.use} />
       <div className="py-5">
         <Link href="/" className="text-sm text-muted hover:text-ink">
           ← All guides

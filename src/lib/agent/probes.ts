@@ -34,17 +34,31 @@ async function assertPublicHttps(raw: string): Promise<URL> {
 export type FetchResult = { url: string; status: number; body: string; contentType: string };
 
 export async function safeGet(raw: string): Promise<FetchResult> {
+  return safeRequest(raw);
+}
+
+// GET by default; a POST body (form-encoded) is only used for the token-endpoint attempt.
+// Redirects are followed manually so every hop passes the public-HTTPS check.
+async function safeRequest(raw: string, post?: Record<string, string>): Promise<FetchResult & { redirects: string[] }> {
   let current = raw;
+  const redirects: string[] = [];
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
     const url = await assertPublicHttps(current);
     const res = await fetch(url, {
+      method: post && hop === 0 ? "POST" : "GET",
+      body: post && hop === 0 ? new URLSearchParams(post) : undefined,
       redirect: "manual",
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { "user-agent": "OAuthFieldGuide/1.0 (+link check)", accept: "application/json,text/html;q=0.9,*/*;q=0.5" },
+      headers: {
+        "user-agent": "OAuthFieldGuide/1.0 (+setup check)",
+        accept: "application/json,text/html;q=0.9,*/*;q=0.5",
+        ...(post ? { "content-type": "application/x-www-form-urlencoded" } : {}),
+      },
     });
     const location = res.headers.get("location");
     if (res.status >= 300 && res.status < 400 && location) {
       current = new URL(location, url).toString();
+      redirects.push(current);
       continue;
     }
     const reader = res.body?.getReader();
@@ -60,9 +74,86 @@ export async function safeGet(raw: string): Promise<FetchResult> {
       }
       await reader.cancel().catch(() => {});
     }
-    return { url: url.toString(), status: res.status, body, contentType: res.headers.get("content-type") ?? "" };
+    return { url: url.toString(), status: res.status, body, contentType: res.headers.get("content-type") ?? "", redirects };
   }
   throw new Error("too many redirects");
+}
+
+export type Attempt = { id: string; title: string; url: string; observed: string };
+
+// Visible text from an HTML or JSON response, short enough to hand to the model.
+function excerpt(body: string): string {
+  return body
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 600);
+}
+
+const FAKE_CLIENT = "oauth-field-guide-test-client";
+
+// Safe, logged-out attempts at the first steps of setup. Each tells us something a developer
+// would otherwise only learn by trying: does the authorize endpoint exist and how does it treat
+// an unknown app, does the token endpoint answer, is the developer console open to sign up?
+// Nothing here creates an account or an app.
+export async function attemptSetup(opts: { authorizeUrl?: string; tokenUrl?: string; portalUrl?: string }): Promise<Attempt[]> {
+  const tasks: Promise<Attempt | null>[] = [];
+
+  if (opts.authorizeUrl) {
+    const u = new URL(opts.authorizeUrl);
+    u.searchParams.set("client_id", FAKE_CLIENT);
+    u.searchParams.set("response_type", "code");
+    u.searchParams.set("redirect_uri", "https://example.com/callback");
+    u.searchParams.set("state", "field-guide-check");
+    tasks.push(
+      safeRequest(u.toString())
+        .then((r) => ({
+          id: "attempt1",
+          title: "Live check: authorize URL with an unregistered test app",
+          url: opts.authorizeUrl!,
+          observed: `HTTP ${r.status}${r.redirects.length ? `, redirected to ${new URL(r.redirects.at(-1)!).hostname}${new URL(r.redirects.at(-1)!).pathname}` : ""}. Response text: "${excerpt(r.body)}"`,
+        }))
+        .catch(() => null),
+    );
+  }
+
+  if (opts.tokenUrl) {
+    tasks.push(
+      safeRequest(opts.tokenUrl, { grant_type: "authorization_code", code: "invalid-test-code", client_id: FAKE_CLIENT, redirect_uri: "https://example.com/callback" })
+        .then((r) => ({
+          id: "attempt2",
+          title: "Live check: token endpoint with an invalid code",
+          url: opts.tokenUrl!,
+          observed: `HTTP ${r.status}. Response: "${excerpt(r.body)}"`,
+        }))
+        .catch(() => null),
+    );
+  }
+
+  if (opts.portalUrl) {
+    tasks.push(
+      safeRequest(opts.portalUrl)
+        .then((r) => {
+          const text = excerpt(r.body).toLowerCase();
+          const signals = [
+            /sign up|create (an )?account|get started|register/.test(text) && "offers sign-up",
+            /log ?in|sign in/.test(text) && "asks you to sign in",
+            /\bapply\b|apply (now|for access)|partner program|request access|waitlist/.test(text) && "mentions applying or requesting access",
+            /contact sales|talk to sales|book a demo/.test(text) && "points to sales",
+          ].filter(Boolean);
+          return {
+            id: "attempt3",
+            title: "Live check: developer console, logged out",
+            url: opts.portalUrl!,
+            observed: `HTTP ${r.status}${r.redirects.length ? `, redirected to ${new URL(r.redirects.at(-1)!).hostname}` : ""}. Page ${signals.length ? signals.join(", ") : "gives no sign-up or apply signals"}.`,
+          };
+        })
+        .catch(() => null),
+    );
+  }
+
+  return (await Promise.all(tasks)).filter((a): a is Attempt => a !== null);
 }
 
 export type DiscoveryProbe = {

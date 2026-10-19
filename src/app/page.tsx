@@ -64,8 +64,10 @@ export default async function Home() {
           <ol className="space-y-4">
             {[
               ["Identify", "Confirm the app exists and offers OAuth to third-party developers."],
-              ["Probe", "Fetch the provider's live OAuth metadata. This is the only thing a generated guide can call tested."],
+              ["Probe", "Fetch the provider's live OAuth metadata. Only live probes and attempts can make a claim \"tested\"."],
               ["Read", "Find and read the provider's official developer docs and policy pages, keeping every source."],
+              ["Try", "Attempt the first setup steps logged out: the sign-in URL with a test app, the token endpoint, the developer console."],
+              ["Dig deeper", "Look at what's still unclear and decide whether a couple more targeted searches would settle it."],
               ["Audit", "Check that every cited link resolves, then downgrade claims the sources don't support."],
             ].map(([title, text], i) => (
               <li key={title} className="grid grid-cols-[1.75rem_1fr] gap-3">

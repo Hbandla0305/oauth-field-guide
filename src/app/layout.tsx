@@ -10,7 +10,7 @@ const publicSans = Public_Sans({ variable: "--font-public-sans", subsets: ["lati
 const REPO = "https://github.com/Hbandla0305/oauth-field-guide";
 
 export const metadata: Metadata = {
-  title: { default: "OAuth Field Guide", template: "%s · OAuth Field Guide" },
+  title: { default: "OAuth Guide", template: "%s · OAuth Guide" },
   description: "How long until your users can connect? Setup steps, review waits and blockers for getting your own OAuth app approved, with the evidence behind every claim.",
 };
 
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <header className="border-b border-line bg-surface">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
             <Link href="/" className="font-display text-lg font-semibold tracking-tight">
-              OAuth Field Guide
+              OAuth Guide
             </Link>
             <nav aria-label="Main" className="flex gap-5 text-sm text-muted">
               <Link href="/use" className="hover:text-ink">

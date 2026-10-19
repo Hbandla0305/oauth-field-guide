@@ -13,7 +13,7 @@ export const maxDuration = 300;
 const SUPPORTED = ["2025-11-25", "2025-06-18", "2025-03-26"];
 
 const INSTRUCTIONS =
-  "OAuth Field Guide tells developers what it takes to get their own OAuth app approved with a provider: difficulty, time to a working dev app vs. time until any user can connect, permission tiers, steps (and which an AI can help with), blockers and sources. Every claim has an evidence label (tested, sourced, inferred, unverified); pass those through to the user. Use get_guide with a section to keep answers short. If an app isn't in the library, generate_guide researches it in 1-3 minutes.";
+  "OAuth Guide tells developers what it takes to get their own OAuth app approved with a provider: difficulty, time to a working dev app vs. time until any user can connect, permission tiers, steps (and which an AI can help with), blockers and sources. Every claim has an evidence label (tested, sourced, inferred, unverified); pass those through to the user. Use get_guide with a section to keep answers short. If an app isn't in the library, generate_guide researches it in 1-3 minutes.";
 
 const TOOLS = [
   {
@@ -114,7 +114,7 @@ async function handle(msg: Rpc, origin: string, ip: string) {
       return reply({
         protocolVersion: SUPPORTED.includes(requested) ? requested : SUPPORTED[0],
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "oauth-field-guide", title: "OAuth Field Guide", version: "1.0.0" },
+        serverInfo: { name: "oauth-guide", title: "OAuth Guide", version: "1.0.0" },
         instructions: INSTRUCTIONS,
       });
     }

@@ -44,7 +44,7 @@ async function handleMention(event: Mention, team: string) {
 
   const guide = matchApp(text);
   if (!guide) {
-    return reply({ text: "Which app? Try `@OAuth Field Guide gmail`, or ask about a specific app, e.g. “what blocks a Slack app from reading messages?”. For an app that isn't in the library, use `/oauth-guide research <app>`." });
+    return reply({ text: "Which app? Try `@OAuth Guide gmail`, or ask about a specific app, e.g. “what blocks a Slack app from reading messages?”. For an app that isn't in the library, use `/oauth-guide research <app>`." });
   }
 
   // Just an app name (optionally with a section) gets the card or section; anything longer is a question.

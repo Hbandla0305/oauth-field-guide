@@ -6,7 +6,7 @@ import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = {
   title: "Use it anywhere",
-  description: "Use OAuth Field Guide on the web, in Slack, and inside Claude, Claude Code, Cursor and other MCP clients, with ready-to-copy prompts.",
+  description: "Use OAuth Guide on the web, in Slack, and inside Claude, Claude Code, Cursor and other MCP clients, with ready-to-copy prompts.",
 };
 
 const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "https://oauth-field-guide.vercel.app";
@@ -24,12 +24,12 @@ const SECTIONS = [
 // Paste into Slack's "Create an app → From a manifest".
 const SLACK_MANIFEST = {
   display_information: {
-    name: "OAuth Field Guide",
+    name: "OAuth Guide",
     description: "How long until your users can connect? OAuth app setup and approval guides.",
     background_color: "#142033",
   },
   features: {
-    bot_user: { display_name: "OAuth Field Guide", always_online: true },
+    bot_user: { display_name: "OAuth Guide", always_online: true },
     slash_commands: [
       {
         command: "/oauth-guide",
@@ -54,18 +54,18 @@ const SLACK_EXAMPLES = [
   "/oauth-guide slack permissions",
   "/oauth-guide hubspot troubleshoot",
   "/oauth-guide research loom",
-  "@OAuth Field Guide what blocks a Slack app from reading messages?",
-  "@OAuth Field Guide do I need admin consent for Microsoft Outlook?",
+  "@OAuth Guide what blocks a Slack app from reading messages?",
+  "@OAuth Guide do I need admin consent for Microsoft Outlook?",
 ];
 
 const PROMPTS: { title: string; prompt: string }[] = [
-  { title: "Compare apps before you commit", prompt: "Using OAuth Field Guide, compare Gmail, Slack and HubSpot: which will take longest before any user can connect my agent, what are we waiting on for each, and what does it cost?" },
-  { title: "Choose the right permissions", prompt: "Using OAuth Field Guide, my agent needs to read and draft emails in Gmail. Which scopes do I need, which review tier does each trigger, and is there a lower tier that still works?" },
-  { title: "Fix an error you're stuck on", prompt: "Using OAuth Field Guide, I'm getting \"Error 403: access_denied. The app is currently being tested\" from Google. What's the cause and how do I fix it?" },
-  { title: "Get the checklist, split by who does what", prompt: "Using OAuth Field Guide, give me the step-by-step setup for a Slack app that reads channel messages. Mark which steps you can do for me and which need me." },
-  { title: "Have the AI do the AI steps", prompt: "Using OAuth Field Guide's Google guide, draft the scope justification text and a privacy policy section for an agent that sends email with gmail.send. Flag anything I must confirm in the Google console." },
-  { title: "Research an app that isn't in the library", prompt: "Using OAuth Field Guide, research Loom: is there an OAuth app review, how long until any user can connect, and what will block me? If it's not in the library, generate the guide and check back." },
-  { title: "Plan a launch", prompt: "Using OAuth Field Guide, I'm launching an agent in 6 weeks that connects to Salesforce, Zoom and Microsoft Outlook. Which applications or reviews do I need to start this week to make that date?" },
+  { title: "Compare apps before you commit", prompt: "Using OAuth Guide, compare Gmail, Slack and HubSpot: which will take longest before any user can connect my agent, what are we waiting on for each, and what does it cost?" },
+  { title: "Choose the right permissions", prompt: "Using OAuth Guide, my agent needs to read and draft emails in Gmail. Which scopes do I need, which review tier does each trigger, and is there a lower tier that still works?" },
+  { title: "Fix an error you're stuck on", prompt: "Using OAuth Guide, I'm getting \"Error 403: access_denied. The app is currently being tested\" from Google. What's the cause and how do I fix it?" },
+  { title: "Get the checklist, split by who does what", prompt: "Using OAuth Guide, give me the step-by-step setup for a Slack app that reads channel messages. Mark which steps you can do for me and which need me." },
+  { title: "Have the AI do the AI steps", prompt: "Using OAuth Guide's Google guide, draft the scope justification text and a privacy policy section for an agent that sends email with gmail.send. Flag anything I must confirm in the Google console." },
+  { title: "Research an app that isn't in the library", prompt: "Using OAuth Guide, research Loom: is there an OAuth app review, how long until any user can connect, and what will block me? If it's not in the library, generate the guide and check back." },
+  { title: "Plan a launch", prompt: "Using OAuth Guide, I'm launching an agent in 6 weeks that connects to Salesforce, Zoom and Microsoft Outlook. Which applications or reviews do I need to start this week to make that date?" },
 ];
 
 export default function UsePage() {
@@ -105,18 +105,18 @@ export default function UsePage() {
       </Section>
 
       <Section id="claude" title="In Claude (claude.ai and Claude Desktop)">
-        <p className="text-muted">Add OAuth Field Guide as a custom connector. Claude can then look up guides, pull just the section you need, and research new apps while you chat.</p>
+        <p className="text-muted">Add OAuth Guide as a custom connector. Claude can then look up guides, pull just the section you need, and research new apps while you chat.</p>
         <Steps
           items={[
             <>In Claude, open <strong>Settings → Connectors</strong> and choose <strong>Add custom connector</strong>.</>,
-            <>Name it <strong>OAuth Field Guide</strong> and paste this URL. No sign-in is needed.</>,
+            <>Name it <strong>OAuth Guide</strong> and paste this URL. No sign-in is needed.</>,
           ]}
         />
         <CopyBox text={MCP_URL} label="Copy URL" />
         <Steps
           start={3}
           items={[
-            <>In a new chat, enable the connector from the tools menu, then ask a question that names it, for example: <em>“Using OAuth Field Guide, how long until users can connect Gmail?”</em></>,
+            <>In a new chat, enable the connector from the tools menu, then ask a question that names it, for example: <em>“Using OAuth Guide, how long until users can connect Gmail?”</em></>,
             <>Claude asks permission the first time it calls a tool. The three tools are <code>search_guides</code>, <code>get_guide</code> and <code>generate_guide</code>.</>,
           ]}
         />
@@ -125,12 +125,12 @@ export default function UsePage() {
 
       <Section id="claude-code" title="In Claude Code">
         <p className="text-muted">Add the server once, and Claude Code can check OAuth requirements while it writes your integration.</p>
-        <CopyBox text={`claude mcp add --transport http oauth-field-guide ${MCP_URL}`} />
+        <CopyBox text={`claude mcp add --transport http oauth-guide ${MCP_URL}`} />
         <Steps
           items={[
             <>Run the command above in your terminal. Add <code>--scope user</code> to make it available in every project.</>,
-            <>Start Claude Code and run <code>/mcp</code> to confirm <strong>oauth-field-guide</strong> is connected.</>,
-            <>Ask while you build: <em>“Before we add the Slack integration, check OAuth Field Guide for what blocks an app that reads messages.”</em></>,
+            <>Start Claude Code and run <code>/mcp</code> to confirm <strong>oauth-guide</strong> is connected.</>,
+            <>Ask while you build: <em>“Before we add the Slack integration, check OAuth Guide for what blocks an app that reads messages.”</em></>,
           ]}
         />
       </Section>
@@ -142,14 +142,14 @@ export default function UsePage() {
           Add to <code>~/.cursor/mcp.json</code> (all projects) or <code>.cursor/mcp.json</code> (one project):
         </p>
         <div className="mt-2">
-          <CopyBox text={JSON.stringify({ mcpServers: { "oauth-field-guide": { url: MCP_URL } } }, null, 2)} />
+          <CopyBox text={JSON.stringify({ mcpServers: { "oauth-guide": { url: MCP_URL } } }, null, 2)} />
         </div>
         <h3 className="mt-6 font-medium">VS Code</h3>
         <p className="mt-1 text-sm text-muted">
           Add to <code>.vscode/mcp.json</code> in your project:
         </p>
         <div className="mt-2">
-          <CopyBox text={JSON.stringify({ servers: { "oauth-field-guide": { type: "http", url: MCP_URL } } }, null, 2)} />
+          <CopyBox text={JSON.stringify({ servers: { "oauth-guide": { type: "http", url: MCP_URL } } }, null, 2)} />
         </div>
         <h3 className="mt-6 font-medium">Anything else</h3>
         <p className="mt-1 text-sm text-muted">
@@ -182,7 +182,7 @@ export default function UsePage() {
               redeploys.
             </>,
             <>
-              Back in Slack, under <strong>Event Subscriptions</strong>, check that the Request URL shows <em>Verified</em>. Invite the bot to a channel with <code>/invite @OAuth Field Guide</code>.
+              Back in Slack, under <strong>Event Subscriptions</strong>, check that the Request URL shows <em>Verified</em>. Invite the bot to a channel with <code>/invite @OAuth Guide</code>.
             </>,
           ]}
         />
@@ -201,7 +201,7 @@ export default function UsePage() {
       </Section>
 
       <Section id="prompts" title="Prompts to try">
-        <p className="text-muted">Work in Claude, Claude Code, Cursor or any connected assistant. Naming “OAuth Field Guide” helps the assistant pick the right tool. In Slack, put the question after <code>@OAuth Field Guide</code>.</p>
+        <p className="text-muted">Work in Claude, Claude Code, Cursor or any connected assistant. Naming “OAuth Guide” helps the assistant pick the right tool. In Slack, put the question after <code>@OAuth Guide</code>.</p>
         <ul className="mt-4 space-y-4">
           {PROMPTS.map((p) => (
             <li key={p.title}>

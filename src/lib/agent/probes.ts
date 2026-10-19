@@ -50,7 +50,7 @@ async function safeRequest(raw: string, post?: Record<string, string>): Promise<
       redirect: "manual",
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: {
-        "user-agent": "OAuthFieldGuide/1.0 (+setup check)",
+        "user-agent": "OAuthGuide/1.0 (+setup check)",
         accept: "application/json,text/html;q=0.9,*/*;q=0.5",
         ...(post ? { "content-type": "application/x-www-form-urlencoded" } : {}),
       },
@@ -91,7 +91,7 @@ function excerpt(body: string): string {
     .slice(0, 600);
 }
 
-const FAKE_CLIENT = "oauth-field-guide-test-client";
+const FAKE_CLIENT = "oauth-guide-test-client";
 
 // Safe, logged-out attempts at the first steps of setup. Each tells us something a developer
 // would otherwise only learn by trying: does the authorize endpoint exist and how does it treat

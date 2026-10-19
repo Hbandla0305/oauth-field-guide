@@ -16,7 +16,7 @@ export const TOURS: Record<"home" | "guide" | "use", TourStep[]> = {
     { icon: "🧭", title: "See how it was made", body: "“How it was made” shows what the agent read, tried and decided, and what's still uncertain." },
   ],
   use: [
-    { icon: "🧩", title: "Use the guides in your tools", body: "Connect OAuth Field Guide to Claude, Claude Code, Cursor or VS Code, and ask while you build." },
+    { icon: "🧩", title: "Use the guides in your tools", body: "Connect OAuth Guide to Claude, Claude Code, Cursor or VS Code, and ask while you build." },
     { icon: "💬", title: "Or in Slack", body: "Install the Slack app with the manifest below, then use /oauth-guide or @mention it in a channel." },
     { icon: "📎", title: "Copy a prompt to start", body: "The prompts at the bottom are ready to paste into any connected assistant." },
   ],

@@ -6,13 +6,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // type (remembered in this browser), replayable from "Show tips" in the footer.
 export type TourStep = { icon: string; title: string; body: string };
 
-const SHOW_EVENT = "oauth-field-guide:show-tips";
+const SHOW_EVENT = "oauth-guide:show-tips";
 
 export function PageTour({ id, steps }: { id: string; steps: TourStep[] }) {
   const [open, setOpen] = useState(false);
   const [i, setI] = useState(0);
   const card = useRef<HTMLDivElement>(null);
-  const key = `oauth-field-guide:tour:${id}`;
+  const key = `oauth-guide:tour:${id}`;
 
   useEffect(() => {
     try {

@@ -29,6 +29,10 @@ const Screen = z.object({
 export type Screen = z.infer<typeof Screen>;
 
 const Audit = z.object({
+  // True when the guide describes outside apps getting OAuth access to this provider's user data.
+  // False when it actually describes the provider's own app platform calling other services.
+  inboundOAuth: z.boolean(),
+  inboundReason: z.string(),
   downgrades: z.array(
     z.object({
       path: z.string(),
@@ -38,6 +42,8 @@ const Audit = z.object({
   ),
   openQuestions: z.array(z.string()),
 });
+
+export class NoThirdPartyOAuth extends Error {}
 
 export class RunCost {
   usd = 0;
@@ -123,6 +129,9 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, emi
     { signal },
   );
   cost.add(costOf(MODELS.fast, audit.usage));
+  if (audit.output_parsed && !audit.output_parsed.inboundOAuth) {
+    throw new NoThirdPartyOAuth(audit.output_parsed.inboundReason);
+  }
   let applied = 0;
   if (audit.output_parsed) {
     for (const d of audit.output_parsed.downgrades) {

@@ -31,6 +31,8 @@ Evidence rules (strict; under-claim rather than over-claim):
 - Every source must be a real https URL you actually saw in search results. Never invent URLs.
 - Do not include a source with id "probe"; it is added automatically.
 
+Direction matters: the guide is about an OUTSIDE app getting OAuth access to this provider's users' data. Don't confuse that with the provider's own app platform or marketplace using OAuth to call other services. If the provider's API only takes API keys, say so plainly in the summary and openQuestions.
+
 Content rules:
 - verdict.difficulty: "trivial" (self-serve, no review, under an hour to production) | "moderate" (self-serve dev; config, optional review, or limits; days) | "hard" (mandatory review or security assessment; weeks) | "gated" (must apply to a partner program or paid tier to reach useful APIs).
 - verdict.summary: at most 2 sentences, plain language.
@@ -52,6 +54,8 @@ Content rules:
 
 export const AUDIT_INSTRUCTIONS = `You audit an agent-written OAuth setup guide (JSON) for unsupported confidence.
 You can only DOWNGRADE evidence labels; you cannot add content.
+
+First, check direction. inboundOAuth = true only if the guide describes how an OUTSIDE developer's app gets OAuth tokens to access this provider's users' data through the provider's API. Set it false if the guide actually describes the provider's own app/marketplace platform using OAuth to call OTHER services, or if the sources show the provider's API only accepts API keys. Give a one-sentence inboundReason a developer would understand.
 
 Flag a claim when:
 - It is labelled "sourced" but the cited source titles/URLs are clearly unrelated to the claim, or are not official docs and the claim is a hard requirement.

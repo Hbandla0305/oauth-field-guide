@@ -14,7 +14,9 @@
     "predev": "npm run index-guides",
     "prebuild": "npm run index-guides",
     "check-links": "tsx scripts/check-links.ts",
-    "inspect": "tsx --env-file=.env.local scripts/inspect-generated.ts"
+    "inspect": "tsx --env-file=.env.local scripts/inspect-generated.ts",
+    "generated": "tsx --env-file=.env.local scripts/list-generated.ts",
+    "delete-generated": "tsx --env-file=.env.local scripts/delete-generated.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

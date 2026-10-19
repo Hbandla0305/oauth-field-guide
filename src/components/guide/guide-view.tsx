@@ -8,6 +8,7 @@ import { InfoTip } from "../info-tip";
 import { TimelineBand, TimelineTicks } from "../timeline";
 import { ShareBar } from "../share-bar";
 import { ChatPanel } from "./chat-panel";
+import { ErrorBoundary } from "../error-boundary";
 import { CopyPrompt, buildPrompt } from "./copy-prompt";
 
 const TABS = [
@@ -168,7 +169,17 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
         </div>
       </div>
 
-      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} guide={guide} />
+      <ErrorBoundary
+        fallback={
+          chatOpen ? (
+            <div role="alert" className="fixed right-4 bottom-4 z-50 max-w-sm rounded-lg bg-ink px-4 py-3 text-sm text-surface shadow-lg">
+              Chat is unavailable right now. The guide itself is unaffected.
+            </div>
+          ) : null
+        }
+      >
+        <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} guide={guide} />
+      </ErrorBoundary>
     </>
   );
 }

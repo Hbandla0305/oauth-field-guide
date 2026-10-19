@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { LIMITS, generationEnabled } from "@/lib/agent/config";
-import { runAgent, screenInput, toSlug, RunCost, type AgentEvent } from "@/lib/agent/pipeline";
+import { runAgent, screenInput, toSlug, RunCost, NoThirdPartyOAuth, type AgentEvent } from "@/lib/agent/pipeline";
 import { findGuide } from "@/lib/guides";
 import { hashIp, reserveRun, saveGuide, settleRun } from "@/lib/db";
 
@@ -73,10 +74,18 @@ export async function POST(req: NextRequest) {
         const guide = await runAgent(input, screen, cost, emit, signal);
         emit({ type: "stage", stage: "save", status: "active" });
         await saveGuide(guide, input, cost.usd);
+        // Without this, a 404 cached before the guide existed (or a stale home list) hides it.
+        revalidatePath(`/guides/${guide.app.slug}`);
+        revalidatePath("/");
         await settleRun(runId, cost.usd, "done", slug, undefined, cost.firecrawlCredits);
         emit({ type: "stage", stage: "save", status: "done" });
         emit({ type: "done", slug: guide.app.slug, cached: false });
       } catch (err) {
+        if (err instanceof NoThirdPartyOAuth) {
+          await settleRun(runId, cost.usd, "rejected", slug, "no inbound oauth", cost.firecrawlCredits).catch(() => {});
+          emit({ type: "error", message: screenMessage("no_oauth", err.message) });
+          return;
+        }
         const message = err instanceof Error ? err.message : String(err);
         console.error("generate failed", { runId, message });
         // An interrupted call may have spent tokens we never saw; keep the full reservation.
@@ -98,7 +107,16 @@ export async function POST(req: NextRequest) {
   });
 }
 
-function screenMessage(verdict: string, reason: string) {
+// Model-written reasons arrive as fragments ("input resembles a fake domain"); make them sentences.
+function sentence(text: string): string {
+  const t = text.trim().replace(/\s+/g, " ");
+  if (!t) return "";
+  const s = t[0].toUpperCase() + t.slice(1);
+  return /[.!?]$/.test(s) ? s : `${s}.`;
+}
+
+function screenMessage(verdict: string, raw: string) {
+  const reason = sentence(raw);
   if (verdict === "no_oauth") return `This app doesn't appear to offer OAuth for third-party developers. ${reason}`;
   if (verdict === "unsafe") return "Enter just an app name or website, for example “Asana” or “calendly.com”.";
   return `We couldn't identify an app from that. ${reason}`;

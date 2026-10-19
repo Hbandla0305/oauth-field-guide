@@ -57,7 +57,7 @@
         "min": 168,
         "max": 672
       },
-      "assumes": "A multi-user agent that reads reports and manages campaigns at Basic access (15,000 ops/day), which needs brand verification plus Google OAuth app verification for the Google Ads scope; Standard access adds a manual audit of about 10 business days.",
+      "assumes": "A multi-user agent that reads reports and manages campaigns at Basic access (15,000 ops/day), which needs brand verification plus Google OAuth app verification for the Google Ads scope; Standard access adds a manual audit of about 10 business days. Google Ads docs call the scope restricted; if it is reviewed as restricted, Google's FAQ estimate is 6 weeks instead.",
       "waitingOn": "Google's OAuth app verification for the Google Ads scope (3–5 business days typical for sensitive scopes, often longer), then automated Basic approval; Standard needs a manual Google compliance review.",
       "evidence": {
         "label": "inferred",

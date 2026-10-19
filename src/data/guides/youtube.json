@@ -57,21 +57,22 @@
       }
     },
     "timeToProd": {
-      "range": "3 weeks–4 months",
+      "range": "3–8 weeks",
       "hours": {
         "min": 504,
-        "max": 2880
+        "max": 1344
       },
-      "assumes": "An agent that reads channel/video data for many users and needs more than the default quota, so it needs both sensitive-scope verification and a quota audit. If 10,000 units/day is enough, only OAuth verification applies (about 1–3 weeks).",
+      "assumes": "An agent that reads channel/video data for many users and needs more than the default quota, so it needs both sensitive-scope verification and a quota audit. Google estimates 3-5 to 10 business days for sensitive verification; YouTube publishes no audit timeline, and audits can run months or end in a lower quota or rejection. If 10,000 units/day is enough, only OAuth verification applies (about 1–2 weeks).",
       "waitingOn": "Google Trust & Safety sensitive-scope verification, then the YouTube API Services compliance audit and quota extension review.",
       "evidence": {
         "label": "inferred",
         "sourceIds": [
+          "s12",
           "s4",
           "s2",
           "s10"
         ],
-        "note": "Google states 3–5 business days for sensitive verification. YouTube's audit page only says the team will reach out 'as soon as possible'. The several-weeks-to-months audit range is from a third-party guide."
+        "note": "Estimate. Google's FAQ says sensitive verification takes '10 Business days' (developer docs: 'typically takes 3-5 business days'), 'not guaranteed'. YouTube's audit page gives no timeline, only that the team will contact you 'as soon as possible', so we allow a few weeks for the audit on top; month-plus audits reported by third parties are tail risk, not typical."
       }
     },
     "cost": null
@@ -148,7 +149,7 @@
         "https://www.googleapis.com/auth/youtube.readonly"
       ],
       "reviewRequired": true,
-      "time": "1–3 weeks",
+      "time": "About 1–2 weeks",
       "impact": "Lets an agent list the user's channel, playlists, subscriptions and ratings. Needs sensitive-scope verification for public use; otherwise test users only, with 7-day refresh tokens, or a lifetime cap of 100 users behind the unverified warning.",
       "evidence": {
         "label": "inferred",
@@ -169,7 +170,7 @@
         "https://www.googleapis.com/auth/youtube.upload"
       ],
       "reviewRequired": true,
-      "time": "1–3 weeks",
+      "time": "About 1–2 weeks",
       "impact": "Write access: post comments, edit metadata, upload. Same verification path, with stronger justification needed for each scope. Uploads are capped at 100 videos.insert calls per day per project.",
       "evidence": {
         "label": "inferred",
@@ -204,7 +205,7 @@
         "Audit and Quota Extension Form"
       ],
       "reviewRequired": true,
-      "time": "Several weeks–months",
+      "time": "Several weeks (no published timeline)",
       "impact": "Needed once you outgrow 10,000 units/day or 100 search.list calls/day. Extra quota may only be used for the approved use case; a changed use case needs a new audit.",
       "evidence": {
         "label": "sourced",
@@ -352,7 +353,7 @@
       "owner": "wait",
       "detail": "A YouTube API Services team member contacts you; they may ask for account access to all features. Approved quota can be lower than requested.",
       "url": null,
-      "duration": "Several weeks–months",
+      "duration": "Several weeks (no published timeline)",
       "evidence": {
         "label": "unverified",
         "sourceIds": [
@@ -561,6 +562,11 @@
       "id": "s11",
       "title": "Phyllo: YouTube OAuth scopes explained (third-party)",
       "url": "https://www.getphyllo.com/post/youtube-oauth-scopes"
+    },
+    {
+      "id": "s12",
+      "title": "OAuth verification FAQ (timelines)",
+      "url": "https://support.google.com/cloud/answer/13463817"
     }
   ],
   "verification": {

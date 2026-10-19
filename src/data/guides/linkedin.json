@@ -53,22 +53,22 @@
       }
     },
     "timeToProd": {
-      "range": "Weeks to months",
+      "range": "4–12 weeks",
       "hours": {
-        "min": 336,
-        "max": 4320
+        "min": 672,
+        "max": 2016
       },
-      "assumes": "Partner APIs, needed to read posts or manage pages. Sign-in and posting work the same day. Approval isn't guaranteed.",
+      "assumes": "Partner APIs (Community Management), needed to read posts or manage pages: Development tier vetting, then a Standard tier review with screencast. Sign-in and posting work the same day. LinkedIn publishes no timeline for these reviews, approval isn't guaranteed, and info requests or rejections (which need a new app) can add weeks or months.",
       "waitingOn": "Nothing for the self-serve products. For gated products: LinkedIn vetting of the business and use case (Development tier), then a second review with screencast (Standard tier). Ads Standard tier review is stated as up to 30 business days. Restricted APIs have no fixed timeline.",
       "evidence": {
-        "label": "sourced",
+        "label": "inferred",
         "sourceIds": [
           "s5",
           "s9",
           "s10",
           "s11"
         ],
-        "note": "Self-serve products are 'available to all developers' with no approval (s5). LinkedIn states up to 30 business days for Ads Standard tier (s11) and 'no fixed timeline' for restricted APIs (s9). The 'weeks to months' end-to-end figure for partner programs is inferred, not an official SLA."
+        "note": "Estimate. LinkedIn states 'up to 30 business days' only for the Ads API Standard tier and gives no timeline for Community Management Development or Standard tier review. The range covers two review rounds plus building the integration between them."
       }
     },
     "cost": "Free API access. Partner programs (SNAP, Talent) are commercial partnerships; terms not published."
@@ -184,7 +184,7 @@
         "rw_organization_admin"
       ],
       "reviewRequired": true,
-      "time": "Weeks to months",
+      "time": "4–12 weeks (no published timeline)",
       "impact": "Company Page posting/reading, comments and reactions, member post and profile analytics. Must be the ONLY product on its app. Development tier caps you at 500 calls per app and 100 per member per 24 h, with no BATCH_GET and no webhooks. Standard tier needs a screencast and test credentials. Business entities only.",
       "evidence": {
         "label": "sourced",

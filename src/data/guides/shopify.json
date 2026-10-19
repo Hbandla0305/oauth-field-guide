@@ -58,22 +58,22 @@
       }
     },
     "timeToProd": {
-      "range": "3–10 weeks",
+      "range": "2–6 weeks",
       "hours": {
-        "min": 504,
-        "max": 1680
+        "min": 336,
+        "max": 1008
       },
-      "assumes": "A public App Store app that reads orders and customer PII (protected customer data Level 2); custom distribution to a single store or one Plus organization skips review and works the same day.",
+      "assumes": "A public App Store app that reads orders and customer PII (protected customer data Level 2); custom distribution to a single store or one Plus organization skips review and works the same day. Shopify publishes no review SLA; during 2026 backlogs reviews ran 30+ days, and each 'Paused' fix round adds more.",
       "waitingOn": "Protected customer data access request approval, then App Store review (submitted, possibly paused for fixes, then published). Shopify publishes no SLA.",
       "evidence": {
-        "label": "unverified",
+        "label": "inferred",
         "sourceIds": [
           "s2",
           "s7",
           "s13",
           "s14"
         ],
-        "note": "Shopify's review-process page gives no timeframe. The submission email says 'up to 2 weeks', but a February 2026 staff post acknowledges a backlog, and April 2026 forum threads discuss 30+ day waits (a staff reply confirmed this for resubmissions). Allow extra for each 'Paused' round."
+        "note": "Estimate. Shopify's review-process page gives no timeframe; the submission email says 'up to 2 weeks'. The range adds the protected customer data access request and one fix round. A February 2026 staff post acknowledged longer reviews, and forum threads report 30+ day waits; those are tail risk."
       }
     },
     "cost": "One-time $19 USD App Store registration fee (waived for accounts created before 2021-08-01 or partners who only build custom apps). App charges have to go through Shopify Billing, with Shopify's revenue share."
@@ -148,7 +148,7 @@
         "write_products"
       ],
       "reviewRequired": true,
-      "time": "3–8 weeks (App Store review)",
+      "time": "2–6 weeks (App Store review)",
       "impact": "Declared in shopify.app.toml [access_scopes], approved by the merchant on install. Any public app needs App Store review before non-development stores can install it. read_orders only returns the last 60 days of orders.",
       "evidence": {
         "label": "sourced",
@@ -371,7 +371,7 @@
       "owner": "wait",
       "detail": "Status goes Submitted, then Paused or Reviewed if fixes are needed, then Published. Reply to reviewer emails and use 'Submit fixes'.",
       "url": "https://shopify.dev/docs/apps/launch/app-store-review/review-process",
-      "duration": "3–8 weeks",
+      "duration": "2–6 weeks",
       "evidence": {
         "label": "unverified",
         "sourceIds": [

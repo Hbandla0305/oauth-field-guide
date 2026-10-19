@@ -52,23 +52,21 @@
       }
     },
     "timeToProd": {
-      "range": "6 weeks – 4+ months",
+      "range": "6–10 weeks",
       "hours": {
         "min": 1008,
-        "max": 3240.0
+        "max": 1680
       },
-      "assumes": "Restricted Gmail scopes (read, modify, drafts), which most email agents need.",
+      "assumes": "Restricted Gmail scopes (read, modify, drafts), which most email agents need. Google estimates 6 weeks for restricted verification (not guaranteed); the CASA security assessment runs alongside and can add a few weeks. Reviews occasionally stall longer.",
       "waitingOn": "Google Trust & Safety review (brand, then data access), plus a CASA-authorized security lab's Letter of Validation for restricted scopes",
       "evidence": {
         "label": "inferred",
         "sourceIds": [
           "s7",
-          "s13",
           "s14",
-          "s15",
-          "s25"
+          "s6"
         ],
-        "note": "Google's FAQ estimates brand 2-3 business days, sensitive 10 business days, restricted 6 weeks, 'not guaranteed'. The developer docs say sensitive 'typically 3-5 business days' and restricted 'several weeks'. The upper bounds come from forum reports of reviews stalled for months and the time a CASA lab takes to remediate and retest."
+        "note": "Google's FAQ: brand verification '2-3 Business days', sensitive '10 Business days', restricted '6 weeks', and 'these estimates are not guaranteed'. The lower bound is Google's figure. The 10-week upper bound is our estimate: Google states no CASA duration, so we allow a few weeks for the lab assessment and any remediation to finish after verification."
       }
     },
     "cost": "Google charges no fees. Restricted scopes need an annual CASA assessment paid directly to an authorized lab, roughly US$500-$6,000+/yr per app depending on lab and tier (third-party pricing, unverified). You also need a domain and a hosted homepage and privacy policy."
@@ -199,11 +197,12 @@
         "https://www.googleapis.com/auth/drive.apps.readonly"
       ],
       "reviewRequired": true,
-      "time": "1–4 weeks",
+      "time": "About 2 weeks (10 business days)",
       "impact": "Requires sensitive scope verification: brand verification, per-scope justification, and an unlisted YouTube demo video. No security assessment. Unverified apps show the 'unverified app' screen and are capped at 100 new users for the project's lifetime.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [
+          "s7",
           "s10",
           "s11",
           "s13",
@@ -225,11 +224,12 @@
         "https://www.googleapis.com/auth/drive.metadata.readonly"
       ],
       "reviewRequired": true,
-      "time": "6 weeks – 4+ months",
+      "time": "6–10 weeks incl. CASA",
       "impact": "Requires restricted scope verification plus an annual CASA security assessment by a Google-approved third-party lab, if restricted data is stored on or passes through your servers. The app must fit an allowed Gmail use case, and Limited Use plus the AI/ML training ban apply. gmail.compose (drafts) is restricted, so an agent that only drafts still needs CASA.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [
+          "s7",
           "s10",
           "s11",
           "s14",
@@ -458,7 +458,7 @@
       "owner": "wait",
       "detail": "Google estimates 10 business days for sensitive scopes (the dev docs say 3-5) and 6 weeks for restricted, 'not guaranteed' and dependent on how fast you respond. Reply to every Trust & Safety email quickly, since each round trip resets your place.",
       "url": null,
-      "duration": "1-3 weeks (sensitive), 6+ weeks (restricted)",
+      "duration": "About 2 weeks (sensitive), about 6 weeks (restricted)",
       "evidence": {
         "label": "sourced",
         "sourceIds": [

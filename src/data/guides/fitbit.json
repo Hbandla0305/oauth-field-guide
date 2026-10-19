@@ -56,20 +56,20 @@
       }
     },
     "timeToProd": {
-      "range": "4–12 weeks",
+      "range": "6–10 weeks",
       "hours": {
-        "min": 672,
-        "max": 2016
+        "min": 1008,
+        "max": 1680
       },
-      "assumes": "Reading activity, sleep and health metrics for more than 100 users, which needs restricted-scope verification and CASA. There is no faster path: staying under 100 users in Testing mode is the only review-free option.",
+      "assumes": "Reading activity, sleep and health metrics for more than 100 users, which needs restricted-scope verification and a tier 2 CASA assessment. Google estimates 6 weeks for restricted verification (not guaranteed) and 2-3 weeks for tier 2 CASA; a tier 3 assessment (4-6 weeks) can push the total to about 12 weeks, and reviews occasionally stall longer. Staying under 100 users in Testing mode is the only review-free option.",
       "waitingOn": "Google Trust & Safety OAuth verification, then a CASA assessor (2–3 weeks for tier 2, 4–6 weeks for tier 3), then Letter of Validation submission",
       "evidence": {
         "label": "inferred",
         "sourceIds": [
-          "s3",
-          "s7"
+          "s10",
+          "s3"
         ],
-        "note": "The CASA durations are Google's stated figures. Trust & Safety review time for Google Health scopes isn't published; the total is our estimate based on Google's general restricted-scope process."
+        "note": "Google's FAQ estimates restricted scope verification at '6 weeks' and says 'these estimates are not guaranteed'. The Health docs say CASA 'can take 2-3 weeks for tier-2 applications and 4-6 weeks for tier-3'. The 10-week upper bound (6 weeks plus tier 2 CASA and LOV submission) is our estimate; Google publishes no Health-specific review time."
       }
     },
     "cost": "No Google fee. CASA assessor fees of US$500–4,500 per assessment (Google's stated range), repeated annually."
@@ -152,7 +152,7 @@
         "https://www.googleapis.com/auth/googlehealth.profile.readonly"
       ],
       "reviewRequired": true,
-      "time": "4–12 weeks",
+      "time": "6–10 weeks incl. CASA",
       "impact": "What a typical agent needs. Each scope needs a specific justification, then CASA.",
       "evidence": {
         "label": "sourced",
@@ -171,7 +171,7 @@
         "https://www.googleapis.com/auth/googlehealth.location.readonly"
       ],
       "reviewRequired": true,
-      "time": "4–12+ weeks",
+      "time": "6–10+ weeks incl. CASA",
       "impact": "Same process, but ECG, irregular-rhythm and exercise GPS data invite closer scrutiny of the justification.",
       "evidence": {
         "label": "inferred",
@@ -190,7 +190,7 @@
         "https://www.googleapis.com/auth/googlehealth.sleep.writeonly"
       ],
       "reviewRequired": true,
-      "time": "4–12 weeks",
+      "time": "6–10 weeks incl. CASA",
       "impact": "Google advises requesting write only if your app sends data to Google Health. Adding write later means another verification round.",
       "evidence": {
         "label": "sourced",
@@ -336,13 +336,14 @@
       "owner": "wait",
       "detail": "Google reviews identity, scopes and justifications, then tells you when to start CASA.",
       "url": null,
-      "duration": "1–6 weeks",
+      "duration": "About 6 weeks (Google estimate)",
       "evidence": {
         "label": "inferred",
         "sourceIds": [
+          "s10",
           "s3"
         ],
-        "note": "No duration published for Health scopes; estimate based on Google's general restricted-scope timelines."
+        "note": "No Health-specific duration published. Google's FAQ estimates 6 weeks for restricted scope verification, not guaranteed."
       }
     },
     {
@@ -559,6 +560,11 @@
       "id": "s9",
       "title": "Google Health API discovery document (v4)",
       "url": "https://health.googleapis.com/$discovery/rest?version=v4"
+    },
+    {
+      "id": "s10",
+      "title": "OAuth verification FAQ (timelines)",
+      "url": "https://support.google.com/cloud/answer/13463817"
     }
   ],
   "verification": {

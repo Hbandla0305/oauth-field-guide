@@ -53,12 +53,12 @@
       }
     },
     "timeToProd": {
-      "range": "3–10 weeks",
+      "range": "2–6 weeks",
       "hours": {
-        "min": 504,
-        "max": 1680
+        "min": 336,
+        "max": 1008
       },
-      "assumes": "Unlimited installs. Up to 25 accounts can connect on day one with no review.",
+      "assumes": "Unlimited installs via a Marketplace listing. Up to 25 accounts can connect on day one with no review. HubSpot states an initial review 'within 10 business days' and allows up to 60 days for the feedback process, so several fix rounds can push past 6 weeks. Time to get 3 active unaffiliated installs first is not included.",
       "waitingOn": "At least 3 active installs from unaffiliated production accounts (30-day activity window), then the HubSpot Ecosystem Quality team's manual listing review. Approval lifts the 25-install cap.",
       "evidence": {
         "label": "inferred",
@@ -67,7 +67,7 @@
           "s6",
           "s7"
         ],
-        "note": "The 25-install cap, 3-install minimum, 10-business-day initial review and 60-day feedback window are all sourced. The total range is our estimate, and how long it takes to get 3 real customers depends on you."
+        "note": "HubSpot's listing requirements: 'initial review within 10 business days' and the feedback process 'should take no more than 60 days'. The range assumes the initial review plus one feedback round; it is our estimate. The 25-install cap and 3-install minimum are sourced."
       }
     },
     "cost": "Free. Building, test accounts and Marketplace listing have no fee. Some scopes only work on customer accounts with paid Professional or Enterprise tiers."

@@ -2,6 +2,8 @@ import { LIBRARY, recentGenerated, summarise } from "@/lib/guides";
 import { DIFFICULTY } from "@/components/difficulty";
 import { EvidenceLegend } from "@/components/evidence";
 import { GuideSearch } from "@/components/guide-search";
+import { PageTour } from "@/components/page-tour";
+import { TOURS } from "@/lib/tours";
 
 export const revalidate = 60;
 
@@ -11,6 +13,7 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
+      <PageTour id="home" steps={TOURS.home} />
       <section className="pt-12 pb-8 sm:pt-16">
         <h1 className="max-w-3xl font-display text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-5xl">
           How long until your users can connect?

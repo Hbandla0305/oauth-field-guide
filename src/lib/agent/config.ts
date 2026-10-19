@@ -18,17 +18,20 @@ export const LIMITS = {
   reservePerRunUsd: 0.2, // worst case for one run, held until the run settles
   maxSearchesPerRun: 6,
   maxOutputTokens: { screen: 2_000, research: 24_000, audit: 16_000, gaps: 2_000 },
-  runsPerIpPerHour: 3,
-  runsPerDay: 25,
+  runsPerIpPerHour: 10,
+  runsPerDay: 40, // ~40 runs at ~$0.03 stays well under the $1.80 cap, which is the real stop
   runTimeoutMs: 240_000,
   inputMaxLength: 80,
   chat: {
-    reservePerMessageUsd: 0.01,
+    reservePerMessageUsd: 0.02, // covers the longest task (a review pack)
     perIpPerHour: 20,
     perDay: 300,
     maxTurns: 8, // messages in one conversation, both sides
     maxQuestionLength: 500,
     maxOutputTokens: 1_200,
+    // Tasks the assistant performs for the user produce longer, finished output.
+    maxOutputTokensDraft: 3_000,
+    maxOutputTokensPack: 6_000,
   },
   // The investigate loop: after drafting, the agent may ask up to this many follow-up questions.
   agent: {

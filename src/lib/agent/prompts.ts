@@ -93,3 +93,21 @@ export const REVISE_ADDENDUM = `You are revising your own draft with new evidenc
 - Live attempts are things our code actually did, logged out. Claims they support may be labelled "tested" with sourceIds like ["attempt1"]. Describe exactly what was observed and don't over-read it: an "invalid client" error shows the endpoint is live and rejects unknown apps; it does not prove registration is self-serve. A login page on the developer console shows it's reachable, not who can sign up.
 - Use new pages to answer open questions; remove questions they settle and add any new ones.
 - Keep every claim the new evidence doesn't affect. sourceIds may be page ids, "probe" or attempt ids.`;
+
+
+export const DRAFT_INSTRUCTIONS = `You do setup work for a developer, using ONE OAuth setup guide (below) and the details they gave about their product.
+Produce the finished deliverable they asked for, ready to paste: text, config or code. No preamble, no explanation of what you're about to do.
+- Base requirements on the guide only. Where the guide or the product details don't give you something, write a clear [placeholder in brackets].
+- End with a short "Check before you submit" list: 2 to 5 things the developer must confirm in the provider's console or with their own team, citing the guide's sources as [n].
+- If the task can't be done from the guide, say so in one sentence and suggest what to do instead.
+- Plain Markdown: headings and bullets are fine. Never use em dashes.`;
+
+export const PACK_INSTRUCTIONS = `You assemble a "review pack" for a developer submitting an OAuth app for this provider's review or verification, using ONE setup guide (below) and their product details.
+Include only sections the guide shows this provider needs, in this order where relevant:
+1. Summary: app name, what it does, the scopes/permissions requested and why (one line each).
+2. Scope justifications: one short paragraph per scope, in the provider's terms.
+3. Privacy policy section: how user data from this provider is accessed, used, stored, shared and deleted, including any data-use policy the guide mentions (e.g. Limited Use).
+4. Demo video script: a numbered shot list that shows the OAuth consent flow and each scope in use.
+5. Reviewer test instructions: test account, steps, expected result.
+6. Submission checklist: the guide's human steps, in order.
+Use [placeholders] for anything you don't know. Cite the guide's sources as [n]. Plain Markdown. Never use em dashes.`;

@@ -75,7 +75,7 @@ export async function screenInput(input: string, cost: RunCost, signal: AbortSig
       instructions: SCREEN_INSTRUCTIONS,
       input: [{ role: "user", content: `<user_input>${input}</user_input>` }],
       text: { format: zodTextFormat(Screen, "screen") },
-      reasoning: { effort: "minimal" },
+      reasoning: { effort: "low" },
       max_output_tokens: LIMITS.maxOutputTokens.screen,
       store: false,
     },
@@ -321,10 +321,23 @@ function normalise(g: Guide, screen: Screen, probe: DiscoveryProbe, pages: Page[
     : g.sources.filter((s) => s.id !== "probe" && !s.id.startsWith("attempt") && /^https:\/\//.test(s.url));
   if (probe.found) sources.push({ id: "probe", title: "Live probe: OAuth discovery document", url: probe.found.url });
   for (const a of attempts) sources.push({ id: a.id, title: a.title, url: a.url });
+
+  // If the model didn't cite a live attempt on any claim, record it as its own Tested note, so
+  // what we actually observed always reaches the guide with the right label.
+  const cited = JSON.stringify(g);
+  const uncited = attempts.filter((a) => !cited.includes(`"${a.id}"`));
+  const nuances = [
+    ...g.nuances,
+    ...uncited.map((a) => ({
+      text: `Live check on ${today()}: ${a.title.replace("Live check: ", "")}. ${a.observed.length > 320 ? `${a.observed.slice(0, 319)}…` : a.observed}`,
+      evidence: { label: "tested" as const, sourceIds: [a.id], note: "Observed by our agent, logged out. Shows how the endpoint responds, not who can register an app." },
+    })),
+  ];
   return {
     ...g,
     app: { ...g.app, name: screen.name, slug: screen.slug, website: screen.website },
     officialDocs: g.officialDocs.filter((d) => /^https:\/\//.test(d.url)).slice(0, 6),
+    nuances,
     sources,
     verification: {
       status: "agent-generated",

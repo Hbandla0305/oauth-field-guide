@@ -1,0 +1,453 @@
+{
+  "app": {
+    "name": "Harvest (GetHarvest)",
+    "slug": "harvest",
+    "website": "https://getharvest.com/",
+    "category": "time-tracking",
+    "developerPortal": "https://id.getharvest.com/developers"
+  },
+  "steps": [
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "owner": "human",
+      "title": "Decide OAuth vs Personal Access Token",
+      "detail": "If the integration is for your own account or a script, consider a Personal Access Token; for multi-user apps register an OAuth2 Application.",
+      "duration": "5–15 min",
+      "evidence": {
+        "note": "V2 docs describe both Personal Access Tokens and OAuth2 options.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "url": "https://id.getharvest.com/developers",
+      "owner": "human",
+      "title": "Sign in to Harvest ID and open Developers page",
+      "detail": "Authenticate to id.getharvest.com and go to the Developers/Applications area to create a new OAuth2 app.",
+      "duration": "2–10 min",
+      "evidence": {
+        "note": "Docs point to the Harvest ID Developers page for app registration; a live check of the page requires sign-in.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "attempt3"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "owner": "human",
+      "title": "Register the OAuth2 Application",
+      "detail": "Provide app name, redirect URI(s), select product support (Harvest/Forecast) and copy client_id and client_secret from the console into your secure store.",
+      "duration": "5–20 min",
+      "evidence": {
+        "note": "Authentication docs describe fields returned and required for client credentials and redirect URIs.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "owner": "agent",
+      "title": "Implement Authorization Code flow (server-side)",
+      "detail": "Redirect users to the documented authorize URL, capture the authorization code, exchange it for tokens at the documented token endpoint, and persist tokens securely.",
+      "duration": "10–60 min",
+      "evidence": {
+        "note": "Docs provide authorize and token endpoints; live probes showed the authorize page redirects to sign-in and the token endpoint rejects malformed requests indicating the endpoint is live and expects client_secret.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "attempt1",
+          "attempt2"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "owner": "agent",
+      "title": "Implement token refresh and secure storage",
+      "detail": "Use refresh_token grant to obtain new access tokens. Store refresh tokens and client_secret on the server side and rotate as needed.",
+      "duration": "15–60 min",
+      "evidence": {
+        "note": "OAuth token example in docs includes expires_in and refresh token usage.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "owner": "human",
+      "title": "Test authorization and basic API calls",
+      "detail": "Authorize your app as a user, confirm returned scopes, call GET https://id.getharvest.com/api/v2/accounts and a sample API endpoint such as GET https://api.harvestapp.com/v2/users/me with Authorization and Harvest-Account-Id headers.",
+      "duration": "10–60 min",
+      "evidence": {
+        "note": "Docs show accounts endpoint and example API requests including required headers and User-Agent policy.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ]
+      }
+    },
+    {
+      "url": "https://support.getharvest.com/hc/en-us/articles/46293697226381-Harvest-MCP",
+      "owner": "human",
+      "title": "(Optional) Expose/point to MCP connector for assistant integrations",
+      "detail": "If integrating with AI assistants using Harvest's MCP connector, follow the MCP connector instructions and provide the MCP URL and connector config to the assistant platform.",
+      "duration": "15–60 min",
+      "evidence": {
+        "note": "MCP docs describe connector URLs and usage patterns for assistants.",
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/",
+      "owner": "human",
+      "title": "Deploy to production and monitor",
+      "detail": "Deploy your server, secure client_secret and refresh tokens, monitor token expiry and API rate limit (429 responses and Retry-After header), and provide user support contact info.",
+      "duration": "varies",
+      "evidence": {
+        "note": "Production deployment and monitoring guidance references secure storage and rate limit awareness as inferred best practices, but explicit Harvest-required production deployment steps are not clearly documented.",
+        "label": "unverified",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "owner": "human",
+      "title": "Use documented endpoints if discovery is not present",
+      "detail": "Harvest does not publish OIDC discovery at standard well-known URLs (probe). Use the explicit authorize and token endpoints from the documentation and configure any libraries manually.",
+      "duration": "5 min",
+      "evidence": {
+        "note": "Live probe found no .well-known discovery documents; docs list explicit endpoints to use instead.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "No OIDC discovery: libraries expecting standard discovery documents must be manually configured with the documented authorize and token endpoints, issuer, and JWKS URL if you need JWT validation.",
+      "evidence": {
+        "note": "Because discovery documents were not found at probed URLs, you must provide endpoints to libraries manually; docs list explicit endpoints but do not provide a discovery document.",
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "text": "Token expiry and refresh: OAuth examples show expires_in in responses; typical example value shown corresponds to long-lived tokens (example in docs), handle refresh_token usage accordingly.",
+      "evidence": {
+        "note": "Authentication examples in the docs include expires_in and refresh_token fields.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "text": "Rate limits: Harvest enforces an API throttle of 100 requests per 15 seconds for general API endpoints and 100 requests per 15 minutes for Reports API; exceeding the limit returns 429 and Retry-After.",
+      "evidence": {
+        "note": "Rate limiting values and 429 behavior are documented in the V2 overview.",
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ]
+      }
+    },
+    {
+      "text": "User-Agent requirement: every API call must include a User-Agent header containing your app name and a contact link or email; missing it triggers a 400 Bad Request.",
+      "evidence": {
+        "note": "V2 docs state the User-Agent header policy and consequences for omission.",
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ]
+      }
+    },
+    {
+      "text": "App registration may require Administrator privileges on the Harvest account (legacy v1 doc indicates admin required).",
+      "evidence": {
+        "note": "V1 docs explicitly state an Administrator must register an app; V2 docs imply account context but do not repeat that line.",
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "title": "Authentication – Harvest API V2 Documentation"
+    },
+    {
+      "id": "s2",
+      "url": "https://help.getharvest.com/api-v2/",
+      "title": "Harvest API V2 Documentation"
+    },
+    {
+      "id": "s3",
+      "url": "https://support.getharvest.com/hc/en-us/articles/46293697226381-Harvest-MCP",
+      "title": "Harvest MCP"
+    },
+    {
+      "id": "s4",
+      "url": "https://help.getharvest.com/api-v1/authentication/authentication/oauth/",
+      "title": "OAuth 2.0 Authentication – Harvest API V1 Documentation"
+    },
+    {
+      "id": "s5",
+      "url": "https://help.getharvest.com/api-v2/introduction/overview/general/",
+      "title": "Overview – Harvest API V2 Documentation"
+    },
+    {
+      "id": "attempt1",
+      "url": "https://id.getharvest.com/oauth2/authorize",
+      "title": "Live check: authorize URL with an unregistered test app"
+    },
+    {
+      "id": "attempt2",
+      "url": "https://id.getharvest.com/api/v2/oauth2/token",
+      "title": "Live check: token endpoint with an invalid code"
+    },
+    {
+      "id": "attempt3",
+      "url": "https://id.getharvest.com/developers",
+      "title": "Live check: developer console, logged out"
+    }
+  ],
+  "verdict": {
+    "cost": "null",
+    "summary": "Harvest provides a documented OAuth2 Authorization Code flow and a developer area for registering OAuth apps, so a developer can build and test an integration quickly; Harvest does not publish OIDC discovery metadata at common well-known URLs, so clients must use the documented endpoints. The API docs do not document a mandatory public app review or publishing process.",
+    "timeToDev": {
+      "hours": {
+        "max": 1,
+        "min": 0.25
+      },
+      "range": "15–60 min",
+      "evidence": {
+        "note": "API v2 docs include explicit Authorization and token endpoints and describe app registration, enabling a quick dev setup.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ]
+      }
+    },
+    "difficulty": "moderate",
+    "timeToProd": {
+      "hours": {
+        "max": 8,
+        "min": 0.25
+      },
+      "range": "Same day",
+      "assumes": "You register an OAuth app in Harvest ID, implement the Authorization Code flow using documented scopes and endpoints, and you do not require a separate Harvest-managed app publishing review.",
+      "evidence": {
+        "note": "API docs describe how to register apps and show endpoints; MCP docs and API docs do not describe a mandatory public app review workflow.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ]
+      },
+      "waitingOn": "No documented review required; wait only if Harvest requests additional information or support manually."
+    }
+  },
+  "blockers": [
+    {
+      "fix": "Manually configure authorize/token endpoints and other values in your OAuth/OIDC library using the documented endpoints in Harvest API docs; file a support request if you need discovery metadata.",
+      "cause": "Harvest does not publish OIDC discovery metadata at the well-known endpoints probed.",
+      "symptom": "No .well-known/openid-configuration or oauth-authorization-server metadata at common hostnames",
+      "evidence": {
+        "note": "Live probe checked multiple common hostnames for .well-known documents and found none; docs provide explicit endpoints to use instead.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "fix": "Ensure you send client_id and client_secret and a valid authorization code in the token exchange. Test token exchange against the documented token endpoint using server-to-server POST with required form fields.",
+      "cause": "Token endpoint enforces client credentials and grant parameter validation.",
+      "symptom": "Token exchange returns client_secret required or invalid_request for malformed requests",
+      "evidence": {
+        "note": "Live probe to the token endpoint returned an error indicating client_secret is required; docs describe the token exchange parameters.",
+        "label": "sourced",
+        "sourceIds": [
+          "attempt2",
+          "s1"
+        ]
+      }
+    },
+    {
+      "fix": "Include a User-Agent header in every API request formatted per the docs, e.g. 'MyApp (https://example.com/contact)'.",
+      "cause": "Harvest requires a User-Agent header that includes app name and contact; omission causes 400 responses.",
+      "symptom": "API requests return 400 when User-Agent header is missing or malformed",
+      "evidence": {
+        "note": "V2 docs state missing User-Agent results in 400 and provide acceptable examples.",
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ]
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Generate server and client sample code for the Authorization Code flow using documented endpoints",
+    "Draft privacy policy text and OAuth consent descriptions for your app",
+    "Create redirect_uri patterns and validate them against Harvest console constraints",
+    "Generate automated tests for token exchange, refresh, and a simple API call using documented endpoints",
+    "Prepare User-Agent header strings and examples required by the API"
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Per-account scopes",
+      "time": "Same day",
+      "impact": "Access is limited to the specific Harvest account(s) the user authorizes. You must present and store Harvest-Account-Id when calling API endpoints.",
+      "evidence": {
+        "note": "V2 docs describe account-specific scope strings and the accounts endpoint to enumerate accessible accounts.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      },
+      "examples": [
+        "harvest:{ACCOUNT_ID}"
+      ],
+      "reviewRequired": false
+    },
+    {
+      "tier": "All-accounts/global scopes",
+      "time": "Same day",
+      "impact": "Grants the app access to all of a user's Harvest accounts, which increases the data and action surface your integration needs to handle.",
+      "evidence": {
+        "note": "Docs list harvest:all and similar scope strings for broader access.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      },
+      "examples": [
+        "harvest:all",
+        "all"
+      ],
+      "reviewRequired": false
+    },
+    {
+      "tier": "MCP connector (assistant integration)",
+      "time": "Same day",
+      "impact": "Allows AI assistants that support the Harvest MCP connector to act on behalf of authorized users within role limits.",
+      "evidence": {
+        "note": "Harvest MCP documentation describes connector usage and assistant capabilities.",
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ]
+      },
+      "examples": [
+        "MCP connector to https://api.harvestapp.com/mcp"
+      ],
+      "reviewRequired": false
+    }
+  ],
+  "humanMustDo": [
+    "Sign in to Harvest ID and register the OAuth2 application in the Developers section",
+    "Copy client_id and client_secret from the console and store them securely",
+    "Configure Redirect URIs and any Harvest-specific registration settings",
+    "Authorize the app from a real Harvest account to complete the OAuth handshake",
+    "Deploy the production server and implement secure storage/rotation for secrets"
+  ],
+  "officialDocs": [
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "kind": "oauth",
+      "label": "Authentication / OAuth2 (API v2)"
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/",
+      "kind": "api",
+      "label": "Harvest API v2 Documentation hub"
+    },
+    {
+      "url": "https://help.getharvest.com/api-v1/authentication/authentication/oauth/",
+      "kind": "oauth",
+      "label": "OAuth 2.0 Authentication (API v1, legacy)"
+    },
+    {
+      "url": "https://support.getharvest.com/hc/en-us/articles/46293697226381-Harvest-MCP",
+      "kind": "console",
+      "label": "Harvest MCP connector info (AI assistant integration)"
+    }
+  ],
+  "verification": {
+    "status": "agent-generated",
+    "tested": [
+      "Looked for OAuth discovery metadata at 10 standard URLs; none found",
+      "authorize URL with an unregistered test app: HTTP 200, redirected to id.getharvest.com/sessions/new. Response text: \"Sign in Sign in to Harvest ID Sign in with Google or with your email below Sign in or sign in with SAML SSO Forgot password? Terms of service Privacy policy\"",
+      "token endpoint with an invalid code: HTTP 400. Response: \"{\"error\":\"invalid_request\",\"error_description\":\"client_secret required.\"}\"",
+      "developer console, logged out: HTTP 200, redirected to id.getharvest.com. Page asks you to sign in."
+    ],
+    "reviewedOn": null,
+    "corrections": [],
+    "lastChecked": "2026-10-19",
+    "openQuestions": [
+      "Is there any formal Harvest app review or publishing process required to list or distribute an OAuth app to external customers (not documented in the API/help pages)?",
+      "Does Harvest have a formal, documented external OAuth app publishing or review process beyond what is described in the API docs?",
+      "Are there any official minimum security requirements for storing client_secret/refresh_token beyond standard OAuth best practices?",
+      "Is there a published, explicit rate limit guidance beyond the general overview, to help clients design backoff strategies?"
+    ]
+  },
+  "prerequisites": [
+    {
+      "why": "You must sign in to Harvest ID to register OAuth applications and to authorize/test app access to account data.",
+      "item": "Harvest account (Administrator for app registration)",
+      "evidence": {
+        "note": "V1 docs explicitly say Administrator access is required to register an application; V2 docs assume account context for API calls and app setup.",
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ]
+      }
+    },
+    {
+      "why": "Apps are created from the Harvest ID Developers page to obtain client_id and client_secret and to configure redirect URIs.",
+      "item": "Developer console access (Harvest ID)",
+      "evidence": {
+        "note": "V2 Authentication docs describe registering an OAuth2 Application in Harvest ID developers.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "why": "Registration requires at least app name and redirect URI; contact/privacy details are typically needed when you surface the app to end users or for support.",
+      "item": "Redirect URI and app contact/privacy info ready",
+      "evidence": {
+        "note": "No explicit requirement for redirect URI or app contact/privacy fields is enumerated in the official docs; this is an assumption based on general OAuth app registration norms.",
+        "label": "unverified",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    }
+  ]
+}

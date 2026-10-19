@@ -33,21 +33,32 @@
     "summary": "A draft app works against your own account within minutes, but SurveyMonkey says no other account can authenticate a draft app, and an app for unrelated customers has to be a Public app that SurveyMonkey reviews and approves for its App Directory. Private apps skip review but are limited to one account or team, and the developer pays for it.",
     "timeToDev": {
       "range": "15–60 min",
-      "hours": { "min": 0.25, "max": 1 },
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "Anyone with a SurveyMonkey account can register a draft app and authenticate it against their own account for 90 days."
       }
     },
     "timeToProd": {
       "range": "2–8 weeks",
-      "hours": { "min": 336, "max": 1344 },
+      "hours": {
+        "min": 336,
+        "max": 1344
+      },
       "assumes": "A Public app that reads surveys and responses for any SurveyMonkey user; a Private app for a single team avoids review but can't serve other customers.",
       "waitingOn": "SurveyMonkey's review of your App Directory listing, plus separate approval if you need surveys_write or responses_write.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "SurveyMonkey doesn't publish a review timeline, and we found no reliable reports of real durations. The range is our estimate."
       }
     },
@@ -57,56 +68,122 @@
     {
       "item": "A SurveyMonkey account (any plan) for a Public app",
       "why": "Anyone with an account can register an app. Private apps need a paid plan with direct API access, but Public apps don't.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "item": "HTTPS everywhere with a valid SSL certificate",
       "why": "A basic requirement for Public app approval.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A product that doesn't duplicate SurveyMonkey features, and a support channel",
       "why": "Public apps should offer unique value, not replicate SurveyMonkey's survey tools, and provide easily accessible support.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A non-generic app name without 'SurveyMonkey' or a version number",
       "why": "Naming rule for App Directory listings.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Read scopes available on free plans",
-      "examples": ["surveys_read", "collectors_read", "responses_read", "users_read", "webhooks_read", "webhooks_write"],
+      "examples": [
+        "surveys_read",
+        "collectors_read",
+        "responses_read",
+        "users_read",
+        "webhooks_read",
+        "webhooks_write"
+      ],
       "reviewRequired": true,
       "time": "2–8 weeks",
       "impact": "No paid plan needed on the user's side, but the Public app itself still has to be approved before other accounts can connect.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The time is our estimate." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The time is our estimate."
+      }
     },
     {
       "tier": "Response details (plan-limited)",
-      "examples": ["responses_read_detail"],
+      "examples": [
+        "responses_read_detail"
+      ],
       "reviewRequired": true,
       "time": "2–8 weeks",
       "impact": "Full answer data, which an agent analyzing surveys needs. Basic (free) users only get up to 25 responses per survey; beyond that the API returns 1005 Upgrade required.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Write scopes that need extra approval",
-      "examples": ["surveys_write", "responses_write"],
+      "examples": [
+        "surveys_write",
+        "responses_write"
+      ],
       "reviewRequired": true,
       "time": "Extra approval on top of listing review",
       "impact": "Public apps must contact the help center and describe the use case to add these. responses_write also needs a paid plan on the user's side.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Team and admin scopes (paid plans)",
-      "examples": ["groups_read", "workgroups_read", "roles_read", "workgroups_shares_read"],
+      "examples": [
+        "groups_read",
+        "workgroups_read",
+        "roles_read",
+        "workgroups_shares_read"
+      ],
       "reviewRequired": true,
       "time": "2–8 weeks",
       "impact": "Only work for users on paid team plans; mark them optional so free users can still connect.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -116,7 +193,14 @@
       "detail": "Sign in to the developer portal, open My Apps and add a new app. It starts as a draft that only your account can authenticate, with a 90-day window.",
       "url": "https://developer.surveymonkey.com/apps/",
       "duration": "10 min",
-      "evidence": { "label": "tested", "sourceIds": ["s1", "s4"], "note": "developer.surveymonkey.com/apps/ returned 302 to the sign-in page on 2026-10-20. We did not sign in." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "developer.surveymonkey.com/apps/ returned 302 to the sign-in page on 2026-10-20. We did not sign in."
+      }
     },
     {
       "title": "Set redirect URI and scope requirements",
@@ -124,7 +208,13 @@
       "detail": "Register the OAuth redirect URI and set each scope to required, optional or not required. All required scopes have to be available to the user or OAuth fails, so keep paid-plan scopes optional.",
       "url": "https://developer.surveymonkey.com/apps/",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement OAuth",
@@ -132,7 +222,13 @@
       "detail": "Redirect to https://api.surveymonkey.com/oauth/authorize with response_type=code, client_id, redirect_uri (URL-encoded) and state. Exchange the code within 5 minutes by form POST to /oauth/token. Save access_token and access_url.",
       "url": "https://api.surveymonkey.com/v3/docs",
       "duration": "1 hour",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Use the per-user access_url",
@@ -140,7 +236,13 @@
       "detail": "Route API calls to the access_url from the token response: api.surveymonkey.com, api.eu.surveymonkey.com or api.surveymonkey.ca.",
       "url": "https://api.surveymonkey.com/v3/docs",
       "duration": "20 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Handle plan-limited errors",
@@ -148,7 +250,13 @@
       "detail": "Treat 1005 (upgrade required), 1014 (permission not granted) and 1015 (user lacks required plan) as user-facing states, not crashes.",
       "url": "https://api.surveymonkey.com/v3/docs",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Request write-scope approval if needed",
@@ -156,7 +264,13 @@
       "detail": "If the agent creates surveys or writes responses, contact the SurveyMonkey help center describing the app and use case to enable surveys_write / responses_write.",
       "url": "https://help.surveymonkey.com/contact/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Draft the App Directory listing",
@@ -164,7 +278,13 @@
       "detail": "Write an honest English listing covering core functionality and why each scope is needed, whether users need a free or paid account with your service, and where to get support.",
       "url": "https://www.surveymonkey.com/developer/build-a-public-app/",
       "duration": "1–2 hours",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Submit the listing for approval",
@@ -172,7 +292,14 @@
       "detail": "In My Apps open the listings tab, create the app listing and submit it. Do this well before the 90-day draft window ends, or the app is disabled.",
       "url": "https://developer.surveymonkey.com/apps/",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Wait for SurveyMonkey review",
@@ -180,7 +307,13 @@
       "detail": "SurveyMonkey reviews the app against its criteria and terms of use, and says it can reject apps for criteria not listed.",
       "url": null,
       "duration": "2–8 weeks",
-      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "Duration is our estimate; no official timeline." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Duration is our estimate; no official timeline."
+      }
     },
     {
       "title": "Get early users connected",
@@ -188,7 +321,13 @@
       "detail": "After launch, the listing criteria expect at least five OAuth sign-ins in the first three months.",
       "url": null,
       "duration": "Ongoing",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -209,70 +348,156 @@
       "symptom": "Other SurveyMonkey users can't authorize your app during development",
       "cause": "No other SurveyMonkey accounts can authenticate a draft app.",
       "fix": "Deploy as Public (after approval) or as Private (single team only).",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "App stops working about 90 days after registration",
       "cause": "The draft window expired and the app was disabled.",
       "fix": "Deploy it, or ask the help center for an extension.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "OAuth fails for free-plan users",
       "cause": "A required scope needs a paid plan (for example groups_read or responses_write).",
       "fix": "Mark paid-plan scopes optional and degrade gracefully.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Error 1005 'Upgrade required' (HTTP 402) when reading responses",
       "cause": "A Basic plan user hit the 25-responses-per-survey limit on response details.",
       "fix": "Tell the user to upgrade, or use summary data only.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Error 1040 rate limit (HTTP 429) after a few hundred calls in a day",
       "cause": "Draft and Private apps get 120 requests per minute and a daily limit starting at 500, reset at midnight GMT.",
       "fix": "Get Public approval (500,000/day) or buy higher limits through sales.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Every user's token suddenly returns 401",
       "cause": "Someone refreshed the app credential (secret) in the developer portal, which revokes all access.",
       "fix": "Don't rotate the secret casually; if you do, plan for all users to reconnect.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens don't currently expire and there are no refresh tokens. SurveyMonkey says this may change with advance warning, and users can revoke access at any time (error 1013).",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Public apps get up to 500,000 requests per day. Draft and Private apps get 120 per minute and start at 500 per day, with three overages up to 150% allowed per 30 days.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Accounts live in US, EU or Canada data centers; use the access_url returned at token exchange for each user.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "End users pay for their own SurveyMonkey plan with a Public app, while with a Private app the developer buys the accounts.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "SurveyMonkey reserves the right to reject apps based on criteria it hasn't listed, so an approval isn't predictable from the published checklist alone.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "SurveyMonkey API v3 documentation", "url": "https://api.surveymonkey.com/v3/docs" },
-    { "id": "s2", "title": "SurveyMonkey Developer: Creating a Public App", "url": "https://www.surveymonkey.com/developer/build-a-public-app/" },
-    { "id": "s3", "title": "SurveyMonkey Developer: FAQ", "url": "https://developer.surveymonkey.com/faq/" },
-    { "id": "s4", "title": "Live check: SurveyMonkey developer portal (My Apps)", "url": "https://developer.surveymonkey.com/apps/" }
+    {
+      "id": "s1",
+      "title": "SurveyMonkey API v3 documentation",
+      "url": "https://api.surveymonkey.com/v3/docs"
+    },
+    {
+      "id": "s2",
+      "title": "SurveyMonkey Developer: Creating a Public App",
+      "url": "https://www.surveymonkey.com/developer/build-a-public-app/"
+    },
+    {
+      "id": "s3",
+      "title": "SurveyMonkey Developer: FAQ",
+      "url": "https://developer.surveymonkey.com/faq/"
+    },
+    {
+      "id": "s4",
+      "title": "Live check: SurveyMonkey developer portal (My Apps)",
+      "url": "https://developer.surveymonkey.com/apps/"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://api.surveymonkey.com/oauth/authorize with no params: 200 page 'Missing required parameter(s): client_id, redirect_uri, response_type'",
       "POST https://api.surveymonkey.com/oauth/token with no body: {\"error\": \"invalid_request\", \"error_description\": \"Missing required parameter(s): client_id, client_secret, code, grant_type, redirect_uri\"}",

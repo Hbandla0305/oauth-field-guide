@@ -7,32 +7,64 @@
     "category": "File storage"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth guide", "url": "https://docs.dropboxapi.com/dropbox-api/docs/oauth" },
-    { "kind": "review", "label": "Developer guide (production approval)", "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/developer-guide" },
-    { "kind": "review", "label": "Branding guide", "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/branding-guide" },
-    { "kind": "console", "label": "App Console", "url": "https://www.dropbox.com/developers/apps" },
-    { "kind": "scopes", "label": "Migrating to scoped apps (scope names)", "url": "https://dropbox.tech/developers/migrating-app-permissions-and-access-tokens" }
+    {
+      "kind": "oauth",
+      "label": "OAuth guide",
+      "url": "https://docs.dropboxapi.com/dropbox-api/docs/oauth"
+    },
+    {
+      "kind": "review",
+      "label": "Developer guide (production approval)",
+      "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/developer-guide"
+    },
+    {
+      "kind": "review",
+      "label": "Branding guide",
+      "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/branding-guide"
+    },
+    {
+      "kind": "console",
+      "label": "App Console",
+      "url": "https://www.dropbox.com/developers/apps"
+    },
+    {
+      "kind": "scopes",
+      "label": "Migrating to scoped apps (scope names)",
+      "url": "https://dropbox.tech/developers/migrating-app-permissions-and-access-tokens"
+    }
   ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "Self-serve: a new app works for your own account in minutes and can link up to 500 users while in development. Once 50 users link you have two weeks to get production approval (a light review Dropbox says usually takes a few business days) or new linking freezes.",
     "timeToDev": {
       "range": "15–45 min",
-      "hours": { "min": 0.25, "max": 0.75 },
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "Create a scoped app in the App Console, tick scopes on the Permissions tab, add a redirect URI, and run the code flow. No review for development."
       }
     },
     "timeToProd": {
       "range": "2 days–2 weeks",
-      "hours": { "min": 48, "max": 336 },
+      "hours": {
+        "min": 48,
+        "max": 336
+      },
       "assumes": "A Full Dropbox or App folder app that reads and writes user files and needs more than 50 users; the first 50 users (up to 500 total in development) can link the same day with no review.",
       "waitingOn": "Dropbox production approval, which is not reviewed until 50 users have linked unless you request early review.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s5"],
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
         "note": "Dropbox support says it responds to 'nearly all production requests within a few business days'. The upper bound is the two-week window before new linking freezes."
       }
     },
@@ -42,56 +74,130 @@
     {
       "item": "A Dropbox account (Basic free plan works) to own the app",
       "why": "Apps are created in the App Console while signed in, and in development they link to the developer's own account first.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s9"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s9"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A registered redirect URI that exactly matches the one sent in the authorize request",
       "why": "Dropbox checks that redirect_uri matches one of the values registered in the App Console.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "The OAuth guide does not state rules for http://localhost; see open questions." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The OAuth guide does not state rules for http://localhost; see open questions."
+      }
     },
     {
       "item": "An app icon and a written description of how the app uses the API",
       "why": "Both are required in the production approval application.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Compliance with the developer branding guide and API terms",
       "why": "Apps that don't follow the branding guidelines and terms are rejected at production review.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Sign-in / account info",
-      "examples": ["openid", "email", "profile", "account_info.read"],
+      "examples": [
+        "openid",
+        "email",
+        "profile",
+        "account_info.read"
+      ],
       "reviewRequired": false,
       "time": "Same day (up to 50 users)",
       "impact": "Identity only. Still counts toward the 50-user threshold for production approval, since the threshold is about linked users, not scopes.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s7"], "note": "OIDC scopes observed in the live discovery document. Production rules are per app, not per scope." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": "OIDC scopes observed in the live discovery document. Production rules are per app, not per scope."
+      }
     },
     {
       "tier": "App folder access",
-      "examples": ["files.metadata.read", "files.content.read", "files.content.write"],
+      "examples": [
+        "files.metadata.read",
+        "files.content.read",
+        "files.content.write"
+      ],
       "reviewRequired": true,
       "time": "Same day to 50 users, then a few business days",
       "impact": "The app sees only /Apps/<your app>. The least-privilege choice and the easiest to justify at production review, but useless for an agent that needs to read a user's existing files.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": "reviewRequired=true means beyond 50 linked users; review applies to every API app." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "reviewRequired=true means beyond 50 linked users; review applies to every API app."
+      }
     },
     {
       "tier": "Full Dropbox access",
-      "examples": ["files.metadata.read", "files.content.read", "files.content.write", "sharing.read", "sharing.write"],
+      "examples": [
+        "files.metadata.read",
+        "files.content.read",
+        "files.content.write",
+        "sharing.read",
+        "sharing.write"
+      ],
       "reviewRequired": true,
       "time": "Same day to 50 users, then a few business days",
       "impact": "Access to all files and folders in the user's Dropbox, which most file-reading agents need. Reviewers check that you don't request broader access than the functionality needs.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Team (Business API) scopes",
-      "examples": ["team_info.read", "members.read", "groups.read", "events.read"],
+      "examples": [
+        "team_info.read",
+        "members.read",
+        "groups.read",
+        "events.read"
+      ],
       "reviewRequired": true,
       "time": "Varies; team admin must install",
       "impact": "The token is tied to the team rather than a user, and member-level calls use the Dropbox-API-Select-User header. Needs a Dropbox team admin to authorize.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s6"], "note": "Team review timing isn't documented separately; the admin-install requirement is inferred from the token being associated with the team." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": "Team review timing isn't documented separately; the admin-install requirement is inferred from the token being associated with the team."
+      }
     }
   ],
   "steps": [
@@ -101,7 +207,13 @@
       "detail": "Sign in with the Dropbox account that will own the app.",
       "url": "https://www.dropbox.com/developers/apps",
       "duration": "2 min",
-      "evidence": { "label": "tested", "sourceIds": ["s9"], "note": "GET /developers/apps returned 302 to dropbox.com/login on 2026-10-20. We did not sign in." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "GET /developers/apps returned 302 to dropbox.com/login on 2026-10-20. We did not sign in."
+      }
     },
     {
       "title": "Create a scoped app and choose the access type",
@@ -109,7 +221,14 @@
       "detail": "Create app > Scoped access > App folder or Full Dropbox. Pick App folder unless the agent must read existing files; reviewers check least privilege.",
       "url": "https://www.dropbox.com/developers/apps/create",
       "duration": "2 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": "The create URL path is our inference and wasn't opened." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "The create URL path is our inference and wasn't opened."
+      }
     },
     {
       "title": "Pick the minimum scopes",
@@ -117,7 +236,13 @@
       "detail": "Map each endpoint the agent calls to its required scope (each endpoint documents one) and produce the list to tick on the Permissions tab, e.g. files.metadata.read + files.content.read for a read-only agent.",
       "url": "https://docs.dropboxapi.com/dropbox-api/docs/oauth",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Tick scopes and add redirect URIs",
@@ -125,7 +250,14 @@
       "detail": "On the Permissions tab tick the scopes and Submit. On Settings add the exact redirect URIs. Changing scopes later means existing users must re-authorize to get them.",
       "url": "https://www.dropbox.com/developers/apps",
       "duration": "5 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s2", "s6"], "note": "Re-authorization for new scopes is inferred from scopes being granted per authorization." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": "Re-authorization for new scopes is inferred from scopes being granted per authorization."
+      }
     },
     {
       "title": "Implement the code flow with offline access",
@@ -133,7 +265,15 @@
       "detail": "Redirect to https://www.dropbox.com/oauth2/authorize?client_id=...&response_type=code&redirect_uri=...&state=...&token_access_type=offline (add PKCE S256 for public clients). Exchange at POST https://api.dropboxapi.com/oauth2/token. Store the refresh token; access tokens are short-lived.",
       "url": "https://docs.dropboxapi.com/dropbox-api/docs/oauth",
       "duration": "1–3 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4", "s7"], "note": "Token endpoint host confirmed from the live OIDC discovery document." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4",
+          "s7"
+        ],
+        "note": "Token endpoint host confirmed from the live OIDC discovery document."
+      }
     },
     {
       "title": "Test with your own and invited accounts",
@@ -141,7 +281,13 @@
       "detail": "Link your own account, then other test accounts. Development apps can link up to 500 users, but the 50th link starts a two-week clock.",
       "url": "https://www.dropbox.com/developers/apps",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Check branding and draft the production application",
@@ -149,7 +295,14 @@
       "detail": "Audit app name, logo use and copy against the branding guide (don't imply endorsement or partnership; say the app uses Dropbox). Draft the description of how the app uses the API and justify Full Dropbox if chosen.",
       "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/branding-guide",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Apply for production",
@@ -157,7 +310,13 @@
       "detail": "From the app's info page click Apply for production, paste the description, upload the icon. Use 'Request early review' if you need approval before 50 users. Rename the app first if needed; production apps can't be renamed.",
       "url": "https://www.dropbox.com/developers/apps",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Production review",
@@ -165,7 +324,14 @@
       "detail": "Not reviewed until 50 users link (unless early review is granted). Dropbox says it answers nearly all requests within a few business days.",
       "url": null,
       "duration": "a few business days",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Keep meeting production requirements",
@@ -173,7 +339,13 @@
       "detail": "Approved apps must keep following the branding guide and terms. Any number of users can then link.",
       "url": null,
       "duration": "ongoing",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -194,73 +366,180 @@
       "symptom": "New users can no longer link the app, even after unlinking others",
       "cause": "The app reached 50 linked users (or the 500 development cap) and wasn't approved for production within two weeks, so linking froze.",
       "fix": "Apply for production status; that's the only way to unfreeze. Apply before the 50th user, or request early review.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "API calls start returning 401 expired_access_token a few hours after linking",
       "cause": "Access tokens are short-lived; long-lived tokens are no longer issued.",
       "fix": "Request token_access_type=offline and refresh with grant_type=refresh_token. Read expires_in rather than hardcoding a lifetime.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4", "s6"], "note": "The exact error string is from community reports; the short-lived behaviour is official." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4",
+          "s6"
+        ],
+        "note": "The exact error string is from community reports; the short-lived behaviour is official."
+      }
     },
     {
       "symptom": "Calls fail with missing_scope / required_scope errors",
       "cause": "The endpoint needs a scope not ticked on the Permissions tab or not granted in the user's authorization.",
       "fix": "Tick the scope, then have the user re-authorize (optionally pass scopes= to request it).",
-      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "The OAuth guide says scopes control which endpoints an app can call; the error name is from memory of the API and wasn't seen on the pages we read." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The OAuth guide says scopes control which endpoints an app can call; the error name is from memory of the API and wasn't seen on the pages we read."
+      }
     },
     {
       "symptom": "Production application rejected",
       "cause": "Branding violations (implying endorsement, resembling an official client) or requesting broader access than needed.",
       "fix": "Fix the branding, drop to App folder or fewer scopes, and reapply.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Authorize page shows an error instead of the consent screen",
       "cause": "Missing or unregistered client_id or redirect_uri.",
       "fix": "Send the app key as client_id and a redirect_uri registered exactly in the App Console.",
-      "evidence": { "label": "tested", "sourceIds": ["s2"], "note": "GET /oauth2/authorize with no params redirected to /oauth2/authorize_error?error_name=missing_client_id." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "GET /oauth2/authorize with no params redirected to /oauth2/authorize_error?error_name=missing_client_id."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Refresh tokens can be reused and don't expire automatically, but can be revoked. Short-lived access tokens last a few hours; Dropbox's example shows expires_in of about 14400 seconds.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "The 4-hour figure is from community answers and examples; Dropbox says to read expires_in." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "The 4-hour figure is from community answers and examples; Dropbox says to read expires_in."
+      }
     },
     {
       "text": "Production vs development status doesn't change token lifetimes. It only changes how many users can link.",
-      "evidence": { "label": "unverified", "sourceIds": ["s8"], "note": "Stated by a Dropbox forum moderator, not in the developer guide." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "Stated by a Dropbox forum moderator, not in the developer guide."
+      }
     },
     {
       "text": "Pre-built Chooser, Saver and Embedder components don't need production approval because they only access what the user picks. An agent that only needs user-selected files could avoid the API review entirely.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Team-scoped tokens belong to the team. To act as a member, add the Dropbox-API-Select-User header, which needs user scopes requested alongside the team scopes.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Production apps can't be renamed, so settle the name before applying.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Dropbox's developer docs moved to docs.dropboxapi.com; old www.dropbox.com/developers/reference links 301-redirect there.",
-      "evidence": { "label": "tested", "sourceIds": ["s1", "s2"], "note": "Observed 301 redirects on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Observed 301 redirects on 2026-10-20."
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Dropbox: DBX Platform developer guide (production approval)", "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/developer-guide" },
-    { "id": "s2", "title": "Dropbox: OAuth guide", "url": "https://docs.dropboxapi.com/dropbox-api/docs/oauth" },
-    { "id": "s3", "title": "Dropbox: Developer branding guide", "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/branding-guide" },
-    { "id": "s4", "title": "Dropbox tech blog: Using OAuth 2.0 with offline access", "url": "https://dropbox.tech/developers/using-oauth-2-0-with-offline-access" },
-    { "id": "s5", "title": "Dropbox: Developer support page", "url": "https://www.dropbox.com/developers/support" },
-    { "id": "s6", "title": "Dropbox tech blog: Migrating app permissions and access tokens", "url": "https://dropbox.tech/developers/migrating-app-permissions-and-access-tokens" },
-    { "id": "s7", "title": "Dropbox OpenID Connect discovery document", "url": "https://www.dropbox.com/.well-known/openid-configuration" },
-    { "id": "s8", "title": "Dropbox forum: Production approval for a very small amount of users", "url": "https://www.dropboxforum.com/discussions/101000014/production-approval-for-a-very-small-amount-of-users/503543" },
-    { "id": "s9", "title": "Dropbox App Console", "url": "https://www.dropbox.com/developers/apps" }
+    {
+      "id": "s1",
+      "title": "Dropbox: DBX Platform developer guide (production approval)",
+      "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/developer-guide"
+    },
+    {
+      "id": "s2",
+      "title": "Dropbox: OAuth guide",
+      "url": "https://docs.dropboxapi.com/dropbox-api/docs/oauth"
+    },
+    {
+      "id": "s3",
+      "title": "Dropbox: Developer branding guide",
+      "url": "https://docs.dropboxapi.com/dropbox-api/docs/developer-resources/branding-guide"
+    },
+    {
+      "id": "s4",
+      "title": "Dropbox tech blog: Using OAuth 2.0 with offline access",
+      "url": "https://dropbox.tech/developers/using-oauth-2-0-with-offline-access"
+    },
+    {
+      "id": "s5",
+      "title": "Dropbox: Developer support page",
+      "url": "https://www.dropbox.com/developers/support"
+    },
+    {
+      "id": "s6",
+      "title": "Dropbox tech blog: Migrating app permissions and access tokens",
+      "url": "https://dropbox.tech/developers/migrating-app-permissions-and-access-tokens"
+    },
+    {
+      "id": "s7",
+      "title": "Dropbox OpenID Connect discovery document",
+      "url": "https://www.dropbox.com/.well-known/openid-configuration"
+    },
+    {
+      "id": "s8",
+      "title": "Dropbox forum: Production approval for a very small amount of users",
+      "url": "https://www.dropboxforum.com/discussions/101000014/production-approval-for-a-very-small-amount-of-users/503543"
+    },
+    {
+      "id": "s9",
+      "title": "Dropbox App Console",
+      "url": "https://www.dropbox.com/developers/apps"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://www.dropbox.com/.well-known/openid-configuration: issuer https://www.dropbox.com, token endpoint https://api.dropboxapi.com/oauth2/token, scopes openid/profile/email, RS256",
       "GET https://www.dropbox.com/developers/apps: 302 to dropbox.com/login",

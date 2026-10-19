@@ -7,32 +7,64 @@
     "category": "Shared inbox"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth guide", "url": "https://dev.frontapp.com/docs/oauth" },
-    { "kind": "scopes", "label": "Authentication and permissions (namespaces, read/write/delete/send)", "url": "https://dev.frontapp.com/docs/authentication" },
-    { "kind": "console", "label": "Create, manage and publish apps", "url": "https://dev.frontapp.com/docs/create-and-manage-apps" },
-    { "kind": "review", "label": "Partnering with Front (submission)", "url": "https://dev.frontapp.com/docs/partnering-with-front" },
-    { "kind": "api", "label": "Rate limiting", "url": "https://dev.frontapp.com/docs/rate-limiting" }
+    {
+      "kind": "oauth",
+      "label": "OAuth guide",
+      "url": "https://dev.frontapp.com/docs/oauth"
+    },
+    {
+      "kind": "scopes",
+      "label": "Authentication and permissions (namespaces, read/write/delete/send)",
+      "url": "https://dev.frontapp.com/docs/authentication"
+    },
+    {
+      "kind": "console",
+      "label": "Create, manage and publish apps",
+      "url": "https://dev.frontapp.com/docs/create-and-manage-apps"
+    },
+    {
+      "kind": "review",
+      "label": "Partnering with Front (submission)",
+      "url": "https://dev.frontapp.com/docs/partnering-with-front"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limiting",
+      "url": "https://dev.frontapp.com/docs/rate-limiting"
+    }
   ],
   "verdict": {
     "difficulty": "hard",
     "summary": "Any Front company admin can create an app with OAuth in Settings > Company > Developers, but apps are private to the Front instance they were created in; to let other companies install yours you submit it to Front, which tests it (and may run a security or legal review) before publishing it to the App Store. Front requires OAuth for public Core API integrations, only admins can authorize, and the review has no published timeline.",
     "timeToDev": {
       "range": "30–90 min",
-      "hours": { "min": 0.5, "max": 1.5 },
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s3", "s4"],
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
         "note": "Assumes you already have a Front account or a free developer account; we couldn't find how long a developer account takes to provision."
       }
     },
     "timeToProd": {
       "range": "2–6 weeks",
-      "hours": { "min": 336, "max": 1008 },
+      "hours": {
+        "min": 336,
+        "max": 1008
+      },
       "assumes": "A published App Store integration using OAuth to read and send messages across customers' Front instances; there is no self-serve unlisted path for other companies.",
       "waitingOn": "Front's partner submission testing and technical approval, plus a possible security or legal review; no SLA is published.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s4", "s3"],
+        "sourceIds": [
+          "s4",
+          "s3"
+        ],
         "note": "Front gives no review timeline. The range is our estimate by analogy with similar marketplace reviews."
       }
     },
@@ -42,64 +74,138 @@
     {
       "item": "A Front company where you are an admin (free developer account or existing paid instance)",
       "why": "Only company admins can create or manage apps; Front recommends a free developer account if you don't want to test on production data.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "item": "An HTTPS redirect URL and a server for app authorization",
       "why": "OAuth needs a redirect URL; calls to servers you configure for app authorization are limited to 600 rpm.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Admin on the customer side",
       "why": "Users authorizing OAuth apps must be admins (the MCP server connection is the exception).",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A support process for joint customers",
       "why": "Partners must help joint users; Front sends users with issues to the partner.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Private app or API token (your own instance)",
-      "examples": ["API token", "OAuth on a private app"],
+      "examples": [
+        "API token",
+        "OAuth on a private app"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Apps are private to the instance they were created in. Fine for development or an agent you run for your own team only.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Shared resources, read and write",
-      "examples": ["Shared namespace: Read", "Shared namespace: Write", "Global namespace: Read"],
+      "examples": [
+        "Shared namespace: Read",
+        "Shared namespace: Write",
+        "Global namespace: Read"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "Covers shared inboxes, conversations, contacts and workspace tags, which is what a support agent typically needs. Goes through Front's submission and testing to reach other companies.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2", "s4"], "note": "Front shows namespaces and permissions as UI choices, not scope strings. Whether narrower permissions speed up review isn't stated." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "Front shows namespaces and permissions as UI choices, not scope strings. Whether narrower permissions speed up review isn't stated."
+      }
     },
     {
       "tier": "Send and delete permissions",
-      "examples": ["Shared namespace: Send", "Shared namespace: Delete"],
+      "examples": [
+        "Shared namespace: Send",
+        "Shared namespace: Delete"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "Needed for an agent that sends replies. Same submission path; expect testers to check the sending behaviour.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2", "s4"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Private (teammate) resources",
-      "examples": ["Private namespace: Read"],
+      "examples": [
+        "Private namespace: Read"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks, plus per-teammate opt-in",
       "impact": "Reaches personal inboxes and signatures, but each teammate has to enable API access in their own settings.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Auto-provisioning (SCIM)",
-      "examples": ["Auto-provisioning"],
+      "examples": [
+        "Auto-provisioning"
+      ],
       "reviewRequired": true,
       "time": "Not generally available",
       "impact": "Not generally available to the public.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -109,7 +215,14 @@
       "detail": "Use your company's Front instance or request a free developer account via the Developer Portal.",
       "url": "https://dev.frontapp.com/docs/welcome",
       "duration": "10 min to a few days",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s7"], "note": "Developer account turnaround isn't documented." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s7"
+        ],
+        "note": "Developer account turnaround isn't documented."
+      }
     },
     {
       "title": "Contact Front's partner team early (optional but advised)",
@@ -117,7 +230,13 @@
       "detail": "Draft an email to partners@front.com describing the integration and the APIs it uses, especially if you might need an exception to the OAuth requirement.",
       "url": "https://dev.frontapp.com/docs/partnering-with-front",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create the app",
@@ -125,7 +244,14 @@
       "detail": "Go to Settings > Company > Developers > Create app, enter name and description, then add the OAuth feature on the Features tab with redirect URLs and the namespaces and permissions you need.",
       "url": "https://app.frontapp.com/settings/developers",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s2"], "note": "The settings URL is our guess at the path; we didn't sign in." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": "The settings URL is our guess at the path; we didn't sign in."
+      }
     },
     {
       "title": "Implement the OAuth flow",
@@ -133,7 +259,13 @@
       "detail": "Redirect admins to https://app.frontapp.com/oauth/authorize with response_type=code, client_id, redirect_uri and state. Exchange the code at https://app.frontapp.com/oauth/token using HTTP Basic auth with client_id:client_secret. Store tokens per Front company.",
       "url": "https://dev.frontapp.com/docs/oauth",
       "duration": "1–3 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Basic auth on the token endpoint is our reading; a live POST with fake Basic credentials returned invalid_client." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Basic auth on the token endpoint is our reading; a live POST with fake Basic credentials returned invalid_client."
+      }
     },
     {
       "title": "Implement refresh handling",
@@ -141,7 +273,13 @@
       "detail": "Refresh access tokens (60 minutes) with the refresh token at the same token endpoint. Refresh tokens last 6 months and are replaced in their final 24 hours, so always save any new refresh token.",
       "url": "https://dev.frontapp.com/docs/oauth",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Build rate-limit and guard handling",
@@ -149,7 +287,13 @@
       "detail": "Budget for 120 rpm per company for partner OAuth traffic, honour Retry-After on 429, and respect per-route guards (search, analytics, per-resource).",
       "url": "https://dev.frontapp.com/docs/rate-limiting",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Prepare the submission",
@@ -157,7 +301,13 @@
       "detail": "Draft the integration description, setup instructions, support contact and listing copy; prepare test credentials for your own service.",
       "url": "https://dev.frontapp.com/docs/partnering-with-front",
       "duration": "half a day",
-      "evidence": { "label": "inferred", "sourceIds": ["s4"], "note": "Front's form fields weren't visible to us." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Front's form fields weren't visible to us."
+      }
     },
     {
       "title": "Submit the integration form",
@@ -165,7 +315,13 @@
       "detail": "Complete Front's submission form linked from the partnering page.",
       "url": "https://dev.frontapp.com/docs/partnering-with-front",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Front testing and approval",
@@ -173,7 +329,13 @@
       "detail": "Front tests the integration and confirms technical approval. Smaller teams may face a security or legal review, and Front can decline over security concerns or unclear company ownership.",
       "url": null,
       "duration": "unknown (no SLA)",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Launch in the App Store",
@@ -181,7 +343,14 @@
       "detail": "Front launches the integration with a landing page and in-app listing under Settings > Company > App Store. After that you can't change the published app directly; test changes in a new app and tell Front via the original email thread.",
       "url": null,
       "duration": "days",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -203,77 +372,181 @@
       "symptom": "Customers from other companies can't install your app",
       "cause": "Apps are private to the Front instance they were created in until Front publishes them.",
       "fix": "Submit the integration to Front for publishing.",
-      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": "Front says apps are private by default but doesn't explicitly say OAuth is blocked for other companies; the exact error wasn't documented." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Front says apps are private by default but doesn't explicitly say OAuth is blocked for other companies; the exact error wasn't documented."
+      }
     },
     {
       "symptom": "A non-admin teammate can't complete authorization",
       "cause": "Users authorizing OAuth apps must be admins.",
       "fix": "Ask a company admin to connect, then let teammates use the integration.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Private inbox data is missing for some teammates",
       "cause": "Private-namespace access needs each teammate to enable API access in their settings.",
       "fix": "Ask teammates to enable it, or stick to shared resources.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "429 with Retry-After while x-ratelimit-remaining is above 0",
       "cause": "Separate guards apply to search, analytics, per-resource and link routes, independent of the main limit.",
       "fix": "Honour Retry-After and spread search and analytics calls.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Can't edit the app after it goes live",
       "cause": "Published apps can't be changed directly.",
       "fix": "Create a new app to test changes and notify Front through the original email thread.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "invalid_client from /oauth/token",
       "cause": "Wrong client credentials or wrong authentication method on the token request.",
       "fix": "Send client_id:client_secret correctly and check the app's OAuth settings.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed {\"error\":\"invalid_client\",\"error_description\":\"Invalid client credentials.\"} with fake credentials." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed {\"error\":\"invalid_client\",\"error_description\":\"Invalid client credentials.\"} with fake credentials."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens expire after 60 minutes; refresh tokens last 6 months and are returned unchanged until their final 24 hours, when a new one starts a fresh six-month period.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Partner OAuth traffic has its own limit of 120 rpm per company and doesn't count against the customer's plan limit (50–200 rpm by plan), except for Zapier.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Public Core API integrations must use OAuth unless Front grants an exception, which it considers only when certain resources can't be reached through OAuth.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Application triggers aren't available for OAuth tokens, and Front's MCP server isn't available for API tokens.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Front doesn't expose an OIDC discovery document, so 'Sign in with Front' isn't a standard OIDC option.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "GET https://app.frontapp.com/.well-known/openid-configuration returned the web app's HTML shell, not JSON." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "GET https://app.frontapp.com/.well-known/openid-configuration returned the web app's HTML shell, not JSON."
+      }
     },
     {
       "text": "Front may decline integrations over security concerns or unclear company ownership, and smaller teams may get a security or legal review.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Front developer docs: OAuth", "url": "https://dev.frontapp.com/docs/oauth" },
-    { "id": "s2", "title": "Front developer docs: Authentication", "url": "https://dev.frontapp.com/docs/authentication" },
-    { "id": "s3", "title": "Front developer docs: Create, manage, and publish apps", "url": "https://dev.frontapp.com/docs/create-and-manage-apps" },
-    { "id": "s4", "title": "Front developer docs: Partnering with Front", "url": "https://dev.frontapp.com/docs/partnering-with-front" },
-    { "id": "s5", "title": "Front: Integration partner program", "url": "https://front.com/partners/integration" },
-    { "id": "s6", "title": "Front developer docs: Rate limiting", "url": "https://dev.frontapp.com/docs/rate-limiting" },
-    { "id": "s7", "title": "Front Developer Portal", "url": "https://dev.frontapp.com/docs/welcome" }
+    {
+      "id": "s1",
+      "title": "Front developer docs: OAuth",
+      "url": "https://dev.frontapp.com/docs/oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Front developer docs: Authentication",
+      "url": "https://dev.frontapp.com/docs/authentication"
+    },
+    {
+      "id": "s3",
+      "title": "Front developer docs: Create, manage, and publish apps",
+      "url": "https://dev.frontapp.com/docs/create-and-manage-apps"
+    },
+    {
+      "id": "s4",
+      "title": "Front developer docs: Partnering with Front",
+      "url": "https://dev.frontapp.com/docs/partnering-with-front"
+    },
+    {
+      "id": "s5",
+      "title": "Front: Integration partner program",
+      "url": "https://front.com/partners/integration"
+    },
+    {
+      "id": "s6",
+      "title": "Front developer docs: Rate limiting",
+      "url": "https://dev.frontapp.com/docs/rate-limiting"
+    },
+    {
+      "id": "s7",
+      "title": "Front Developer Portal",
+      "url": "https://dev.frontapp.com/docs/welcome"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.frontapp.com/oauth/authorize?...: 302 to /signin (authorize endpoint live, needs login)",
       "POST https://app.frontapp.com/oauth/token with fake Basic credentials: {\"error\":\"invalid_client\",\"error_description\":\"Invalid client credentials.\"}",

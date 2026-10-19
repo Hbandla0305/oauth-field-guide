@@ -541,6 +541,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.attio.com/.well-known/oauth-authorization-server: issuer https://app.attio.com, registration_endpoint /oauth/register, PKCE S256, scopes mcp/offline_access/openid",
       "GET https://mcp.attio.com/.well-known/oauth-authorization-server: same endpoints, issuer https://mcp.attio.com",

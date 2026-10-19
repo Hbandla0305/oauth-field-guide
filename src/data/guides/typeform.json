@@ -38,21 +38,33 @@
     "summary": "Any Typeform account can register an OAuth app under Organization > Developer Apps, and the docs describe no review step, so any Typeform user can connect the same day. The things that trip people up are adding the offline scope to get a refresh token, refresh tokens rotating on every use, and Enterprise accounts in the EU data centers needing a different API host (and, for api.typeform.eu, a different authorization server).",
     "timeToDev": {
       "range": "15–45 min",
-      "hours": { "min": 0.25, "max": 0.75 },
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": "Register an app with name, website and redirect URI, copy the one-time client secret, run the code exchange. No developer account or review needed."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 1, "max": 8 },
+      "hours": {
+        "min": 1,
+        "max": 8
+      },
       "assumes": "An agent that reads forms and responses (forms:read, responses:read, offline) for users on the default US region.",
       "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": "The applications guide describes no review or approval. Supporting EU data center 2 (api.typeform.eu) adds work because it's a separate authorization server."
       }
     },
@@ -62,43 +74,99 @@
     {
       "item": "A Typeform account",
       "why": "Typeform says all you need to use its APIs is a Typeform account; no separate developer account.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "Some features (webhooks, Hidden Fields) need PRO or PRO+ on the end user's plan." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Some features (webhooks, Hidden Fields) need PRO or PRO+ on the end user's plan."
+      }
     },
     {
       "item": "A full HTTPS callback URL with a valid certificate",
       "why": "Redirect URIs must be the complete callback URL; HTTPS is recommended and self-signed certificates don't work.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Secure storage for the client secret",
       "why": "The client secret is shown only once at registration; you can regenerate it but not view it again.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Read forms and responses",
-      "examples": ["accounts:read", "forms:read", "responses:read", "workspaces:read", "offline"],
+      "examples": [
+        "accounts:read",
+        "forms:read",
+        "responses:read",
+        "workspaces:read",
+        "offline"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Everything a read-only agent needs: list workspaces and forms, pull responses. Include offline or you get no refresh token and users re-authorize weekly.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Write and webhooks",
-      "examples": ["forms:write", "responses:write", "webhooks:write", "themes:write", "images:write"],
+      "examples": [
+        "forms:write",
+        "responses:write",
+        "webhooks:write",
+        "themes:write",
+        "images:write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Create or edit forms, delete responses, and register webhooks for real-time response delivery. Webhooks need PRO or PRO+ on the form owner's plan.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Newer scopes advertised in server metadata",
-      "examples": ["contacts:read", "automations:read", "insights:read", "pages:read", "subscriptions:read"],
+      "examples": [
+        "contacts:read",
+        "automations:read",
+        "insights:read",
+        "pages:read",
+        "subscriptions:read"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Listed in scopes_supported but not in the public scopes reference, so the APIs behind them may be undocumented or MCP-only.",
-      "evidence": { "label": "tested", "sourceIds": ["s5"], "note": "Seen in /.well-known/oauth-authorization-server on 2026-10-20. Whether classic Developer Apps can request them is unconfirmed." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Seen in /.well-known/oauth-authorization-server on 2026-10-20. Whether classic Developer Apps can request them is unconfirmed."
+      }
     }
   ],
   "steps": [
@@ -108,7 +176,13 @@
       "detail": "Log in, open the organization menu in the upper-left, and go to Organization > Developer Apps.",
       "url": "https://admin.typeform.com/",
       "duration": "2 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Register a new app",
@@ -116,7 +190,13 @@
       "detail": "Click Register a new app and enter App Name, App website and the full Redirect URI(s). Copy the client_secret immediately; it's shown only once.",
       "url": "https://admin.typeform.com/",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Pick the minimum scopes",
@@ -124,7 +204,13 @@
       "detail": "Map features to scopes (for example forms:read + responses:read + accounts:read) and always add offline for a refresh token.",
       "url": "https://www.typeform.com/developers/get-started/scopes/",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement authorize and token exchange",
@@ -132,7 +218,13 @@
       "detail": "Redirect to https://api.typeform.com/oauth/authorize (it 302s to admin.typeform.com/oauth/authorize) with client_id, redirect_uri, scope and state. Exchange the code at https://api.typeform.com/oauth/token with the same redirect_uri.",
       "url": "https://www.typeform.com/developers/get-started/applications/",
       "duration": "30–60 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Store rotating refresh tokens",
@@ -140,7 +232,13 @@
       "detail": "Access tokens last 1 week by default. Each refresh invalidates the previous refresh token, so persist the new one atomically and avoid concurrent refreshes for the same user.",
       "url": "https://www.typeform.com/developers/get-started/applications/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Route responses calls by region",
@@ -148,7 +246,13 @@
       "detail": "Call GET /forms/{form_id} and read _links.responses to find the right host (api.typeform.com, api.eu.typeform.com or api.typeform.eu). Querying responses on the wrong region returns empty results.",
       "url": "https://www.typeform.com/developers/get-started/responses-data-center/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Decide whether to support EU data center 2",
@@ -156,7 +260,14 @@
       "detail": "api.typeform.eu is a separate stack with its own issuer, authorize (admin.typeform.eu) and token endpoints; tokens from one aren't valid on the other. If you need these customers, register an app there too and route users to the right authorization server.",
       "url": "https://www.typeform.com/developers/mcp/core-concepts/",
       "duration": "1–2 hours",
-      "evidence": { "label": "sourced", "sourceIds": ["s6", "s4"], "note": "Whether a separate app registration is required on api.typeform.eu isn't stated in Typeform's docs; third-party guides say it is." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s4"
+        ],
+        "note": "Whether a separate app registration is required on api.typeform.eu isn't stated in Typeform's docs; third-party guides say it is."
+      }
     },
     {
       "title": "Connect a second Typeform account and test",
@@ -164,7 +275,13 @@
       "detail": "Authorize with a different Typeform account to confirm the consent screen and token flow work for an outside user.",
       "url": null,
       "duration": "10 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -184,73 +301,173 @@
       "symptom": "Token response has no refresh_token, and users must reconnect after a week",
       "cause": "The offline scope wasn't requested.",
       "fix": "Add offline to the scope list and have users re-authorize.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Refresh fails with ErrTokenInvalid",
       "cause": "Often a refresh token that was already used: each refresh invalidates the previous refresh token.",
       "fix": "Always save the newest refresh token and serialize refreshes per user.",
-      "evidence": { "label": "unverified", "sourceIds": ["s7", "s1"], "note": "Error string from a 2021 community thread with no confirmed cause; the rotation rule is from the official guide." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7",
+          "s1"
+        ],
+        "note": "Error string from a 2021 community thread with no confirmed cause; the rotation rule is from the official guide."
+      }
     },
     {
       "symptom": "Responses API returns empty results for an Enterprise customer",
       "cause": "The account stores responses in an EU data center and you called the wrong host.",
       "fix": "Use the host in the form's _links.responses (api.eu.typeform.com or api.typeform.eu).",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "401 on api.typeform.eu with a token from api.typeform.com (or vice versa)",
       "cause": "api.typeform.eu is a separate authorization server; tokens from one aren't valid at the other.",
       "fix": "Authorize EU data center 2 users against admin.typeform.eu / api.typeform.eu/oauth/token.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "{\"code\":\"ErrBadRequest\",\"description\":\"Malformed request\"} from /oauth/token",
       "cause": "Missing or malformed parameters, such as no grant_type or a redirect_uri that doesn't match the authorize request.",
       "fix": "Send grant_type, code, client_id, client_secret and the identical redirect_uri.",
-      "evidence": { "label": "tested", "sourceIds": ["s5", "s1"], "note": "An empty POST to api.typeform.com/oauth/token returned this on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": "An empty POST to api.typeform.com/oauth/token returned this on 2026-10-20."
+      }
     },
     {
       "symptom": "HTTP 429 when syncing many forms",
       "cause": "Create and Responses APIs allow 2 requests per second per Typeform account.",
       "fix": "Throttle per account and prefer webhooks for new responses.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The 429 status itself is our assumption; the limit is sourced." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The 429 status itself is our assumption; the limit is sourced."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens expire after 1 week by default; refresh tokens rotate on each use. No refresh-token expiry is documented.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The rate limit is 2 requests per second per Typeform account for the Create and Responses APIs, so a busy connected account is throttled no matter how many apps call it.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Typeform's authorization server now advertises dynamic client registration (/oauth/register), PKCE S256 and Client ID Metadata Documents, which its MCP server uses. Classic Developer Apps with a client secret still work.",
-      "evidence": { "label": "tested", "sourceIds": ["s5", "s6"], "note": "Seen in .well-known metadata on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": "Seen in .well-known metadata on 2026-10-20."
+      }
     },
     {
       "text": "Webhooks, Hidden Fields and payments need PRO or PRO+ on the account, so a webhook-based agent may not work for free-plan users.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "EU data residency is an Enterprise feature. Accounts, Workspaces and Forms APIs work on either US or EU-1 hosts, but anything touching responses (including webhooks) has to use the account's region.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Typeform Developers: Applications (OAuth 2.0)", "url": "https://www.typeform.com/developers/get-started/applications/" },
-    { "id": "s2", "title": "Typeform Developers: OAuth scopes", "url": "https://www.typeform.com/developers/get-started/scopes/" },
-    { "id": "s3", "title": "Typeform Developers: Get started", "url": "https://www.typeform.com/developers/get-started/" },
-    { "id": "s4", "title": "Typeform Developers: EU Responses Data Center", "url": "https://www.typeform.com/developers/get-started/responses-data-center/" },
-    { "id": "s5", "title": "Live check: Typeform authorization server metadata", "url": "https://api.typeform.com/.well-known/oauth-authorization-server" },
-    { "id": "s6", "title": "Typeform Developers: MCP core concepts (authorization servers)", "url": "https://www.typeform.com/developers/mcp/core-concepts/" },
-    { "id": "s7", "title": "Typeform Community: ErrTokenInvalid during access token exchange", "url": "https://community.typeform.com/questions/3157" }
+    {
+      "id": "s1",
+      "title": "Typeform Developers: Applications (OAuth 2.0)",
+      "url": "https://www.typeform.com/developers/get-started/applications/"
+    },
+    {
+      "id": "s2",
+      "title": "Typeform Developers: OAuth scopes",
+      "url": "https://www.typeform.com/developers/get-started/scopes/"
+    },
+    {
+      "id": "s3",
+      "title": "Typeform Developers: Get started",
+      "url": "https://www.typeform.com/developers/get-started/"
+    },
+    {
+      "id": "s4",
+      "title": "Typeform Developers: EU Responses Data Center",
+      "url": "https://www.typeform.com/developers/get-started/responses-data-center/"
+    },
+    {
+      "id": "s5",
+      "title": "Live check: Typeform authorization server metadata",
+      "url": "https://api.typeform.com/.well-known/oauth-authorization-server"
+    },
+    {
+      "id": "s6",
+      "title": "Typeform Developers: MCP core concepts (authorization servers)",
+      "url": "https://www.typeform.com/developers/mcp/core-concepts/"
+    },
+    {
+      "id": "s7",
+      "title": "Typeform Community: ErrTokenInvalid during access token exchange",
+      "url": "https://community.typeform.com/questions/3157"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://api.typeform.com/.well-known/openid-configuration: issuer https://api.typeform.com, authorize https://admin.typeform.com/oauth/authorize, token https://api.typeform.com/oauth/token, registration endpoint, PKCE S256",
       "GET https://api.typeform.com/.well-known/oauth-authorization-server: scopes_supported includes offline_access, forms/responses/webhooks/workspaces read+write, plus contacts, automations, insights, pages, packages, subscriptions",

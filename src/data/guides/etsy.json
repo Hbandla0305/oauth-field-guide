@@ -484,6 +484,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://www.etsy.com/oauth/connect returned HTTP 302 without parameters",
       "POST https://api.etsy.com/v3/public/oauth/token without a key returned HTTP 403 with 'Invalid API key: should be in the format keystring:shared_secret'",

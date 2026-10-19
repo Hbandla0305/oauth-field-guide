@@ -868,6 +868,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://www.linkedin.com/oauth/.well-known/openid-configuration returned issuer 'https://www.linkedin.com/oauth', scopes openid/profile/email, response_types [code], subject_types [pairwise], RS256",
       "GET https://www.linkedin.com/oauth/openid/jwks returned an RSA JWKS (HTTP 200)",

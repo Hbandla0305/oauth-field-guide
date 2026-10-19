@@ -445,6 +445,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://login.mailchimp.com/oauth2/metadata (no token): HTTP 200, {\"error\":\"invalid_token\",\"error_description\":\"Unable to load login and user\"}",
       "GET https://login.mailchimp.com/.well-known/openid-configuration: HTTP 404",

@@ -526,6 +526,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://identity.xero.com/.well-known/openid-configuration: authorize https://login.xero.com/identity/connect/authorize, token https://identity.xero.com/connect/token, revocation and introspection endpoints, grants authorization_code/client_credentials/refresh_token, PKCE S256",
       "GET https://developer.xero.com/app/manage: HTTP 200 (did not sign in)",

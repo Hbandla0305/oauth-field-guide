@@ -559,6 +559,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://app.ramp.com/v1/authorize returned HTTP 200 (no login attempted)",
       "https://api.ramp.com/.well-known/openid-configuration returned 'Not Authorized', no public OIDC discovery document found",

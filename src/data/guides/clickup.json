@@ -7,31 +7,58 @@
     "category": "Project management"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth 2.0 guide", "url": "https://developer.clickup.com/docs/authentication" },
-    { "kind": "api", "label": "API getting started", "url": "https://developer.clickup.com/docs" },
-    { "kind": "api", "label": "Rate limits", "url": "https://developer.clickup.com/docs/rate-limits" },
-    { "kind": "console", "label": "Create an app (Settings > Apps)", "url": "https://app.clickup.com" }
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 guide",
+      "url": "https://developer.clickup.com/docs/authentication"
+    },
+    {
+      "kind": "api",
+      "label": "API getting started",
+      "url": "https://developer.clickup.com/docs"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developer.clickup.com/docs/rate-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Create an app (Settings > Apps)",
+      "url": "https://app.clickup.com"
+    }
   ],
   "verdict": {
     "difficulty": "trivial",
     "summary": "Any ClickUp Workspace owner or admin can create an OAuth app in Settings > Apps, and any ClickUp user can then authorize it with no review, no scopes and no listing step. The trade-offs are coarse access (no scopes, so the token can act on everything the user can see in the authorized Workspaces) and a 100 requests/min per-token limit on most plans.",
     "timeToDev": {
       "range": "15–45 min",
-      "hours": { "min": 0.25, "max": 0.75 },
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "Create the app with a name and redirect URL, copy client_id and secret, run the authorization-code flow. Nothing is reviewed."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 1, "max": 24 },
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
       "assumes": "A standard OAuth app that reads and writes tasks for any ClickUp user who authorizes their Workspaces; there is no slower path to choose.",
       "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "ClickUp's docs describe no review, approval or install cap for OAuth apps. Absence of a review step is our reading of the docs, not an explicit statement."
       }
     },
@@ -41,35 +68,71 @@
     {
       "item": "Owner or admin role in a ClickUp Workspace (a free Workspace you create works)",
       "why": "'Only Workspace owners or admins can create OAuth apps.'",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "An HTTPS redirect URL",
       "why": "The redirect URL is set when creating the app. ClickUp warns that 'Non-SSL redirect URIs may not be supported in the future.'",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Non-SSL URIs apparently work today, but we didn't test it." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Non-SSL URIs apparently work today, but we didn't test it."
+      }
     },
     {
       "item": "A server to hold the client secret",
       "why": "The token exchange sends client_id, client_secret and code to the token endpoint.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "We saw no PKCE support documented." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "We saw no PKCE support documented."
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Workspace authorization (ClickUp has no OAuth scopes)",
-      "examples": ["(no scope parameter; user picks Workspaces)"],
+      "examples": [
+        "(no scope parameter; user picks Workspaces)"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "The user chooses which Workspaces to authorize, and the token works across them with that user's permissions. You can't ask for read-only access, so your privacy policy should explain why the agent needs full access.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": "The official page doesn't mention scopes. Nango states outright that ClickUp doesn't use scopes." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "The official page doesn't mention scopes. Nango states outright that ClickUp doesn't use scopes."
+      }
     },
     {
       "tier": "Personal API token (single user, not for distribution)",
-      "examples": ["pk_… token"],
+      "examples": [
+        "pk_… token"
+      ],
       "reviewRequired": false,
       "time": "Minutes",
       "impact": "Fine for prototyping against your own Workspace. ClickUp says apps used by other people should use the OAuth flow.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -79,7 +142,13 @@
       "detail": "Use an existing Workspace where you're owner/admin, or create a free Workspace for development.",
       "url": "https://app.clickup.com",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create the OAuth app",
@@ -87,7 +156,14 @@
       "detail": "Avatar (top right) > Settings > Apps > Create new app. Enter a name and redirect URL, then copy the client_id and secret.",
       "url": "https://app.clickup.com",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": "The menu path may differ slightly by ClickUp version." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "The menu path may differ slightly by ClickUp version."
+      }
     },
     {
       "title": "Implement the authorize redirect",
@@ -95,7 +171,13 @@
       "detail": "Send users to https://app.clickup.com/api?client_id={client_id}&redirect_uri={redirect_uri}&state={state}. No scope parameter is needed.",
       "url": "https://developer.clickup.com/docs/authentication",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Exchange the code for a token",
@@ -103,7 +185,13 @@
       "detail": "POST client_id, client_secret and code to https://api.clickup.com/api/v2/oauth/token. Store the access token encrypted; send it as Authorization: Bearer.",
       "url": "https://developer.clickup.com/docs/authentication",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Discover authorized Workspaces",
@@ -111,7 +199,13 @@
       "detail": "Call Get Authorized Teams (Workspaces) after connecting to learn which Workspaces the user granted, and route later calls by team ID.",
       "url": "https://developer.clickup.com/docs/authentication",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Add rate-limit handling",
@@ -119,7 +213,13 @@
       "detail": "Read X-RateLimit-Remaining and X-RateLimit-Reset, back off on HTTP 429, and size background sync to the 100 requests/min limit that applies to most plans.",
       "url": "https://developer.clickup.com/docs/rate-limits",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test with a second account",
@@ -127,7 +227,13 @@
       "detail": "Authorize the app from a different ClickUp user and Workspace to confirm the flow works outside your own Workspace.",
       "url": null,
       "duration": "10 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Launch",
@@ -135,7 +241,13 @@
       "detail": "Put the Connect ClickUp button live. No submission or approval step is documented.",
       "url": null,
       "duration": "Same day",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -156,65 +268,148 @@
       "symptom": "No 'Create new app' button in Settings > Apps",
       "cause": "Only Workspace owners or admins can create OAuth apps.",
       "fix": "Create your own free Workspace, or ask an owner/admin to create the app.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Token endpoint returns {\"err\":\"Invalid client credentials\",\"ECODE\":\"OAUTH_011\",\"error\":\"invalid_client\"}",
       "cause": "Wrong client_id or client_secret.",
       "fix": "Re-copy the credentials from Settings > Apps.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed by POSTing dummy credentials to https://api.clickup.com/api/v2/oauth/token on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed by POSTing dummy credentials to https://api.clickup.com/api/v2/oauth/token on 2026-10-20."
+      }
     },
     {
       "symptom": "API returns {\"err\":\"Authorization header required\",\"ECODE\":\"OAUTH_017\"}",
       "cause": "The request has no Authorization header.",
       "fix": "Send Authorization: Bearer {access_token} for OAuth tokens.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed on GET https://api.clickup.com/api/v2/user without a token on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed on GET https://api.clickup.com/api/v2/user without a token on 2026-10-20."
+      }
     },
     {
       "symptom": "HTTP 429 after about 100 calls in a minute",
       "cause": "Free Forever, Unlimited and Business Workspaces allow 100 requests per minute per token.",
       "fix": "Wait until X-RateLimit-Reset, batch work, and prefer webhooks over polling.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Agent can't see data in a Workspace the user belongs to",
       "cause": "The user didn't authorize that Workspace during consent.",
       "fix": "Send the user back to the authorization URL to add Workspaces.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "'The access token currently does not expire. This is subject to change.' There is no documented refresh token, so plan for re-authorization if ClickUp adds expiry.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limits are per token and depend on the plan of the Workspace hosting the token: 100/min on Free Forever, Unlimited and Business; 1,000 on Business Plus; 10,000 on Enterprise.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "No scopes means the token can do anything the user can do in the authorized Workspaces. Security-conscious customers may push back, and your agent should enforce its own read/write limits.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "ClickUp doesn't publish an OIDC discovery document, so 'Sign in with ClickUp' means calling the user endpoint with the access token.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "https://app.clickup.com/.well-known/openid-configuration returned the web app's HTML shell, and api.clickup.com returned 'something went wrong', on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "https://app.clickup.com/.well-known/openid-configuration returned the web app's HTML shell, and api.clickup.com returned 'something went wrong', on 2026-10-20."
+      }
     },
     {
       "text": "The core API is v2, with some newer surfaces (Docs, Chat) on v3 paths. OAuth tokens work for both.",
-      "evidence": { "label": "unverified", "sourceIds": ["s5"], "note": "From a third-party API report card. We didn't confirm in official docs." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "From a third-party API report card. We didn't confirm in official docs."
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "ClickUp developer docs: Authentication", "url": "https://developer.clickup.com/docs/authentication" },
-    { "id": "s2", "title": "ClickUp developer docs: Get started with the ClickUp API", "url": "https://developer.clickup.com/docs" },
-    { "id": "s3", "title": "ClickUp developer docs: Rate limits", "url": "https://developer.clickup.com/docs/rate-limits" },
-    { "id": "s4", "title": "Nango: How to register your own ClickUp API OAuth app", "url": "https://www.nango.dev/docs/api-integrations/clickup/how-to-register-your-own-clickup-api-oauth-app" },
-    { "id": "s5", "title": "Supergood API report card: ClickUp", "url": "https://supergood.ai/api-report-card/clickup" }
+    {
+      "id": "s1",
+      "title": "ClickUp developer docs: Authentication",
+      "url": "https://developer.clickup.com/docs/authentication"
+    },
+    {
+      "id": "s2",
+      "title": "ClickUp developer docs: Get started with the ClickUp API",
+      "url": "https://developer.clickup.com/docs"
+    },
+    {
+      "id": "s3",
+      "title": "ClickUp developer docs: Rate limits",
+      "url": "https://developer.clickup.com/docs/rate-limits"
+    },
+    {
+      "id": "s4",
+      "title": "Nango: How to register your own ClickUp API OAuth app",
+      "url": "https://www.nango.dev/docs/api-integrations/clickup/how-to-register-your-own-clickup-api-oauth-app"
+    },
+    {
+      "id": "s5",
+      "title": "Supergood API report card: ClickUp",
+      "url": "https://supergood.ai/api-report-card/clickup"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.clickup.com/api?client_id=x&redirect_uri=https://example.com: HTTP 200 (web app shell)",
       "POST https://api.clickup.com/api/v2/oauth/token with dummy credentials: {\"err\":\"Invalid client credentials\",\"ECODE\":\"OAUTH_011\",\"error\":\"invalid_client\"}",

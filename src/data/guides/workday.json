@@ -569,6 +569,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://auth.api.workday.com/v1/authorize?client_id=x...: 200 (serves a JS sign-in app shell)",
       "POST https://auth.api.workday.com/v1/token with no credentials: 401 {\"error\":\"Invalid Credentials\"}",

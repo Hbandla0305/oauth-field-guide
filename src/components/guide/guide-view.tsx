@@ -82,7 +82,10 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
           <Summary text={v.summary} />
           <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
             <span className={`rounded px-2 py-0.5 ${BANNER[guide.verification.status].cls}`}>{BANNER[guide.verification.status].text}</span>
-            <span className="text-muted">Last checked {guide.verification.lastChecked}</span>
+            <span className="text-muted">
+              Researched {guide.verification.lastChecked}
+              {guide.verification.reviewedOn && ` · reviewed by a person ${guide.verification.reviewedOn}`}
+            </span>
             <InfoTip label="How this guide was checked" align="start">
               Every claim carries an evidence label. Hover a label to see what backs it. Open questions are listed under Resources.
             </InfoTip>
@@ -141,7 +144,8 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
 
       <div className="mt-8">
         <div className="sticky top-0 z-30 -mx-4 border-b border-line bg-paper/95 px-4 backdrop-blur sm:mx-0 sm:px-0">
-          <div role="tablist" aria-label="Guide sections" className="-mb-px flex gap-1 overflow-x-auto">
+          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-paper to-transparent sm:hidden" />
+          <div role="tablist" aria-label="Guide sections" className="-mb-px flex gap-1 overflow-x-auto pr-8 sm:pr-0">
             {TABS.map((t) => (
               <button
                 key={t.id}
@@ -184,16 +188,22 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
   );
 }
 
+// Lead with the verdict: the first sentence is the punchline, the rest is detail.
 function Summary({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
-  const long = text.length > 240;
+  const match = text.match(/^(.+?[.!?])\s+(?=[A-Z])/);
+  const headline = match ? match[1] : text;
+  const rest = match ? text.slice(match[0].length) : "";
   return (
-    <div className="mt-3">
-      <p className={`text-lg leading-relaxed text-ink/85 ${long && !open ? "line-clamp-3" : ""}`}>{text}</p>
-      {long && (
-        <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-sm font-medium underline underline-offset-2">
-          {open ? "Show less" : "Read more"}
-        </button>
+    <div className="mt-3 max-w-3xl">
+      <p className="text-lg leading-relaxed font-medium text-ink">{headline}</p>
+      {rest && (
+        <>
+          {open && <p className="mt-1 leading-relaxed text-ink/75">{rest}</p>}
+          <button type="button" onClick={() => setOpen(!open)} className="mt-1 text-sm font-medium text-muted underline underline-offset-2 hover:text-ink">
+            {open ? "Show less" : "Read more"}
+          </button>
+        </>
       )}
     </div>
   );
@@ -573,6 +583,24 @@ function ResourcesPanel({ guide }: { guide: Guide }) {
           ))}
         </ul>
       </section>
+
+      {guide.verification.corrections.length > 0 && (
+        <section>
+          <PanelTitle tip="Claims a person checked against the provider's docs or a real setup attempt, and changed.">What we corrected</PanelTitle>
+          <ul className="mt-4 divide-y divide-line rounded-xl border border-line bg-surface">
+            {guide.verification.corrections.map((c) => (
+              <li key={c.claim} className="p-4 text-sm">
+                <p className="font-medium">{c.claim}</p>
+                <p className="mt-1 text-muted line-through">{c.before}</p>
+                <p className="mt-0.5 text-ink">{c.after}</p>
+                <a href={c.source} target="_blank" rel="noreferrer" className="mt-1 inline-block break-all text-cobalt underline underline-offset-2">
+                  Source
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-line bg-surface p-5">

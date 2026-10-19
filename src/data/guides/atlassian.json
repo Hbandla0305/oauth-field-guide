@@ -574,6 +574,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://auth.atlassian.com/.well-known/openid-configuration: issuer https://auth.atlassian.com, PKCE S256, offline_access, device and revocation endpoints",
       "GET https://auth.atlassian.com/authorize: 302 to id.atlassian.com/login",

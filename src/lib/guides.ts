@@ -1,6 +1,7 @@
 import { Guide, type Difficulty } from "./guide-schema";
 import { getGeneratedGuide, listGeneratedGuides } from "./db";
 import { RAW_GUIDES } from "@/data/guides/index";
+import { popularity } from "./popular";
 
 const DIFFICULTY_ORDER: Difficulty[] = ["trivial", "moderate", "hard", "gated"];
 const TIER_ORDER = ["human-verified", "agent-researched", "agent-generated"] as const;
@@ -67,6 +68,7 @@ export type GuideSummary = {
   prod: string;
   devHours: Guide["verdict"]["timeToDev"]["hours"];
   prodHours: Guide["verdict"]["timeToProd"]["hours"];
+  popularity: number;
 };
 
 export function summarise(g: Guide): GuideSummary {
@@ -80,5 +82,6 @@ export function summarise(g: Guide): GuideSummary {
     prod: g.verdict.timeToProd.range,
     devHours: g.verdict.timeToDev.hours,
     prodHours: g.verdict.timeToProd.hours,
+    popularity: popularity(g.app.slug),
   };
 }

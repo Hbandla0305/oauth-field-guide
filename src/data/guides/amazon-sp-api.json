@@ -541,6 +541,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://developer-docs.amazon.com/sp-api/docs/* returned 301 to https://developer-docs.amazon/sp-api/docs/*",
       "https://sellercentral.amazon.com/apps/authorize/consent returned 302 to Seller Central sign-in",

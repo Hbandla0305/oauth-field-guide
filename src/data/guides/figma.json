@@ -43,21 +43,33 @@
     "summary": "Since the developer-platform changes (effective November 17, 2025), an OAuth app that serves users outside your own team or organization has to be published as a public app and pass Figma review, which states 5–10 business days but has run a month or more in 2026. Even after approval, View and Collab seat users get roughly 20 Tier-1 calls (GET file, nodes, images) per month, and Figma's hosted MCP server rejects normal OAuth apps entirely, with new MCP clients paused.",
     "timeToDev": {
       "range": "30–90 min",
-      "hours": { "min": 0.5, "max": 1.5 },
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "Draft apps can be tested by you and your plan admins without review."
       }
     },
     "timeToProd": {
       "range": "2–6 weeks",
-      "hours": { "min": 336, "max": 1008 },
+      "hours": {
+        "min": 336,
+        "max": 1008
+      },
       "assumes": "A public OAuth app reading file content (file_content:read) for any Figma user; a private app for your own team or organization publishes the same day with no review.",
       "waitingOn": "Figma's public-app review (stated 5–10 business days on the submission page; community reports of 4+ weeks in 2026).",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s5", "s6"],
+        "sourceIds": [
+          "s1",
+          "s5",
+          "s6"
+        ],
         "note": "Figma's docs give no official SLA. The 5–10 day figure is quoted by a developer from the submission page; month-long waits are community reports acknowledged by staff as 'in line for review'."
       }
     },
@@ -67,64 +79,147 @@
     {
       "item": "A Figma team or organization to own the app",
       "why": "Every OAuth app must name a team or organization as owner; end users don't need to belong to it.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Registered redirect URLs and browser-based (not WebView) authorization",
       "why": "Token exchange only works with registered redirect URLs, and WebView access to the OAuth flow isn't supported.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "For a public app: testing instructions, test credentials or trial access, optionally a video",
       "why": "Reviewers need to exercise the app against the Community Apps Review Guidelines.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Users with Dev or Full seats if your agent reads files often",
       "why": "View and Collab seats are capped at up to 20 Tier-1 requests per month, which covers GET file and GET file nodes.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Private app (your team/org users only)",
-      "examples": ["file_content:read", "file_metadata:read", "current_user:read"],
+      "examples": [
+        "file_content:read",
+        "file_metadata:read",
+        "current_user:read"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Published directly with no review, but only usable by users in the owning team or organization. Good for internal agents, not for a product.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Public app, granular read/write scopes",
-      "examples": ["file_content:read", "file_comments:read", "file_comments:write", "file_versions:read", "folders:read", "library_content:read", "webhooks:write"],
+      "examples": [
+        "file_content:read",
+        "file_comments:read",
+        "file_comments:write",
+        "file_versions:read",
+        "folders:read",
+        "library_content:read",
+        "webhooks:write"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "Any Figma user can authorize after Figma approves the app. Scope additions need re-review (community reports of 'scope update pending review').",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2", "s4"], "note": "Scope-change re-review is inferred from forum thread titles, not docs." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s4"
+        ],
+        "note": "Scope-change re-review is inferred from forum thread titles, not docs."
+      }
     },
     {
       "tier": "Enterprise-only scopes",
-      "examples": ["file_variables:read", "file_variables:write", "library_analytics:read", "org:activity_log_read"],
+      "examples": [
+        "file_variables:read",
+        "file_variables:write",
+        "library_analytics:read",
+        "org:activity_log_read"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks, Enterprise customers only",
       "impact": "Only work for users on Enterprise plans; org:* scopes also need an organization admin and some need Governance+.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Deprecated broad scopes",
-      "examples": ["files:read", "file_read"],
+      "examples": [
+        "files:read",
+        "file_read"
+      ],
       "reviewRequired": true,
       "time": "Not available",
       "impact": "Being removed; apps had to migrate to granular scopes when re-publishing.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Figma MCP server",
-      "examples": ["mcp:connect"],
+      "examples": [
+        "mcp:connect"
+      ],
       "reviewRequired": true,
       "time": "Paused",
       "impact": "Limited to clients in the Figma MCP Catalog; a normal OAuth app client ID/secret won't grant it, and staff said in August 2026 that adding new MCP clients is paused.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s7", "s8"], "note": "Catalog restriction is in the scopes doc; the pause is a staff forum statement." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s7",
+          "s8"
+        ],
+        "note": "Catalog restriction is in the scopes doc; the pause is a staff forum statement."
+      }
     }
   ],
   "steps": [
@@ -134,7 +229,14 @@
       "detail": "Map each REST endpoint you call to a granular scope (e.g. GET /v1/files/:key needs file_content:read). Decide private (team/org only) vs public (review).",
       "url": "https://developers.figma.com/docs/rest-api/scopes/",
       "duration": "20 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create the OAuth app",
@@ -142,7 +244,13 @@
       "detail": "In My apps, create an app, choose the owning team or organization, and copy the client secret immediately (it's shown once). The app starts in draft.",
       "url": "https://www.figma.com/developers/apps",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Console page resolved (HTTP 200); we didn't sign in." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Console page resolved (HTTP 200); we didn't sign in."
+      }
     },
     {
       "title": "Configure redirect URLs and scopes",
@@ -150,7 +258,13 @@
       "detail": "Add redirect URLs and tick the scopes in the app's OAuth credentials and settings.",
       "url": "https://www.figma.com/developers/apps",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -158,7 +272,13 @@
       "detail": "Redirect to https://www.figma.com/oauth?client_id=...&redirect_uri=...&scope=...&state=...&response_type=code (PKCE recommended). Exchange within 30 seconds at POST https://api.figma.com/v1/oauth/token with HTTP Basic client auth.",
       "url": "https://developers.figma.com/docs/rest-api/oauth-apps/",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement refresh",
@@ -166,7 +286,13 @@
       "detail": "Access tokens expire after 90 days by default. Refresh at POST https://api.figma.com/v1/oauth/refresh; the refresh token is reusable, but each refresh invalidates the previous access token.",
       "url": "https://developers.figma.com/docs/rest-api/oauth-apps/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test as a draft app",
@@ -174,7 +300,13 @@
       "detail": "Authorize with your own account (only you and plan admins can use a draft app).",
       "url": null,
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Design around seat-based rate limits",
@@ -182,7 +314,13 @@
       "detail": "Cache file JSON, prefer GET file nodes for subsets, and detect View/Collab users, who get up to 20 Tier-1 calls per month. Limits are per user, per plan, per app.",
       "url": "https://developers.figma.com/docs/rest-api/rate-limits/",
       "duration": "2–4 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Prepare review materials",
@@ -190,7 +328,14 @@
       "detail": "Draft testing instructions, a scope-by-scope justification and reviewer notes; set up test credentials or trial access to your service.",
       "url": "https://developers.figma.com/docs/rest-api/republish-oauth-apps",
       "duration": "2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Record a test video (optional) and publish as public",
@@ -198,7 +343,13 @@
       "detail": "Choose public in publishing settings and submit for review with the testing materials.",
       "url": "https://www.figma.com/developers/apps",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Figma review",
@@ -206,7 +357,13 @@
       "detail": "Figma emails approval or requested changes. No official SLA; the submission page reportedly says 5–10 business days, and developers reported month-long waits in spring 2026.",
       "url": null,
       "duration": "1–6 weeks",
-      "evidence": { "label": "unverified", "sourceIds": ["s6"], "note": "Community thread; staff confirmed submissions were queued but gave no timeline." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Community thread; staff confirmed submissions were queued but gave no timeline."
+      }
     },
     {
       "title": "Go live",
@@ -214,7 +371,13 @@
       "detail": "Once approved, any Figma user can authorize. Keep scopes stable, since adding scopes appears to need another review.",
       "url": null,
       "duration": "minutes",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -236,76 +399,187 @@
       "symptom": "Users outside your team get an error authorizing, or only you can use the app",
       "cause": "The app is still a draft (only you and plan admins) or private (only team/org users).",
       "fix": "Publish as a public app and pass Figma review.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "An older app suddenly can't call the REST API",
       "cause": "Apps created before September 23, 2025 that weren't re-published by November 17, 2025 moved to draft.",
       "fix": "Migrate off files:read to granular scopes and re-publish (public apps go through review).",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "429s after a handful of GET file calls for some users",
       "cause": "View and Collab seats get up to 20 Tier-1 requests per month, and limits may drop under high demand.",
       "fix": "Cache aggressively, use node-level requests, and tell users a Dev or Full seat raises limits.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Token exchange fails with an invalid or expired code",
       "cause": "Authorization codes expire 30 seconds after issue, or redirect_uri differs between steps.",
       "fix": "Exchange immediately server-side and send the identical redirect_uri.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Your agent can't connect to mcp.figma.com with its OAuth app",
       "cause": "mcp:connect is limited to MCP Catalog clients, and new client onboarding was paused as of August 2026.",
       "fix": "Use the REST API with your OAuth app, or submit the MCP client request form; Organization/Enterprise customers can ask their account team about private clients.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s8"], "note": "Pause comes from a staff forum post." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s8"
+        ],
+        "note": "Pause comes from a staff forum post."
+      }
     },
     {
       "symptom": "Public app review sits for weeks with no response",
       "cause": "Review backlog; Figma gives no official SLA.",
       "fix": "Ask on the Figma forum to have it flagged, and keep testing instructions clear so it isn't bounced.",
-      "evidence": { "label": "unverified", "sourceIds": ["s6"], "note": "Community reports from April 2026." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Community reports from April 2026."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Figma keeps one access token per app per user: refreshing invalidates the previous access token, so concurrent workers must share token state. The refresh token itself is reusable.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Scopes don't override org, team, folder or file permissions; a token only sees what the user can see.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Figma has standard OIDC (issuer https://www.figma.com, scopes openid/profile/email, ES256) for sign-in, separate from the REST API scopes.",
-      "evidence": { "label": "tested", "sourceIds": ["s9"], "note": "Fetched www.figma.com/.well-known/openid-configuration on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "Fetched www.figma.com/.well-known/openid-configuration on 2026-10-20."
+      }
     },
     {
       "text": "Figma's MCP authorization server advertises dynamic client registration (api.figma.com/v1/oauth/mcp/register), but per staff that doesn't grant access unless the client is catalog-approved.",
-      "evidence": { "label": "tested", "sourceIds": ["s10", "s8"], "note": "Metadata fetched on 2026-10-20; we didn't attempt registration." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s10",
+          "s8"
+        ],
+        "note": "Metadata fetched on 2026-10-20; we didn't attempt registration."
+      }
     },
     {
       "text": "Figma for Government uses a separate token endpoint (api.figma-gov.com).",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Figma docs: OAuth apps", "url": "https://developers.figma.com/docs/rest-api/oauth-apps/" },
-    { "id": "s2", "title": "Figma docs: Scopes", "url": "https://developers.figma.com/docs/rest-api/scopes/" },
-    { "id": "s3", "title": "Figma docs: REST API rate limits", "url": "https://developers.figma.com/docs/rest-api/rate-limits/" },
-    { "id": "s4", "title": "Figma docs: Updates to Figma's developer platform", "url": "https://developers.figma.com/docs/updates-to-figmas-developer-platform" },
-    { "id": "s5", "title": "Figma docs: Re-publish OAuth apps", "url": "https://developers.figma.com/docs/rest-api/republish-oauth-apps" },
-    { "id": "s6", "title": "Figma forum: Public OAuth app review submitted March 26, no update (April 2026)", "url": "https://forum.figma.com/ask-the-community-7/public-oauth-app-review-submitted-march-26-no-update-53331" },
-    { "id": "s7", "title": "Figma MCP Catalog", "url": "https://www.figma.com/mcp-catalog/" },
-    { "id": "s8", "title": "Figma forum: Figma's MCP product (staff replies, Aug–Sep 2026)", "url": "https://forum.figma.com/ask-the-community-7/figma-s-mcp-product-57290" },
-    { "id": "s9", "title": "Figma OpenID Connect discovery document", "url": "https://www.figma.com/.well-known/openid-configuration" },
-    { "id": "s10", "title": "Figma MCP OAuth authorization server metadata", "url": "https://mcp.figma.com/.well-known/oauth-authorization-server" }
+    {
+      "id": "s1",
+      "title": "Figma docs: OAuth apps",
+      "url": "https://developers.figma.com/docs/rest-api/oauth-apps/"
+    },
+    {
+      "id": "s2",
+      "title": "Figma docs: Scopes",
+      "url": "https://developers.figma.com/docs/rest-api/scopes/"
+    },
+    {
+      "id": "s3",
+      "title": "Figma docs: REST API rate limits",
+      "url": "https://developers.figma.com/docs/rest-api/rate-limits/"
+    },
+    {
+      "id": "s4",
+      "title": "Figma docs: Updates to Figma's developer platform",
+      "url": "https://developers.figma.com/docs/updates-to-figmas-developer-platform"
+    },
+    {
+      "id": "s5",
+      "title": "Figma docs: Re-publish OAuth apps",
+      "url": "https://developers.figma.com/docs/rest-api/republish-oauth-apps"
+    },
+    {
+      "id": "s6",
+      "title": "Figma forum: Public OAuth app review submitted March 26, no update (April 2026)",
+      "url": "https://forum.figma.com/ask-the-community-7/public-oauth-app-review-submitted-march-26-no-update-53331"
+    },
+    {
+      "id": "s7",
+      "title": "Figma MCP Catalog",
+      "url": "https://www.figma.com/mcp-catalog/"
+    },
+    {
+      "id": "s8",
+      "title": "Figma forum: Figma's MCP product (staff replies, Aug–Sep 2026)",
+      "url": "https://forum.figma.com/ask-the-community-7/figma-s-mcp-product-57290"
+    },
+    {
+      "id": "s9",
+      "title": "Figma OpenID Connect discovery document",
+      "url": "https://www.figma.com/.well-known/openid-configuration"
+    },
+    {
+      "id": "s10",
+      "title": "Figma MCP OAuth authorization server metadata",
+      "url": "https://mcp.figma.com/.well-known/oauth-authorization-server"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://www.figma.com/.well-known/openid-configuration: issuer https://www.figma.com, authorize https://www.figma.com/oauth, token https://api.figma.com/v1/oauth/token, scopes openid/profile/email, ES256",
       "GET https://mcp.figma.com/.well-known/oauth-protected-resource: resource https://mcp.figma.com/mcp, scope mcp:connect",

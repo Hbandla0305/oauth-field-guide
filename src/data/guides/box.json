@@ -7,33 +7,70 @@
     "category": "File storage"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth 2.0 setup guide", "url": "https://developer.box.com/guides/authentication/oauth2/oauth2-setup/" },
-    { "kind": "scopes", "label": "Scopes reference", "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/" },
-    { "kind": "review", "label": "Admin authorization of apps", "url": "https://developer.box.com/guides/authorization/" },
-    { "kind": "review", "label": "Publishing to Box Integrations", "url": "https://developer.box.com/guides/applications/integrations" },
-    { "kind": "console", "label": "Developer Console", "url": "https://app.box.com/developers/console" },
-    { "kind": "api", "label": "Rate limits", "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/rate-limits/" }
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 setup guide",
+      "url": "https://developer.box.com/guides/authentication/oauth2/oauth2-setup/"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/"
+    },
+    {
+      "kind": "review",
+      "label": "Admin authorization of apps",
+      "url": "https://developer.box.com/guides/authorization/"
+    },
+    {
+      "kind": "review",
+      "label": "Publishing to Box Integrations",
+      "url": "https://developer.box.com/guides/applications/integrations"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Console",
+      "url": "https://app.box.com/developers/console"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/rate-limits/"
+    }
   ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "A User Authentication (OAuth 2.0) platform app is self-serve with no Box review, and any Box user can authorize it the same day. The catch is the customer side: enterprises that 'Disable unpublished apps by default' make an admin enable your app first, and listing in Box Integrations (optional) goes through a partner review with no published timeline.",
     "timeToDev": {
       "range": "15–45 min",
-      "hours": { "min": 0.25, "max": 0.75 },
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": "Create a free developer account, New App > User, tick scopes, add a redirect URI (http://localhost allowed), and run the flow."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 1, "max": 24 },
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
       "assumes": "An unpublished OAuth 2.0 app with root_readwrite that reads and writes user files; enterprise customers that block unpublished apps add their own admin approval time, and an Integrations listing adds an unspecified partner review.",
       "waitingOn": "No review needed. Per customer: an enterprise admin enabling the app where unpublished apps are disabled.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s3", "s5", "s6"],
+        "sourceIds": [
+          "s3",
+          "s5",
+          "s6"
+        ],
         "note": "Box docs don't require publishing for outside users; they describe listing as a way to reach new users. Admin enablement timing is up to each customer."
       }
     },
@@ -43,56 +80,122 @@
     {
       "item": "A Box account with Developer Console access (a free developer account works)",
       "why": "Apps are created in the Developer Console; a developer account is the alternative if your enterprise account lacks access.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Exact-match redirect URIs: HTTPS, or HTTP for localhost/loopback (any port)",
       "why": "Box checks redirect URIs by exact match and rejects non-HTTPS URIs other than localhost.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A paid enterprise account and a support ticket for on-request scopes such as enterprise_content",
       "why": "Free trial accounts can't request these scopes, and Box approves them case by case.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "item": "For an Integrations listing: icon, screenshots, short and long descriptions, categories, support info and an Add-button URL",
       "why": "These are the Publishing tab fields Box asks for before Submit for Approval.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Content access (self-serve)",
-      "examples": ["root_readonly", "root_readwrite", "manage_webhook"],
+      "examples": [
+        "root_readonly",
+        "root_readwrite",
+        "manage_webhook"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Reads (and writes) everything the authorizing user owns or collaborates on. root_readwrite is needed to download files. Enough for most file-reading agents.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Box AI / Sign / Relay (self-serve, feature-gated)",
-      "examples": ["ai.readwrite", "sign_requests.readwrite", "manage_triggers"],
+      "examples": [
+        "ai.readwrite",
+        "sign_requests.readwrite",
+        "manage_triggers"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Self-serve in the console, but they only work where the customer's Box plan has the feature (e.g. Sign enabled for the enterprise).",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "Box's scope page doesn't list a plan requirement for ai.readwrite." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Box's scope page doesn't list a plan requirement for ai.readwrite."
+      }
     },
     {
       "tier": "Admin scopes (need an admin's token)",
-      "examples": ["manage_managed_users", "manage_groups", "manage_enterprise_properties"],
+      "examples": [
+        "manage_managed_users",
+        "manage_groups",
+        "manage_enterprise_properties"
+      ],
       "reviewRequired": false,
       "time": "Same day, but only for admin installers",
       "impact": "Selectable in the console, but client-side OAuth apps need an Admin or Co-Admin to authorize for these calls to work.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "On-request scopes (support ticket)",
-      "examples": ["enterprise_content", "manage_legal_holds", "manage_data_retention"],
+      "examples": [
+        "enterprise_content",
+        "manage_legal_holds",
+        "manage_data_retention"
+      ],
       "reviewRequired": true,
       "time": "Unknown; case-by-case",
       "impact": "Box support reviews each request and grants it only when the use case needs it. Paid enterprise accounts only.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -102,7 +205,14 @@
       "detail": "Sign up for a free developer account, or sign in with an enterprise account that has Developer Console access.",
       "url": "https://account.box.com/signup/n/developer",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create a User Authentication platform app",
@@ -110,7 +220,14 @@
       "detail": "Developer Console > New App > User > Create. You can't convert an OAuth 2.0 app to Server Authentication later, so pick deliberately.",
       "url": "https://app.box.com/developers/console",
       "duration": "2 min",
-      "evidence": { "label": "tested", "sourceIds": ["s1", "s9"], "note": "The console URL returned 302 to account.box.com/login on 2026-10-20. We did not sign in." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1",
+          "s9"
+        ],
+        "note": "The console URL returned 302 to account.box.com/login on 2026-10-20. We did not sign in."
+      }
     },
     {
       "title": "Choose minimum scopes",
@@ -118,7 +235,13 @@
       "detail": "Pick root_readonly for a read-only agent, root_readwrite if it downloads or writes, plus ai.readwrite only if calling the Box AI API. Avoid admin and on-request scopes unless needed.",
       "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Configure scopes, redirect URIs and CORS",
@@ -126,7 +249,13 @@
       "detail": "On the Configuration tab tick the scopes, add exact redirect URIs (HTTPS, or http://localhost), and add CORS domains only if the browser calls the API.",
       "url": "https://app.box.com/developers/console",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -134,7 +263,14 @@
       "detail": "Redirect to https://account.box.com/api/oauth2/authorize?response_type=code&client_id=...&redirect_uri=...&state=.... Exchange the code with the client secret at POST https://api.box.com/oauth2/token. Store both tokens per user.",
       "url": "https://developer.box.com/reference/get-authorize/",
       "duration": "1–3 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": "Endpoints confirmed by live checks (authorize 200, token returned invalid_client for a bogus request)." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Endpoints confirmed by live checks (authorize 200, token returned invalid_client for a bogus request)."
+      }
     },
     {
       "title": "Handle single-use refresh tokens",
@@ -142,7 +278,14 @@
       "detail": "Access tokens last 60 minutes (expires_in 3600). Each refresh returns a new refresh token and invalidates the old one, valid for 60 days. Persist the new one atomically and serialize refreshes per user.",
       "url": "https://developer.box.com/guides/authentication/tokens/refresh/",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s7", "s8"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7",
+          "s8"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Add 429 back-off",
@@ -150,7 +293,13 @@
       "detail": "Honor retry-after on 429 rate_limit_exceeded and back off exponentially. Budget 1000 requests/min per user, 240 uploads/min per user, and search caps of 60/min per user and 12/s per enterprise.",
       "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/rate-limits/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s10"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Write admin-enablement instructions for enterprise customers",
@@ -158,7 +307,13 @@
       "detail": "Draft a help page telling Box admins how to enable the app: Admin Console > Integrations > Platform Apps Manager > User Authentication Apps, then the More menu. Include your client ID and the scopes used.",
       "url": "https://developer.box.com/guides/authorization/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Go live with outside users",
@@ -166,7 +321,14 @@
       "detail": "Share your connect link. Users in enterprises that allow unpublished apps can authorize immediately; others ask their admin to enable it.",
       "url": null,
       "duration": "minutes",
-      "evidence": { "label": "inferred", "sourceIds": ["s3", "s5"], "note": "No Box step is documented between creating the app and outside users authorizing it." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": "No Box step is documented between creating the app and outside users authorizing it."
+      }
     },
     {
       "title": "Optional: submit to Box Integrations",
@@ -174,7 +336,14 @@
       "detail": "Publishing tab > confirm the checklist > fill categories, descriptions, screenshots, icon, support info > Preview > Submit for Approval. Questions go to integrate@box.com.",
       "url": "https://developer.box.com/guides/applications/integrations",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s6", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optional: Box Partner review",
@@ -182,7 +351,13 @@
       "detail": "The Box Partner team reviews 'as soon as possible'. Box publishes no timeline.",
       "url": null,
       "duration": "unknown",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -203,71 +378,179 @@
       "symptom": "Enterprise users see that the app is disabled or blocked by their admin when authorizing",
       "cause": "The customer's enterprise has 'Disable unpublished apps by default' on, or doesn't enable integrations by default.",
       "fix": "The customer's Box admin enables it under Integrations > Platform Apps Manager > User Authentication Apps. Publishing in Integrations may help where 'Enable Integrations by default' is on.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The exact wording users see wasn't found in the docs." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The exact wording users see wasn't found in the docs."
+      }
     },
     {
       "symptom": "Refresh fails with invalid_grant after working earlier",
       "cause": "A refresh token was reused (they are single-use), or neither token was used for 60 days.",
       "fix": "Always store the newest refresh token and avoid parallel refreshes. After 60 days idle, send the user through authorization again.",
-      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": "invalid_grant is the standard OAuth error; the exact Box string wasn't confirmed." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "invalid_grant is the standard OAuth error; the exact Box string wasn't confirmed."
+      }
     },
     {
       "symptom": "redirect_uri_mismatch or the authorize page rejects the redirect",
       "cause": "The redirect URI isn't an exact match, or uses http:// on a non-localhost host.",
       "fix": "Register the exact URI on the Configuration tab and send it unchanged.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Error string inferred from standard OAuth behaviour." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Error string inferred from standard OAuth behaviour."
+      }
     },
     {
       "symptom": "403 insufficient_scope or access denied on admin endpoints",
       "cause": "Admin scopes work only with an Admin or Co-Admin token, and enterprise_content must be granted by Box support.",
       "fix": "Have an admin authorize, or file a support ticket for on-request scopes from a paid enterprise account.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "429 rate_limit_exceeded, especially on search",
       "cause": "Search is capped at 60/min per user and 12/s per enterprise; general calls at 1000/min per user.",
       "fix": "Honor retry-after and back off; cache search results.",
-      "evidence": { "label": "sourced", "sourceIds": ["s10"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens last 60 minutes. Refresh tokens last 60 days and are single-use, so each refresh returns a new pair.",
-      "evidence": { "label": "sourced", "sourceIds": ["s7", "s8"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7",
+          "s8"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Box Integrations only lists OAuth 2.0 apps. JWT and Client Credentials apps always need explicit admin authorization and get a Service Account, so they're a poor fit for a multi-customer agent.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The OAuth token acts as the user, so the agent sees only content that user owns or collaborates on. Files the app creates land in that user's account.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Box runs a hosted MCP server at https://mcp.box.com using OAuth. An agent may be able to use it instead of a custom integration.",
-      "evidence": { "label": "tested", "sourceIds": ["s11"], "note": "https://mcp.box.com returned HTTP 401 without a token on 2026-10-20, consistent with an OAuth-protected endpoint." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s11"
+        ],
+        "note": "https://mcp.box.com returned HTTP 401 without a token on 2026-10-20, consistent with an OAuth-protected endpoint."
+      }
     },
     {
       "text": "Box doesn't publish an OIDC discovery document; this is plain OAuth 2.0, not Sign in with Box via OIDC.",
-      "evidence": { "label": "tested", "sourceIds": ["s2"], "note": "account.box.com/.well-known/openid-configuration returned 404 on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "account.box.com/.well-known/openid-configuration returned 404 on 2026-10-20."
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Box docs: Setup with OAuth 2.0", "url": "https://developer.box.com/guides/authentication/oauth2/oauth2-setup/" },
-    { "id": "s2", "title": "Box docs: OAuth 2.0 overview", "url": "https://developer.box.com/guides/authentication/oauth2/" },
-    { "id": "s3", "title": "Box docs: Authorization (admin authorization of apps)", "url": "https://developer.box.com/guides/authorization/" },
-    { "id": "s4", "title": "Box docs: Scopes", "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/" },
-    { "id": "s5", "title": "Box docs: Publish your app", "url": "https://developer.box.com/guides/getting-started/publish-app" },
-    { "id": "s6", "title": "Box docs: Box Integrations (publishing)", "url": "https://developer.box.com/guides/applications/integrations" },
-    { "id": "s7", "title": "Box docs: Refresh a token", "url": "https://developer.box.com/guides/authentication/tokens/refresh/" },
-    { "id": "s8", "title": "Box docs: Access tokens", "url": "https://developer.box.com/guides/authentication/tokens/access-tokens/" },
-    { "id": "s9", "title": "Box Developer Console", "url": "https://app.box.com/developers/console" },
-    { "id": "s10", "title": "Box docs: Rate limits", "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/rate-limits/" },
-    { "id": "s11", "title": "Box docs: Box MCP server", "url": "https://developer.box.com/guides/box-mcp/index.md" }
+    {
+      "id": "s1",
+      "title": "Box docs: Setup with OAuth 2.0",
+      "url": "https://developer.box.com/guides/authentication/oauth2/oauth2-setup/"
+    },
+    {
+      "id": "s2",
+      "title": "Box docs: OAuth 2.0 overview",
+      "url": "https://developer.box.com/guides/authentication/oauth2/"
+    },
+    {
+      "id": "s3",
+      "title": "Box docs: Authorization (admin authorization of apps)",
+      "url": "https://developer.box.com/guides/authorization/"
+    },
+    {
+      "id": "s4",
+      "title": "Box docs: Scopes",
+      "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/"
+    },
+    {
+      "id": "s5",
+      "title": "Box docs: Publish your app",
+      "url": "https://developer.box.com/guides/getting-started/publish-app"
+    },
+    {
+      "id": "s6",
+      "title": "Box docs: Box Integrations (publishing)",
+      "url": "https://developer.box.com/guides/applications/integrations"
+    },
+    {
+      "id": "s7",
+      "title": "Box docs: Refresh a token",
+      "url": "https://developer.box.com/guides/authentication/tokens/refresh/"
+    },
+    {
+      "id": "s8",
+      "title": "Box docs: Access tokens",
+      "url": "https://developer.box.com/guides/authentication/tokens/access-tokens/"
+    },
+    {
+      "id": "s9",
+      "title": "Box Developer Console",
+      "url": "https://app.box.com/developers/console"
+    },
+    {
+      "id": "s10",
+      "title": "Box docs: Rate limits",
+      "url": "https://developer.box.com/guides/api-calls/permissions-and-errors/rate-limits/"
+    },
+    {
+      "id": "s11",
+      "title": "Box docs: Box MCP server",
+      "url": "https://developer.box.com/guides/box-mcp/index.md"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://account.box.com/api/oauth2/authorize: HTTP 200",
       "GET https://app.box.com/developers/console: 302 to account.box.com/login",

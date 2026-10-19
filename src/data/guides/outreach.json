@@ -7,32 +7,64 @@
     "category": "Sales engagement"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth guide", "url": "https://developers.outreach.io/api/oauth/" },
-    { "kind": "api", "label": "API getting started (tokens, scopes, rate limits)", "url": "https://developers.outreach.io/api/getting-started" },
-    { "kind": "review", "label": "Developing, publishing and reviewing apps", "url": "https://developers.outreach.io/guides/managing-apps" },
-    { "kind": "console", "label": "Developer Portal (My apps)", "url": "https://developers.outreach.io/apps/" },
-    { "kind": "review", "label": "Marketplace partner program", "url": "https://www.outreach.ai/partners/marketplace-partners" }
+    {
+      "kind": "oauth",
+      "label": "OAuth guide",
+      "url": "https://developers.outreach.io/api/oauth/"
+    },
+    {
+      "kind": "api",
+      "label": "API getting started (tokens, scopes, rate limits)",
+      "url": "https://developers.outreach.io/api/getting-started"
+    },
+    {
+      "kind": "review",
+      "label": "Developing, publishing and reviewing apps",
+      "url": "https://developers.outreach.io/guides/managing-apps"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Portal (My apps)",
+      "url": "https://developers.outreach.io/apps/"
+    },
+    {
+      "kind": "review",
+      "label": "Marketplace partner program",
+      "url": "https://www.outreach.ai/partners/marketplace-partners"
+    }
   ],
   "verdict": {
     "difficulty": "hard",
     "summary": "Development credentials are issued as soon as you create an app, and any Outreach user can authorize them, but outside the 10 users the owning org gets unlimited, users have to re-authorize weekly. Production credentials for an app other orgs can install (Unlisted or Public) come only after an Outreach review ticket, possibly with a demo, and a Public Marketplace listing also needs beta testing with at least 5 customers plus a partner application and MNDA.",
     "timeToDev": {
       "range": "30 min–2 h",
-      "hours": { "min": 0.5, "max": 2 },
+      "hours": {
+        "min": 0.5,
+        "max": 2
+      },
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": "The docs say development credentials are provisioned immediately. The time range is our estimate of portal setup plus a working code exchange."
       }
     },
     "timeToProd": {
       "range": "1–4 weeks",
-      "hours": { "min": 168, "max": 672 },
+      "hours": {
+        "min": 168,
+        "max": 672
+      },
       "assumes": "An Unlisted app (installable by any org with the link) that reads and writes prospects, sequences and mailings; a Public Marketplace listing adds beta testing with 5+ customers and a partner application on top.",
       "waitingOn": "Outreach's review ticket for Unlisted/Public visibility (no published SLA; they may ask for more info or a demo).",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s3", "s5"],
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
         "note": "Outreach documents that review exists but publishes no timeline. The range is our estimate."
       }
     },
@@ -42,48 +74,111 @@
     {
       "item": "An Outreach account that can sign in to the Developer Portal",
       "why": "Apps are created and managed under My apps in the Developer Portal.",
-      "evidence": { "label": "unverified", "sourceIds": ["s1", "s7"], "note": "Nango's docs say a free Outreach account is enough for development. Outreach's own docs don't state an eligibility requirement." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": "Nango's docs say a free Outreach account is enough for development. Outreach's own docs don't state an eligibility requirement."
+      }
     },
     {
       "item": "At least one exact-match redirect URI",
       "why": "The token call succeeds only if the parameter values exactly match those that started the flow. Separate dev and prod redirect URIs help you tell which credential pair to use.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "For a Public listing: a Marketplace partner application and a signed Outreach MNDA",
       "why": "Outreach lists these as the first step to becoming a Marketplace partner.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": "The partner page doesn't say whether Unlisted apps also need the application." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "The partner page doesn't say whether Unlisted apps also need the application."
+      }
     },
     {
       "item": "For a Public listing: beta testing with at least 5 customers and a short demo",
       "why": "Required before an app can be Public. Unlisted apps can be released until you reach 5 customers.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Read scopes on dev credentials",
-      "examples": ["prospects.read", "accounts.read", "users.read", "sequences.read", "mailings.read"],
+      "examples": [
+        "prospects.read",
+        "accounts.read",
+        "users.read",
+        "sequences.read",
+        "mailings.read"
+      ],
       "reviewRequired": false,
       "time": "Immediate",
       "impact": "Works right away for up to 10 users in your own org without limits. Users in other orgs (or more than 10 in yours) must re-authorize weekly, and the consent page flags the app as unreviewed.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2", "s3"], "note": "The scope strings follow the resource.access format in the docs. Only prospects.read, accounts.read and users.read appear verbatim in the pages we read." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s3"
+        ],
+        "note": "The scope strings follow the resource.access format in the docs. Only prospects.read, accounts.read and users.read appear verbatim in the pages we read."
+      }
     },
     {
       "tier": "Write/delete scopes, Internal app",
-      "examples": ["prospects.write", "prospects.all", "sequenceStates.write", "accounts.write"],
+      "examples": [
+        "prospects.write",
+        "prospects.all",
+        "sequenceStates.write",
+        "accounts.write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Publishing with Internal visibility needs no review and no metadata, which suits an agent deployed for one customer org. It can't be installed by other orgs.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s2"], "note": "prospects.all and the read/write/delete/all access levels appear in the docs. The other strings are inferred from that pattern." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": "prospects.all and the read/write/delete/all access levels appear in the docs. The other strings are inferred from that pattern."
+      }
     },
     {
       "tier": "Any scopes, Unlisted or Public app (multi-tenant)",
-      "examples": ["prospects.all", "mailings.read", "calls.read", "opportunities.read"],
+      "examples": [
+        "prospects.all",
+        "mailings.read",
+        "calls.read",
+        "opportunities.read"
+      ],
       "reviewRequired": true,
       "time": "1–4 weeks (estimate)",
       "impact": "Production credentials are issued only after the publishing process and review. Public listing adds 5+ beta customers and a demo. Scopes and URLs change only when you republish.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": "The review is sourced. The time range and the scope examples beyond prospects.all are inferred." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "The review is sourced. The time range and the scope examples beyond prospects.all are inferred."
+      }
     }
   ],
   "steps": [
@@ -93,7 +188,13 @@
       "detail": "Sign in with an Outreach account and open My apps.",
       "url": "https://developers.outreach.io/apps/",
       "duration": "5 min",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "https://developers.outreach.io/apps/ returned HTTP 200 on 2026-10-20. We didn't sign in." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "https://developers.outreach.io/apps/ returned HTTP 200 on 2026-10-20. We didn't sign in."
+      }
     },
     {
       "title": "Choose minimal scopes and redirect URIs",
@@ -101,7 +202,14 @@
       "detail": "List the resource.access scopes the agent needs (prefer .read over .all), plus separate dev and prod HTTPS redirect URIs.",
       "url": "https://developers.outreach.io/api/getting-started",
       "duration": "20 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create the app and copy development credentials",
@@ -109,7 +217,14 @@
       "detail": "Create an app, add the API access (OAuth) feature, select scopes and redirect URIs, then copy the client ID and the secret (shown only once).",
       "url": "https://developers.outreach.io/apps/",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -117,7 +232,13 @@
       "detail": "Redirect to https://api.outreach.io/oauth/authorize (it 301s to accounts.outreach.io) with client_id, redirect_uri, response_type=code, scope and state. Exchange the code at POST https://api.outreach.io/oauth/token.",
       "url": "https://developers.outreach.io/api/oauth/",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "We observed the 301 redirect on 2026-10-20." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "We observed the 301 redirect on 2026-10-20."
+      }
     },
     {
       "title": "Handle token refresh",
@@ -125,7 +246,13 @@
       "detail": "Access tokens last 2 hours and refresh tokens 14 days. Refresh proactively, persist the newest refresh token, and stay under 100 live refresh tokens per user/app pair.",
       "url": "https://developers.outreach.io/api/getting-started",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Build against the API with rate-limit handling",
@@ -133,7 +260,13 @@
       "detail": "Call https://api.outreach.io/api/v2 (JSON:API). Limit is 10,000 requests/hour per user. Kaia recordings and transcripts are capped at 3 calls/sec and 6,000/day per org. Back off on 429.",
       "url": "https://developers.outreach.io/api/getting-started",
       "duration": "varies",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Draft listing metadata and policy answers",
@@ -141,7 +274,13 @@
       "detail": "Write the app description, scope justifications, privacy and data-use statements, and support contact for the publishing wizard, which highlights missing metadata.",
       "url": "https://developers.outreach.io/guides/managing-apps",
       "duration": "2–4 h",
-      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": "The page doesn't list the exact metadata fields." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The page doesn't list the exact metadata fields."
+      }
     },
     {
       "title": "Apply to the Marketplace partner program (Public only)",
@@ -149,7 +288,13 @@
       "detail": "Submit the partner application and sign the Outreach MNDA if you want a Public Marketplace listing.",
       "url": "https://www.outreach.ai/partners/marketplace-partners",
       "duration": "30 min + wait",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Publish as Unlisted and submit for review",
@@ -157,7 +302,13 @@
       "detail": "Run the publishing wizard, agree to Outreach policies and submit. The app goes to In Review and a ticket is created. Visibility can only widen (Internal → Unlisted → Public).",
       "url": "https://developers.outreach.io/apps/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Outreach review",
@@ -165,7 +316,13 @@
       "detail": "Outreach reviewers may ask for more information or a demo session.",
       "url": null,
       "duration": "1–4 weeks (estimate)",
-      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": "No SLA is published." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "No SLA is published."
+      }
     },
     {
       "title": "Switch to production credentials",
@@ -173,7 +330,14 @@
       "detail": "Swap the dev client ID and secret for the production pair issued after publishing. Keep dev credentials for testing only.",
       "url": "https://developers.outreach.io/api/oauth/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Beta with 5 customers, then go Public (optional)",
@@ -181,7 +345,13 @@
       "detail": "Run the Unlisted app with at least 5 customers, then submit again for Public visibility with a short demo.",
       "url": "https://marketplace.outreach.io",
       "duration": "weeks",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -203,77 +373,180 @@
       "symptom": "Users outside your org lose access every week and have to reconnect",
       "cause": "They're using development credentials, which are unlimited only for up to 10 users of the owning org.",
       "fix": "Publish the app (Unlisted or Public) and switch to production credentials after review.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Consent page shows the app as unreviewed",
       "cause": "Development credentials are in use.",
       "fix": "Use production credentials, which are issued after publishing and review.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Can't move the app back to Internal after making it Unlisted",
       "cause": "Visibility only moves Internal → Unlisted → Public.",
       "fix": "Create a separate app for internal use if you need one.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "New scopes or redirect URIs don't take effect in production",
       "cause": "Portal edits don't affect the live app until you republish.",
       "fix": "Go through the publishing process again, and have existing users re-authorize for new scopes.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": "The re-authorization step is our inference." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": "The re-authorization step is our inference."
+      }
     },
     {
       "symptom": "API returns empty or forbidden results despite granted scopes",
       "cause": "OAuth scopes don't grant access on their own. Outreach governance settings (such as 'manage own prospects only') still limit what the user can see.",
       "fix": "Explain to customers that the agent sees only what the authorizing user can, or have an admin connect.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "HTTP 429 Too Many Requests",
       "cause": "Over 10,000 requests/hour for a user, or over the Kaia caps of 3/sec and 6,000/day per org.",
       "fix": "Queue per user, read rate-limit headers, and back off.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "The 429 status and header handling come from third-party tutorials. The limits are official." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The 429 status and header handling come from third-party tutorials. The limits are official."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens expire after 2 hours and refresh tokens after 14 days, so a user idle for more than 14 days must reconnect. Each user/app pair can have at most 100 refresh tokens at a time.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Outreach also periodically expires user grants and revokes tokens on development credentials, separately from the weekly re-authorization rule.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limits are per user (10,000/hour), so a multi-tenant agent scales with the number of connected users rather than sharing a global app quota.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Internal visibility skips review entirely, which is a fast path if each customer builds and owns their own app, but that's rarely practical for a SaaS agent.",
-      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Outreach is actively courting AI partners: the Marketplace program explicitly invites partners to build MCP servers for connecting AI agents through the Developer Portal.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Deleting a published app uninstalls it from every org using it. Hiding it only blocks new installs.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Outreach developer docs: OAuth", "url": "https://developers.outreach.io/api/oauth/" },
-    { "id": "s2", "title": "Outreach developer docs: API getting started", "url": "https://developers.outreach.io/api/getting-started" },
-    { "id": "s3", "title": "Outreach developer docs: Developing and testing apps", "url": "https://developers.outreach.io/guides/managing-apps" },
-    { "id": "s4", "title": "Outreach Support: How to Access Outreach APIs", "url": "https://support.outreach.io/hc/en-us/articles/9986965571867-How-to-Access-Outreach-APIs" },
-    { "id": "s5", "title": "Outreach Marketplace Partner Program", "url": "https://www.outreach.ai/partners/marketplace-partners" },
-    { "id": "s6", "title": "Outreach Developer Portal (My apps)", "url": "https://developers.outreach.io/apps/" },
-    { "id": "s7", "title": "Third-party: Nango Outreach integration docs", "url": "https://docs.nango.dev/integrations/all/outreach" }
+    {
+      "id": "s1",
+      "title": "Outreach developer docs: OAuth",
+      "url": "https://developers.outreach.io/api/oauth/"
+    },
+    {
+      "id": "s2",
+      "title": "Outreach developer docs: API getting started",
+      "url": "https://developers.outreach.io/api/getting-started"
+    },
+    {
+      "id": "s3",
+      "title": "Outreach developer docs: Developing and testing apps",
+      "url": "https://developers.outreach.io/guides/managing-apps"
+    },
+    {
+      "id": "s4",
+      "title": "Outreach Support: How to Access Outreach APIs",
+      "url": "https://support.outreach.io/hc/en-us/articles/9986965571867-How-to-Access-Outreach-APIs"
+    },
+    {
+      "id": "s5",
+      "title": "Outreach Marketplace Partner Program",
+      "url": "https://www.outreach.ai/partners/marketplace-partners"
+    },
+    {
+      "id": "s6",
+      "title": "Outreach Developer Portal (My apps)",
+      "url": "https://developers.outreach.io/apps/"
+    },
+    {
+      "id": "s7",
+      "title": "Third-party: Nango Outreach integration docs",
+      "url": "https://docs.nango.dev/integrations/all/outreach"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://api.outreach.io/oauth/authorize?client_id=test&...: 301 to https://accounts.outreach.io/oauth/authorize?...",
       "POST https://api.outreach.io/oauth/token with only grant_type: 400 {\"error\":\"invalid_request\",\"error_description\":\"Missing required parameter: code.\"}",

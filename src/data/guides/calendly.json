@@ -7,32 +7,63 @@
     "category": "Scheduling"
   },
   "officialDocs": [
-    { "kind": "console", "label": "Creating an OAuth app", "url": "https://developer.calendly.com/creating-an-oauth-app" },
-    { "kind": "scopes", "label": "Scopes reference", "url": "https://developer.calendly.com/docs/authentication/scopes" },
-    { "kind": "oauth", "label": "Refresh token rotation guide", "url": "https://developer.calendly.com/docs/authentication/refresh-token-rotation-guide" },
-    { "kind": "api", "label": "API rate limits", "url": "https://developer.calendly.com/api-docs/overview/rate-limits" },
-    { "kind": "api", "label": "Calendly API overview (plan availability)", "url": "https://calendly.com/help/calendly-api-overview" }
+    {
+      "kind": "console",
+      "label": "Creating an OAuth app",
+      "url": "https://developer.calendly.com/creating-an-oauth-app"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://developer.calendly.com/docs/authentication/scopes"
+    },
+    {
+      "kind": "oauth",
+      "label": "Refresh token rotation guide",
+      "url": "https://developer.calendly.com/docs/authentication/refresh-token-rotation-guide"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits",
+      "url": "https://developer.calendly.com/api-docs/overview/rate-limits"
+    },
+    {
+      "kind": "api",
+      "label": "Calendly API overview (plan availability)",
+      "url": "https://calendly.com/help/calendly-api-overview"
+    }
   ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "OAuth apps are self-serve from a separate Calendly developer account, with sandbox and production app types and no Calendly review found in the docs. The catches are plan-based: any Calendly user can authorize and read data, but webhooks and the Scheduling API need the end user to be on a paid plan, Free users get 50 requests/min, and refresh tokens became single-use (enforced from 31 Aug 2026).",
     "timeToDev": {
       "range": "15–45 min",
-      "hours": { "min": 0.25, "max": 0.75 },
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "Sign up for a developer account with GitHub or Google, create a Sandbox app with an http://localhost redirect, run PKCE."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 2, "max": 8 },
+      "hours": {
+        "min": 2,
+        "max": 8
+      },
       "assumes": "A Production OAuth app reading scheduled events and invitees (and webhooks for paid-plan users); no listing in Calendly's integrations directory.",
       "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "Neither the app-creation nor scopes pages mention a Calendly review or approval step; 'no review' is our reading of their absence."
       }
     },
@@ -42,51 +73,117 @@
     {
       "item": "A Calendly developer account (separate from a Calendly user account), signed up with GitHub or Google",
       "why": "OAuth apps are created and managed there.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "An HTTPS redirect URI for the Production app",
       "why": "Production redirect URIs must be HTTPS; Sandbox allows http://localhost.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A Calendly user account on a paid plan for testing webhooks",
       "why": "Webhooks and the Scheduling API need Professional, Standard, Teams, Enterprise or similar paid plans.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Read scheduling data (works on all plans)",
-      "examples": ["users:read", "event_types:read", "scheduled_events:read", "availability:read", "routing_forms:read"],
+      "examples": [
+        "users:read",
+        "event_types:read",
+        "scheduled_events:read",
+        "availability:read",
+        "routing_forms:read"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Enough for an agent to read a user's meetings and availability. New apps get no API access until scopes are requested and the user approves them; users can decline scopes at install.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s5"], "note": "That the user (not Calendly) does the approving is our reading; the page doesn't say who approves." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": "That the user (not Calendly) does the approving is our reading; the page doesn't say who approves."
+      }
     },
     {
       "tier": "Invitee and contact data",
-      "examples": ["invitees:read", "contacts:read", "contacts:write"],
+      "examples": [
+        "invitees:read",
+        "contacts:read",
+        "contacts:write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Personal data of people who booked; the scopes page suggests invitees:read alongside scheduled_events:read for syncing.",
-      "evidence": { "label": "unverified", "sourceIds": ["s2"], "note": "invitees:read appears in a search snippet of the scopes page but not in the catalog list we fetched; confirm the exact scope name." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "invitees:read appears in a search snippet of the scopes page but not in the catalog list we fetched; confirm the exact scope name."
+      }
     },
     {
       "tier": "Write and real-time (paid plans)",
-      "examples": ["webhooks:write", "scheduled_events:write", "scheduling_links:write", "event_types:write"],
+      "examples": [
+        "webhooks:write",
+        "scheduled_events:write",
+        "scheduling_links:write",
+        "event_types:write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Webhooks and the Scheduling API only work for users on paid plans, so Free users fall back to polling within 50 requests/min.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s5", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Org admin, compliance and Notetaker",
-      "examples": ["organizations:write", "activity_log:read", "data_compliance:write", "meeting_recaps:read"],
+      "examples": [
+        "organizations:write",
+        "activity_log:read",
+        "data_compliance:write",
+        "meeting_recaps:read"
+      ],
       "reviewRequired": false,
       "time": "Same day (plan-gated)",
       "impact": "Activity logs and data deletion endpoints are Enterprise-only; organization-level scopes need an org admin to authorize.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2", "s5"], "note": "The org-admin requirement is our inference." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": "The org-admin requirement is our inference."
+      }
     }
   ],
   "steps": [
@@ -96,7 +193,13 @@
       "detail": "Sign up on the developer portal with GitHub or Google.",
       "url": "https://developer.calendly.com",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create a Sandbox OAuth app",
@@ -104,7 +207,14 @@
       "detail": "Choose web or native, Sandbox environment, redirect URI (http://localhost is OK in Sandbox), and scopes. Copy the client secret and webhook signing key immediately; they aren't shown again.",
       "url": "https://developer.calendly.com/console/apps",
       "duration": "5 min",
-      "evidence": { "label": "tested", "sourceIds": ["s1", "s8"], "note": "developer.calendly.com/console/apps returned HTTP 200 on 2026-10-20; we did not sign in." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1",
+          "s8"
+        ],
+        "note": "developer.calendly.com/console/apps returned HTTP 200 on 2026-10-20; we did not sign in."
+      }
     },
     {
       "title": "Implement auth code + PKCE (S256)",
@@ -112,7 +222,13 @@
       "detail": "Send users to https://auth.calendly.com/oauth/authorize (redirects to calendly.com/oauth/authorize) with code_challenge and S256, then POST to https://auth.calendly.com/oauth/token. PKCE is recommended for web apps and expected for native apps.",
       "url": "https://developer.calendly.com/creating-an-oauth-app",
       "duration": "1-2 h",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Authorize URL returned 301 to calendly.com/oauth/authorize; token endpoint with no body returned invalid_request 'Missing required parameter: grant_type.'" }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Authorize URL returned 301 to calendly.com/oauth/authorize; token endpoint with no body returned invalid_request 'Missing required parameter: grant_type.'"
+      }
     },
     {
       "title": "Handle single-use refresh tokens",
@@ -120,7 +236,13 @@
       "detail": "Access tokens last 2 hours. Each successful refresh revokes the old refresh token and returns a new one; persist it atomically and serialize refreshes per user. Reuse returns invalid_grant.",
       "url": "https://developer.calendly.com/docs/authentication/refresh-token-rotation-guide",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The 2-hour lifetime comes from a search snippet of Calendly's authentication how-to page, which returned 404 when we fetched it." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The 2-hour lifetime comes from a search snippet of Calendly's authentication how-to page, which returned 404 when we fetched it."
+      }
     },
     {
       "title": "Build data sync with webhooks or polling",
@@ -128,7 +250,14 @@
       "detail": "For paid-plan users, subscribe to webhooks and verify signatures with the signing key. For Free users, poll scheduled events within 50 requests/user/min.",
       "url": "https://developer.calendly.com/api-docs/overview/rate-limits",
       "duration": "2-4 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test with Free and paid user accounts",
@@ -136,7 +265,13 @@
       "detail": "Authorize from a Free user and a paid user to confirm the plan-gated paths (webhooks, Scheduling API) degrade cleanly.",
       "url": null,
       "duration": "30 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create the Production app",
@@ -144,7 +279,13 @@
       "detail": "Create a second app with environment Production, an HTTPS redirect URI, and the same least-privilege scopes. Store the new client secret and signing key.",
       "url": "https://developer.calendly.com/console/apps",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Ship and monitor token health",
@@ -152,7 +293,14 @@
       "detail": "Alert on invalid_grant spikes (lost refresh races) and 429s; respect the 8 token requests per user per minute limit.",
       "url": null,
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -172,66 +320,152 @@
       "symptom": "invalid_grant (HTTP 400/401) when refreshing",
       "cause": "Refresh tokens are single-use; a refresh token was reused, often by two concurrent workers.",
       "fix": "Lock refresh per user, store the new refresh token atomically, and re-prompt if it still fails.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "API calls return no data or a permission error on a newly created app",
       "cause": "New apps get no API access until scopes are requested and approved; the user may have declined some scopes.",
       "fix": "Request needed scopes explicitly and handle partial grants.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "Exact error string not documented on the page we read." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Exact error string not documented on the page we read."
+      }
     },
     {
       "symptom": "Webhook subscription fails for some users",
       "cause": "Webhooks need a paid Calendly plan.",
       "fix": "Detect the plan and fall back to polling scheduled events.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "HTTP 429 with X-RateLimit-Reset",
       "cause": "Per-user limits: 500/min on paid plans, 50/min on Free, and stricter caps on Create Event Invitee.",
       "fix": "Wait for the reset (typically 60 seconds) and use exponential backoff.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "The 60-second reset comes from a search snippet." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "The 60-second reset comes from a search snippet."
+      }
     },
     {
       "symptom": "Production app rejects your localhost redirect",
       "cause": "Production redirect URIs must be HTTPS.",
       "fix": "Keep localhost on the Sandbox app and use HTTPS for Production.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "Single-use refresh tokens are enforced from 31 Aug 2026 for new apps, with a grace period for older apps that Calendly says will end.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Legacy OAuth apps and personal access tokens from before scoped permissions keep full access, and legacy tokens migrate to scoped tokens on refresh without reauthorization.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limits apply per user and count third-party integrations too, so other tools the user connects share their quota.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "'Counts third-party integrations' comes from a search snippet of the rate limits page." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "'Counts third-party integrations' comes from a search snippet of the rate limits page."
+      }
     },
     {
       "text": "Create Event Invitee (booking on someone's behalf) is capped at 10/min, 50/hour and 100/day per user on paid non-Enterprise plans, and 5/day on trials, which limits AI booking agents.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The client secret and webhook signing key are shown once at creation.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Calendly Developer: Creating an OAuth app", "url": "https://developer.calendly.com/creating-an-oauth-app" },
-    { "id": "s2", "title": "Calendly Developer: Authorization scopes", "url": "https://developer.calendly.com/docs/authentication/scopes" },
-    { "id": "s3", "title": "Calendly Developer: Refresh token rotation guide", "url": "https://developer.calendly.com/docs/authentication/refresh-token-rotation-guide" },
-    { "id": "s4", "title": "Calendly Developer: Rate limits", "url": "https://developer.calendly.com/api-docs/overview/rate-limits" },
-    { "id": "s5", "title": "Calendly Help Center: Calendly API overview", "url": "https://calendly.com/help/calendly-api-overview" },
-    { "id": "s8", "title": "Calendly developer console (apps)", "url": "https://developer.calendly.com/console/apps" }
+    {
+      "id": "s1",
+      "title": "Calendly Developer: Creating an OAuth app",
+      "url": "https://developer.calendly.com/creating-an-oauth-app"
+    },
+    {
+      "id": "s2",
+      "title": "Calendly Developer: Authorization scopes",
+      "url": "https://developer.calendly.com/docs/authentication/scopes"
+    },
+    {
+      "id": "s3",
+      "title": "Calendly Developer: Refresh token rotation guide",
+      "url": "https://developer.calendly.com/docs/authentication/refresh-token-rotation-guide"
+    },
+    {
+      "id": "s4",
+      "title": "Calendly Developer: Rate limits",
+      "url": "https://developer.calendly.com/api-docs/overview/rate-limits"
+    },
+    {
+      "id": "s5",
+      "title": "Calendly Help Center: Calendly API overview",
+      "url": "https://calendly.com/help/calendly-api-overview"
+    },
+    {
+      "id": "s8",
+      "title": "Calendly developer console (apps)",
+      "url": "https://developer.calendly.com/console/apps"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://auth.calendly.com/oauth/authorize?client_id=x&response_type=code&redirect_uri=https://example.com: HTTP 301 to https://calendly.com/oauth/authorize",
       "POST https://auth.calendly.com/oauth/token with no body: {\"error\":\"invalid_request\",\"error_description\":\"Missing required parameter: grant_type.\"}",

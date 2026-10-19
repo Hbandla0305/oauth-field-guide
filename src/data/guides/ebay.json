@@ -505,6 +505,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://auth.ebay.com/oauth2/authorize returned HTTP 302 without parameters",
       "https://api.ebay.com/identity/v1/oauth2/token returned HTTP 405 to GET (endpoint exists, expects POST)",

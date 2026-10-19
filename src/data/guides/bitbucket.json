@@ -485,6 +485,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://bitbucket.org/site/oauth2/authorize (no params): HTTP 401",
       "POST https://bitbucket.org/site/oauth2/access_token (no body): 400 invalid_grant 'Unsupported grant type: '",

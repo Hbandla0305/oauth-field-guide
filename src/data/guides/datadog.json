@@ -49,7 +49,10 @@
       },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": "Creating the client in the Developer Platform takes minutes, but it can only be done in a partner developer org, which you get after Technology Partner approval and a sandbox request. Datadog publishes no approval time, so the range is an estimate."
       }
     },
@@ -63,7 +66,11 @@
       "waitingOn": "Technology Partner application approval, sandbox provisioning, then Datadog's integration review before the tile is published and the OAuth client works outside your partner org.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4", "s5"],
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s5"
+        ],
         "note": "The docs say 'The Datadog team will review and respond with feedback' but give no timeline. The range is our estimate."
       }
     },
@@ -75,7 +82,10 @@
       "why": "The docs state 'OAuth is available only to approved Technology Partners developing official Datadog integrations' and standalone OAuth clients are not supported.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": null
       }
     },
@@ -84,7 +94,10 @@
       "why": "Listed product requirements: generally available, hosts the code that calls the Datadog API, submits telemetry to Datadog, and implements OAuth.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": "A read-only agent may not satisfy the telemetry requirement. Ask the partner team whether an exception exists."
       }
     },
@@ -93,7 +106,10 @@
       "why": "The OAuth client is created on the listing's Configuration Method tab, and testing only works inside that partner org until publication.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": null
       }
     },
@@ -102,7 +118,9 @@
       "why": "'Dashboards are required for all integrations.' The listing also needs an overview, data type definitions, and support details.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s5"],
+        "sourceIds": [
+          "s5"
+        ],
         "note": null
       }
     }
@@ -110,37 +128,60 @@
   "scopeTiers": [
     {
       "tier": "Read scopes for an agent",
-      "examples": ["metrics_read", "timeseries_query", "logs_read_data", "monitors_read", "dashboards_read", "incident_read", "events_read"],
+      "examples": [
+        "metrics_read",
+        "timeseries_query",
+        "logs_read_data",
+        "monitors_read",
+        "dashboards_read",
+        "incident_read",
+        "events_read"
+      ],
       "reviewRequired": true,
       "time": "1–3 months",
       "impact": "These are ordinary authorization scopes, but no scope is usable by third parties without partner approval and a published tile. Users starting from the tile need the permissions for every requested scope.",
       "evidence": {
         "label": "tested",
-        "sourceIds": ["s6", "s2"],
+        "sourceIds": [
+          "s6",
+          "s2"
+        ],
         "note": "Scope names seen in the HTML of the scopes page on 2026-10-20. That review applies to all scopes is inferred from the partner-only rule."
       }
     },
     {
       "tier": "Write scopes",
-      "examples": ["monitors_write", "dashboards_write", "incident_write"],
+      "examples": [
+        "monitors_write",
+        "dashboards_write",
+        "incident_write"
+      ],
       "reviewRequired": true,
       "time": "1–3 months",
       "impact": "Same path as read scopes. Datadog asks you to select the minimum required scopes on the listing.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s6", "s1"],
+        "sourceIds": [
+          "s6",
+          "s1"
+        ],
         "note": null
       }
     },
     {
       "tier": "Private data-submission scope",
-      "examples": ["api_keys_write"],
+      "examples": [
+        "api_keys_write"
+      ],
       "reviewRequired": true,
       "time": "1–3 months",
       "impact": "Needed to create an API key on the user's behalf (POST /api/v2/api_keys/marketplace) and submit metrics, logs or events. It's described as private and does not appear on the public scopes page.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": null
       }
     }
@@ -154,7 +195,10 @@
       "duration": "30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s4", "s7"],
+        "sourceIds": [
+          "s4",
+          "s7"
+        ],
         "note": null
       }
     },
@@ -166,7 +210,9 @@
       "duration": "Unknown (days to weeks)",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s4"],
+        "sourceIds": [
+          "s4"
+        ],
         "note": "No timeline in the docs."
       }
     },
@@ -178,7 +224,9 @@
       "duration": "Unknown",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s4"],
+        "sourceIds": [
+          "s4"
+        ],
         "note": null
       }
     },
@@ -190,7 +238,9 @@
       "duration": "1–2 hours",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s5"],
+        "sourceIds": [
+          "s5"
+        ],
         "note": null
       }
     },
@@ -202,7 +252,10 @@
       "duration": "15–30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s5"],
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
         "note": "The exact Developer Platform URL isn't given in the docs. The link is the Integrations page, which the docs navigate from."
       }
     },
@@ -214,7 +267,10 @@
       "duration": "1–3 days",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2", "s3"],
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
         "note": null
       }
     },
@@ -226,7 +282,10 @@
       "duration": "1–3 days",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s4", "s5"],
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
         "note": null
       }
     },
@@ -238,7 +297,9 @@
       "duration": "1–2 hours",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -250,7 +311,10 @@
       "duration": "15 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s5"],
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
         "note": null
       }
     },
@@ -262,7 +326,10 @@
       "duration": "Unknown (weeks)",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s5", "s1"],
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
         "note": "No published timeline."
       }
     }
@@ -288,7 +355,9 @@
       "fix": "Test inside the partner sandbox org, or get the integration published.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -298,7 +367,10 @@
       "fix": "Apply to the Partner Network, or for a single org use an API key plus a scoped application key instead of OAuth.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s6"],
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
         "note": "Scoped application keys are mentioned on the scopes page as able to carry any Datadog permission."
       }
     },
@@ -308,7 +380,9 @@
       "fix": "Switch to the production client ID and secret and the production redirect URI.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -318,7 +392,10 @@
       "fix": "Use api.<domain> with only the base domain, such as datadoghq.eu. Use site only for the authorize step.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": null
       }
     },
@@ -328,7 +405,11 @@
       "fix": "Enable api_keys_write on the listing and call POST /api/v2/api_keys/marketplace; store the key, since it's returned only once.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s2", "s3"],
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s3"
+        ],
         "note": null
       }
     },
@@ -338,7 +419,9 @@
       "fix": "Send application/json or application/x-www-form-urlencoded.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     }
@@ -348,7 +431,10 @@
       "text": "Access tokens last 1 hour. Refresh tokens for Marketplace OAuth clients have no expiration unless the user or partner revokes them.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3", "s1"],
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
         "note": null
       }
     },
@@ -356,7 +442,10 @@
       "text": "Datadog has several regional sites. The flow passes domain (for token and API calls) and site (for the authorize step) to your Onboarding URL, and Datadog wants users to start authorization from the Datadog tile rather than from your product.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": null
       }
     },
@@ -364,7 +453,10 @@
       "text": "Clients must be confidential. PKCE is recommended, with S256.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2", "s3"],
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
         "note": null
       }
     },
@@ -372,7 +464,9 @@
       "text": "Users who start from the tile need permissions for all requested scopes. Users who start elsewhere can finish but are prompted to re-authorize later.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": null
       }
     },
@@ -380,7 +474,9 @@
       "text": "Only one client secret is active at a time. Rotating one goes through ecosystems@datadog.com and doesn't force users to re-authorize.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -388,23 +484,55 @@
       "text": "OAuth clients get a limited set of authorization scopes, while scoped application keys can carry any Datadog permission. For an internal or single-customer agent, keys may be the more practical route.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s6"],
+        "sourceIds": [
+          "s6"
+        ],
         "note": "The 'more practical' part is our opinion."
       }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Datadog docs: Create an API-based integration (OAuth for integrations)", "url": "https://docs.datadoghq.com/developers/integrations/oauth_for_integrations/" },
-    { "id": "s2", "title": "Datadog docs: OAuth2 in Datadog", "url": "https://docs.datadoghq.com/developers/authorization/oauth2_in_datadog/" },
-    { "id": "s3", "title": "Datadog docs: OAuth2 authorization endpoints reference", "url": "https://docs.datadoghq.com/extend/authorization/oauth2_endpoints/" },
-    { "id": "s4", "title": "Datadog docs: Build an integration", "url": "https://docs.datadoghq.com/extend/integrations/" },
-    { "id": "s5", "title": "Datadog docs: Build an integration with Datadog (listing and publishing)", "url": "https://docs.datadoghq.com/extend/integrations/build_integration/" },
-    { "id": "s6", "title": "Datadog API: Authorization scopes", "url": "https://docs.datadoghq.com/api/latest/scopes/" },
-    { "id": "s7", "title": "Datadog Partner Portal", "url": "https://partners.datadoghq.com/s/" }
+    {
+      "id": "s1",
+      "title": "Datadog docs: Create an API-based integration (OAuth for integrations)",
+      "url": "https://docs.datadoghq.com/developers/integrations/oauth_for_integrations/"
+    },
+    {
+      "id": "s2",
+      "title": "Datadog docs: OAuth2 in Datadog",
+      "url": "https://docs.datadoghq.com/developers/authorization/oauth2_in_datadog/"
+    },
+    {
+      "id": "s3",
+      "title": "Datadog docs: OAuth2 authorization endpoints reference",
+      "url": "https://docs.datadoghq.com/extend/authorization/oauth2_endpoints/"
+    },
+    {
+      "id": "s4",
+      "title": "Datadog docs: Build an integration",
+      "url": "https://docs.datadoghq.com/extend/integrations/"
+    },
+    {
+      "id": "s5",
+      "title": "Datadog docs: Build an integration with Datadog (listing and publishing)",
+      "url": "https://docs.datadoghq.com/extend/integrations/build_integration/"
+    },
+    {
+      "id": "s6",
+      "title": "Datadog API: Authorization scopes",
+      "url": "https://docs.datadoghq.com/api/latest/scopes/"
+    },
+    {
+      "id": "s7",
+      "title": "Datadog Partner Portal",
+      "url": "https://partners.datadoghq.com/s/"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.datadoghq.com/oauth2/v1/authorize: 307 to /account/login (needs login)",
       "POST https://api.datadoghq.com/oauth2/v1/token with no body: {\"errors\": [\"unsupported_grant_type\"]}",

@@ -421,6 +421,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://be.contentful.com/oauth/authorize returned HTTP 200 (with and without dummy parameters; no login attempted)",
       "https://app.contentful.com/account/profile/developers/applications returned HTTP 200",

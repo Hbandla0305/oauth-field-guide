@@ -7,32 +7,64 @@
     "category": "Business phone"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth implementation guide", "url": "https://developer.aircall.io/docs/oauth" },
-    { "kind": "review", "label": "Build & launch process", "url": "https://developer.aircall.io/docs/launch-process" },
-    { "kind": "review", "label": "How to publish an app (partner requirements)", "url": "https://developer.aircall.io/docs/how-to-publish-an-app" },
-    { "kind": "api", "label": "API reference", "url": "https://developers.aircall.io/api-references" },
-    { "kind": "console", "label": "Technology Partner signup", "url": "https://aircall.io/partners/technology/signup/" }
+    {
+      "kind": "oauth",
+      "label": "OAuth implementation guide",
+      "url": "https://developer.aircall.io/docs/oauth"
+    },
+    {
+      "kind": "review",
+      "label": "Build & launch process",
+      "url": "https://developer.aircall.io/docs/launch-process"
+    },
+    {
+      "kind": "review",
+      "label": "How to publish an app (partner requirements)",
+      "url": "https://developer.aircall.io/docs/how-to-publish-an-app"
+    },
+    {
+      "kind": "api",
+      "label": "API reference",
+      "url": "https://developers.aircall.io/api-references"
+    },
+    {
+      "kind": "console",
+      "label": "Technology Partner signup",
+      "url": "https://aircall.io/partners/technology/signup/"
+    }
   ],
   "verdict": {
     "difficulty": "gated",
     "summary": "OAuth is only available to accepted Aircall Technology Partners. To be accepted you need a live product and an active customer base; Aircall then creates your dev and prod OAuth apps, reviews a demo before publishing, and lists you on the public Marketplace only after 10 customers. Once installed by a customer admin, the token is company-wide and never expires.",
     "timeToDev": {
       "range": "1–3 weeks",
-      "hours": { "min": 168, "max": 504 },
+      "hours": {
+        "min": 168,
+        "max": 504
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s2", "s3"],
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
         "note": "Partner application answered within 5 business days, then an integration plan, then Aircall creates the trial developer account and OAuth apps; only the 5-day figure is published."
       }
     },
     "timeToProd": {
       "range": "3–10 weeks",
-      "hours": { "min": 504, "max": 1680 },
+      "hours": {
+        "min": 504,
+        "max": 1680
+      },
       "assumes": "A Public App installable by any Aircall customer from the Dashboard (published after demo review); the public Marketplace listing comes later, at 10 customers.",
       "waitingOn": "Technology Partner acceptance (up to 5 business days), Aircall creating credentials, demo/asset review (1–5 business days) and publishing (3–5 business days), plus your own build time.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s2", "s3"],
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
         "note": "Review windows are sourced; the total includes estimated build time and the unpublished credential turnaround."
       }
     },
@@ -42,43 +74,89 @@
     {
       "item": "A live, established product with a company website and an active customer base",
       "why": "These are the stated requirements for Technology Partner acceptance, which OAuth depends on; meeting them doesn't guarantee approval.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Public HTTPS install URI and redirect URI(s) (no localhost)",
       "why": "Prod apps need an installation URI; both dev and prod accept up to five redirect URIs, and localhost isn't supported.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "Use a tunnel such as ngrok during development." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Use a tunnel such as ngrok during development."
+      }
     },
     {
       "item": "Demo video (5–10 min), two help-center articles, SVG logo and 3–5 screenshots",
       "why": "Required review assets before Aircall publishes the app.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Public API (OAuth, company-wide)",
-      "examples": ["public_api"],
+      "examples": [
+        "public_api"
+      ],
       "reviewRequired": true,
       "time": "3–10 weeks",
       "impact": "The only documented scope. Gives a company-scoped token for calls, users, contacts, numbers and webhooks once a customer admin installs the app.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": "Time is inferred from the launch process." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "Time is inferred from the launch process."
+      }
     },
     {
       "tier": "Entitlement-gated endpoints",
-      "examples": ["Conversation Intelligence trackers (AI Assist / AI Assist Pro)", "Analytics report export (Analytics+)"],
+      "examples": [
+        "Conversation Intelligence trackers (AI Assist / AI Assist Pro)",
+        "Analytics report export (Analytics+)"
+      ],
       "reviewRequired": true,
       "time": "Depends on customer plan",
       "impact": "Transcripts/AI and analytics data an agent may want only work for customers with the matching paid package.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Private app (API key, your own account only)",
-      "examples": ["Basic auth api_id:api_token"],
+      "examples": [
+        "Basic auth api_id:api_token"
+      ],
       "reviewRequired": false,
       "time": "Minutes",
       "impact": "Any Aircall customer can create API keys for their own company, but this can't be distributed to other customers.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -88,7 +166,13 @@
       "detail": "Confirm you have a live product, public website and active customers, and draft the partner application.",
       "url": "https://developer.aircall.io/docs/how-to-publish-an-app",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Apply to the Technology Partner program",
@@ -96,7 +180,13 @@
       "detail": "Submit the partner signup form.",
       "url": "https://aircall.io/partners/technology/signup/",
       "duration": "15 min",
-      "evidence": { "label": "tested", "sourceIds": ["s3"], "note": "Signup URL returned HTTP 200 on 2026-10-20; we didn't submit it." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Signup URL returned HTTP 200 on 2026-10-20; we didn't submit it."
+      }
     },
     {
       "title": "Wait for partner decision",
@@ -104,7 +194,13 @@
       "detail": "Aircall says it gets back within 5 business days and may decline at its discretion.",
       "url": null,
       "duration": "up to 5 business days",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Send the integration plan",
@@ -112,7 +208,13 @@
       "detail": "Draft a short plan (goals, what you'll build, main features) plus install URI and redirect URIs for dev and prod. Unanswered applications are discarded after a month.",
       "url": "https://developer.aircall.io/docs/launch-process",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Receive developer account and OAuth apps",
@@ -120,7 +222,13 @@
       "detail": "Aircall creates a 4-month trial developer account and separate dev and prod OAuth apps (client ID and secret).",
       "url": null,
       "duration": "Unknown",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "Turnaround not published." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Turnaround not published."
+      }
     },
     {
       "title": "Implement the install + OAuth flow",
@@ -128,7 +236,14 @@
       "detail": "Handle the GET to your install_uri, redirect to https://dashboard.aircall.io/oauth/authorize with client_id, redirect_uri, response_type=code, scope=public_api and state; exchange the code (valid 10 min, single use) via JSON POST to https://api.aircall.io/v1/oauth/token; verify with GET /v1/ping.",
       "url": "https://developer.aircall.io/docs/oauth",
       "duration": "2–4 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Build rate-limit and uninstall handling",
@@ -136,7 +251,14 @@
       "detail": "Respect 120 requests/min per company using X-AircallApi-Remaining/Reset, and handle uninstall/reinstall (a reinstall issues a new token).",
       "url": "https://developers.aircall.io/api-references",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Send progress updates during the build",
@@ -144,7 +266,13 @@
       "detail": "Aircall expects completion within 6 months and an update at least every 2 months, otherwise assets are decommissioned.",
       "url": "https://developer.aircall.io/docs/launch-process",
       "duration": "ongoing",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Record the demo and prepare listing assets",
@@ -152,7 +280,13 @@
       "detail": "Record a 5–10 minute demo; prepare the SVG logo from the Figma template and screenshots. An agent can draft the two help-center articles.",
       "url": "https://developer.aircall.io/docs/launch-process",
       "duration": "half a day",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Demo and asset review",
@@ -160,7 +294,13 @@
       "detail": "Aircall reviews the demo and assets.",
       "url": null,
       "duration": "1–5 business days",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Publication in the Aircall Dashboard",
@@ -168,7 +308,13 @@
       "detail": "Aircall publishes the app in the Dashboard (not yet the public Marketplace); customer admins can now install it.",
       "url": null,
       "duration": "3–5 business days",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Request Marketplace listing at 10 customers",
@@ -176,7 +322,13 @@
       "detail": "Email Aircall once 10 customers use the app to get listed on the public Marketplace; the trial dev account is then extended indefinitely.",
       "url": "https://developer.aircall.io/docs/launch-process",
       "duration": "minutes + unknown",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -197,71 +349,162 @@
       "symptom": "No way to create OAuth credentials in the Aircall dashboard",
       "cause": "OAuth is only for accepted Technology Partners; customers only get API keys.",
       "fix": "Apply to the partner program, or use an API key for a single-company private app.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Partner application declined",
       "cause": "No live product, website or active customer base, or Aircall's discretion.",
       "fix": "Reapply once you have paying customers and a public product.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Non-admin users are redirected away from the consent screen",
       "cause": "Only Aircall Admin users can approve and install integrations.",
       "fix": "Ask the customer's Aircall admin to install the app.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Redirect URI rejected during development",
       "cause": "Localhost URIs aren't supported.",
       "fix": "Use an HTTPS tunnel such as ngrok and register that URL.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Token exchange returns {\"message\":\"BadRequestException\",\"details\":\"Missing code field in body\"}",
       "cause": "The JSON body is missing code (or the code expired after 10 minutes).",
       "fix": "Send code, redirect_uri, client_id, client_secret and grant_type as JSON immediately after the callback.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed with an empty JSON POST on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed with an empty JSON POST on 2026-10-20."
+      }
     },
     {
       "symptom": "Developer account or OAuth apps disabled mid-build",
       "cause": "No progress update for over two months; Aircall decommissions assets after follow-ups.",
       "fix": "Send updates at least every two months.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "OAuth access tokens don't expire and have no refresh flow; a token is scoped to one Aircall company and replaced only on reinstall, so store it like a long-lived secret.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limit is 120 requests/minute per company, shared across all keys and tokens for that company; increases go through support.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "After publication the app shows in the Aircall Dashboard but not the public Marketplace until you reach 10 customers.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The developer account is a 4-month trial, extendable while you're in the program and made permanent after your first customers.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "AI data such as Conversation Intelligence trackers needs the customer to have AI Assist or AI Assist Pro, so an agent's features may vary per customer.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Aircall Developers: OAuth implementation guide", "url": "https://developer.aircall.io/docs/oauth" },
-    { "id": "s2", "title": "Aircall Developers: Build & launch process", "url": "https://developer.aircall.io/docs/launch-process" },
-    { "id": "s3", "title": "Aircall Developers: How to publish an app", "url": "https://developer.aircall.io/docs/how-to-publish-an-app" },
-    { "id": "s4", "title": "Aircall API reference", "url": "https://developers.aircall.io/api-references" },
-    { "id": "s5", "title": "Aircall Developers: Public vs private app", "url": "https://developer.aircall.io/docs/public-vs-private-app" }
+    {
+      "id": "s1",
+      "title": "Aircall Developers: OAuth implementation guide",
+      "url": "https://developer.aircall.io/docs/oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Aircall Developers: Build & launch process",
+      "url": "https://developer.aircall.io/docs/launch-process"
+    },
+    {
+      "id": "s3",
+      "title": "Aircall Developers: How to publish an app",
+      "url": "https://developer.aircall.io/docs/how-to-publish-an-app"
+    },
+    {
+      "id": "s4",
+      "title": "Aircall API reference",
+      "url": "https://developers.aircall.io/api-references"
+    },
+    {
+      "id": "s5",
+      "title": "Aircall Developers: Public vs private app",
+      "url": "https://developer.aircall.io/docs/public-vs-private-app"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://dashboard.aircall.io/oauth/authorize?client_id=x: HTTP 200",
       "POST https://api.aircall.io/v1/oauth/token with {}: {\"message\":\"BadRequestException\",\"details\":\"Missing code field in body\"}",

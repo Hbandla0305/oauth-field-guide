@@ -566,6 +566,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "Fetched https://accounts.google.com/.well-known/openid-configuration; authorization endpoint is https://accounts.google.com/o/oauth2/v2/auth.",
       "Unauthenticated GET to /youtube/v3/channels?mine=true returned 403 'Method doesn't allow unregistered callers'.",

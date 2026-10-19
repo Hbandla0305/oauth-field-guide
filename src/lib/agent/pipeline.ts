@@ -223,6 +223,8 @@ function normalise(g: Guide, screen: Screen, probe: DiscoveryProbe, pages: Page[
     verification: {
       status: "agent-generated",
       lastChecked: today(),
+      reviewedOn: null,
+      corrections: [],
       tested: probe.found
         ? [`Fetched ${probe.found.url} and read the authorization and token endpoints`]
         : [`Looked for OAuth discovery metadata at ${probe.checkedUrls.length} standard URLs; none found`],

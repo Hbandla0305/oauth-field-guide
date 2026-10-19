@@ -486,6 +486,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://developer.webex.com/my-apps/new/integration: 302 to the portal login",
       "GET https://webexapis.com/v1/authorize?client_id=x&response_type=code: 302 to idbroker-eu.webex.com/idb/oauth2/v1/authorize",

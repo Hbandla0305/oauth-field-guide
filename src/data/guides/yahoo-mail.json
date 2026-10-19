@@ -38,21 +38,34 @@
     "summary": "Sign in with Yahoo (openid, email, profile) is self-serve, but the mail scopes (mail-r, mail-w) used for IMAP/SMTP are 'not available for self-served setup': you apply through Yahoo's developer access form, show you meet its security and privacy requirements, and sign a commercial access agreement. Yahoo publishes no review timeline, and there is no REST Mail API, only IMAP/SMTP with OAUTHBEARER.",
     "timeToDev": {
       "range": "1–8 weeks",
-      "hours": { "min": 168, "max": 1344 },
+      "hours": {
+        "min": 168,
+        "max": 1344
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s2", "s5"],
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
         "note": "An OIDC sign-in app works in under an hour, but mail scopes don't work even for your own account until Yahoo approves the app. You can build the IMAP logic against your own mailbox with an app password in the meantime. The range is a guess, since Yahoo states no timeline."
       }
     },
     "timeToProd": {
       "range": "2–12 weeks",
-      "hours": { "min": 336, "max": 2016 },
+      "hours": {
+        "min": 336,
+        "max": 2016
+      },
       "assumes": "An agent that reads (mail-r) or sends/modifies (mail-w) a user's Yahoo mail over IMAP/SMTP. Sign-in-only apps are live the same day.",
       "waitingOn": "Yahoo's manual review of the developer access request, then the signed Commercial Access Agreement",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s2", "s5", "s6"],
+        "sourceIds": [
+          "s2",
+          "s5",
+          "s6"
+        ],
         "note": "Neither Yahoo nor Nylas gives a timeline. The range is our estimate for a manual, contract-based approval and should be read as unverified."
       }
     },
@@ -62,56 +75,122 @@
     {
       "item": "A Yahoo account to own the app in the developer console (YDN)",
       "why": "Apps are created at developer.yahoo.com/apps, and the access form asks for your YDN account.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A business identity, privacy policy and evidence of minimum security standards",
       "why": "Yahoo says applicants must provide clear information about the identity of the app and requester, and demonstrate they meet minimum security standards to be accepted.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "Yahoo doesn't name a specific assessment (such as CASA) or say how security is verified." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Yahoo doesn't name a specific assessment (such as CASA) or say how security is verified."
+      }
     },
     {
       "item": "A use case that serves Yahoo users directly, with no resale, ad targeting or profiling",
       "why": "Data may not be transferred or sold, used for advertising segments, or used for profiling, monetization or email engagement tracking.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "The policy doesn't mention AI or LLM processing specifically." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The policy doesn't mention AI or LLM processing specifically."
+      }
     },
     {
       "item": "An IMAP/SMTP client that supports SASL OAUTHBEARER (and XOAUTH2 for SMTP)",
       "why": "Yahoo offers no proprietary Mail REST API. Mail access is IMAP (imap.mail.yahoo.com:993) and SMTP (smtp.mail.yahoo.com:465) with OAuth bearer tokens.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Sign in with Yahoo (self-serve)",
-      "examples": ["openid", "email", "profile"],
+      "examples": [
+        "openid",
+        "email",
+        "profile"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Identity only. The discovery document lists only openid, openid2, profile and email as supported scopes.",
-      "evidence": { "label": "tested", "sourceIds": ["s4"], "note": "scopes_supported in the live discovery document on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "scopes_supported in the live discovery document on 2026-10-20."
+      }
     },
     {
       "tier": "Mail read (IMAP)",
-      "examples": ["mail-r"],
+      "examples": [
+        "mail-r"
+      ],
       "reviewRequired": true,
       "time": "Weeks (no stated SLA)",
       "impact": "Read mail over IMAP. Requires the developer access request and agreement. Until approval, community reports say sign-in succeeds but mail access is refused.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3", "s7"], "note": "The 'sign-in works, mail refused' behaviour comes from a community project and is unverified." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3",
+          "s7"
+        ],
+        "note": "The 'sign-in works, mail refused' behaviour comes from a community project and is unverified."
+      }
     },
     {
       "tier": "Mail read/write (IMAP + SMTP send)",
-      "examples": ["mail-w"],
+      "examples": [
+        "mail-w"
+      ],
       "reviewRequired": true,
       "time": "Weeks (no stated SLA)",
       "impact": "Needed to send via SMTP or move/flag/delete messages. Same approval path as mail-r. Pick Read/Write in the app's Mail permission.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Calendar and contacts (CalDAV/CardDAV)",
-      "examples": ["ycal-r", "ycal-w", "sdct-r", "sdct-w"],
+      "examples": [
+        "ycal-r",
+        "ycal-w",
+        "sdct-r",
+        "sdct-w"
+      ],
       "reviewRequired": true,
       "time": "Weeks (no stated SLA)",
       "impact": "Same commercial access program as mail. Request them on the same form if your agent needs them.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -123,7 +202,9 @@
       "duration": "5 min",
       "evidence": {
         "label": "tested",
-        "sourceIds": ["s8"],
+        "sourceIds": [
+          "s8"
+        ],
         "note": "https://developer.yahoo.com/apps/create/ returned 302 to login.yahoo.com on 2026-10-20. We did not sign in."
       }
     },
@@ -133,7 +214,14 @@
       "detail": "Enter name, description, homepage and redirect URI(s). Choose Confidential client, tick OpenID Connect Email and Profile, and pick Mail Read or Read/Write if the option is shown. Save the client ID and secret. Scopes are fixed on the app, not sent in the authorize request.",
       "url": "https://developer.yahoo.com/apps/create/",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s5", "s1"], "note": "Field names come from the Nylas guide. Yahoo's own docs don't show the form." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": "Field names come from the Nylas guide. Yahoo's own docs don't show the form."
+      }
     },
     {
       "title": "Draft the access request",
@@ -141,7 +229,13 @@
       "detail": "Write up the company identity, the exact use case (how the agent uses mail on the user's behalf), the scopes needed, data storage and retention, security controls, and a statement that data isn't sold, used for ad targeting or profiling.",
       "url": "https://senders.yahooinc.com/developer/developer-access/",
       "duration": "1–2 h",
-      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "Yahoo doesn't publish the form's fields. The content is drawn from the policy's requirements." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Yahoo doesn't publish the form's fields. The content is drawn from the policy's requirements."
+      }
     },
     {
       "title": "Submit the Yahoo Mail API access form",
@@ -149,7 +243,14 @@
       "detail": "Fill in the form with your YDN account email, set API required to IMAP (and CalDAV/CardDAV if needed), and paste the drafted justification. Questions go to mail-api@yahooinc.com.",
       "url": "https://senders.yahooinc.com/developer/developer-access-mail-form/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s5", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Build IMAP logic with an app password while you wait",
@@ -157,7 +258,14 @@
       "detail": "Have the developer generate an app password on their own account and use it to build the IMAP fetch/search and SMTP send code. Swap in OAUTHBEARER once approved. Don't ship app-password collection to end users.",
       "url": "https://senders.yahooinc.com/developer/documentation/",
       "duration": "varies",
-      "evidence": { "label": "inferred", "sourceIds": ["s5", "s3"], "note": "Nylas documents app passwords as an IMAP option. Using them as a dev stopgap is our suggestion." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s3"
+        ],
+        "note": "Nylas documents app passwords as an IMAP option. Using them as a dev stopgap is our suggestion."
+      }
     },
     {
       "title": "Yahoo reviews the request",
@@ -165,7 +273,14 @@
       "detail": "Yahoo emails when it approves the request or needs more details. No timeline is published.",
       "url": null,
       "duration": "unknown (weeks)",
-      "evidence": { "label": "sourced", "sourceIds": ["s5", "s6"], "note": "The duration is not published." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": "The duration is not published."
+      }
     },
     {
       "title": "Sign and return the Commercial Access Agreement",
@@ -173,7 +288,14 @@
       "detail": "Yahoo sends a 'Yahoo Mail Products Commercial Access Agreement'. Have someone with signing authority review and return it.",
       "url": null,
       "duration": "days (legal review)",
-      "evidence": { "label": "sourced", "sourceIds": ["s5", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -181,7 +303,14 @@
       "detail": "Redirect to https://api.login.yahoo.com/oauth2/request_auth?client_id=...&redirect_uri=...&response_type=code&state=.... Exchange at POST https://api.login.yahoo.com/oauth2/get_token with HTTP Basic client auth. PKCE S256 is advertised in the discovery document.",
       "url": "https://developer.yahoo.com/oauth2/guide/flows_authcode/",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Connect to IMAP/SMTP with OAUTHBEARER",
@@ -189,7 +318,13 @@
       "detail": "Check the CAPABILITY response for AUTH=OAUTHBEARER, then AUTHENTICATE OAUTHBEARER on imap.mail.yahoo.com:993. Send the IMAP ID NAME as the partner name or ID assigned during approval. For SMTP use smtp.mail.yahoo.com:465 with whichever of OAUTHBEARER/XOAUTH2 the server advertises.",
       "url": "https://senders.yahooinc.com/developer/documentation/",
       "duration": "2–4 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test with a non-developer Yahoo account",
@@ -197,7 +332,13 @@
       "detail": "Connect a second account, confirm the consent screen lists mail access, and confirm IMAP login succeeds. Then revoke the app from Yahoo account settings and check your app handles the dead refresh token.",
       "url": null,
       "duration": "20 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -217,69 +358,168 @@
       "symptom": "Mail scopes don't show up, or can't be enabled, in the developer console",
       "cause": "IMAP, CalDAV and CardDAV scopes are not available for self-served setup.",
       "fix": "Submit the developer access form. Approved scopes then appear in your app profile.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Sign-in succeeds but IMAP AUTHENTICATE fails / mail access is refused",
       "cause": "The app hasn't been approved for mail-r/mail-w yet.",
       "fix": "Wait for approval, then have users re-consent so their tokens carry the mail scope.",
-      "evidence": { "label": "unverified", "sourceIds": ["s7"], "note": "From a community project's PR, not Yahoo docs." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "From a community project's PR, not Yahoo docs."
+      }
     },
     {
       "symptom": "'Bad scope' / invalid scope error at the authorize step",
       "cause": "The requested scope isn't in the app's registered permissions, or both mail-r and mail-w were requested together.",
       "fix": "Request only the permissions configured on the app, and use mail-w alone for read/write.",
-      "evidence": { "label": "unverified", "sourceIds": ["s5"], "note": "The mail-r + mail-w conflict is stated by Nylas for its connector. The 'Bad scope' string is from forum reports." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "The mail-r + mail-w conflict is stated by Nylas for its connector. The 'Bad scope' string is from forum reports."
+      }
     },
     {
       "symptom": "Login is inconsistent right after adding a redirect URI",
       "cause": "Redirect URI registration can take up to 24 hours to propagate.",
       "fix": "Register production redirect URIs a day ahead of launch.",
-      "evidence": { "label": "unverified", "sourceIds": ["s5"], "note": "Stated by Nylas, not in Yahoo's docs." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Stated by Nylas, not in Yahoo's docs."
+      }
     },
     {
       "symptom": "Refresh fails with invalid_grant",
       "cause": "The user revoked access, or you kept an old refresh token after Yahoo issued a new one (the old one is revoked).",
       "fix": "Store the refresh token returned on every refresh, and re-prompt the user if it's revoked.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The invalid_grant string is the standard OAuth error, not quoted by Yahoo." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The invalid_grant string is the standard OAuth error, not quoted by Yahoo."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens last 1 hour. Refresh tokens are long-lived, survive password changes, and may be rotated on refresh, so persist the newest one.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Scopes are configured on the app, not passed in the authorize request, so changing mail permissions changes what every new consent grants.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Yahoo and AOL are separate namespaces and need separate client credentials, even though they share a parent company.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "There is no Yahoo Mail REST/JSON API. Search, threading and parsing are your IMAP client's job, which adds real engineering for an agent.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "Yahoo says it no longer supports proprietary Mail APIs." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Yahoo says it no longer supports proprietary Mail APIs."
+      }
     },
     {
       "text": "Data-use terms bar resale, ad targeting, and profiling for personalization, monetization or engagement tracking. AI processing isn't addressed, so describe any LLM use plainly in your request.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "The advice to disclose LLM use is our inference." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The advice to disclose LLM use is our inference."
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Yahoo developer: OAuth 2.0 authorization code flow", "url": "https://developer.yahoo.com/oauth2/guide/flows_authcode/" },
-    { "id": "s2", "title": "Yahoo Sender Hub: Developer access policy", "url": "https://senders.yahooinc.com/developer/developer-access/" },
-    { "id": "s3", "title": "Yahoo Sender Hub: Developer documentation (IMAP/SMTP OAuth, scopes)", "url": "https://senders.yahooinc.com/developer/documentation/" },
-    { "id": "s4", "title": "Yahoo OpenID Connect discovery document", "url": "https://api.login.yahoo.com/.well-known/openid-configuration" },
-    { "id": "s5", "title": "Nylas: Authenticating Yahoo accounts (third-party guide)", "url": "https://developer.nylas.com/docs/provider-guides/yahoo-authentication.md" },
-    { "id": "s6", "title": "Nylas cookbook: How to list Yahoo email messages (third-party)", "url": "https://developer.nylas.com/docs/cookbook/email/messages/list-messages-yahoo.md" },
-    { "id": "s7", "title": "Community: OpenOptOut PR #100 (Yahoo mail scope approval)", "url": "https://github.com/rlnunez/OpenOptOut/pull/100" },
-    { "id": "s8", "title": "Yahoo developer console: create app", "url": "https://developer.yahoo.com/apps/create/" },
-    { "id": "s9", "title": "Yahoo developer: OAuth 2.0 guide overview", "url": "https://developer.yahoo.com/oauth2/guide/" }
+    {
+      "id": "s1",
+      "title": "Yahoo developer: OAuth 2.0 authorization code flow",
+      "url": "https://developer.yahoo.com/oauth2/guide/flows_authcode/"
+    },
+    {
+      "id": "s2",
+      "title": "Yahoo Sender Hub: Developer access policy",
+      "url": "https://senders.yahooinc.com/developer/developer-access/"
+    },
+    {
+      "id": "s3",
+      "title": "Yahoo Sender Hub: Developer documentation (IMAP/SMTP OAuth, scopes)",
+      "url": "https://senders.yahooinc.com/developer/documentation/"
+    },
+    {
+      "id": "s4",
+      "title": "Yahoo OpenID Connect discovery document",
+      "url": "https://api.login.yahoo.com/.well-known/openid-configuration"
+    },
+    {
+      "id": "s5",
+      "title": "Nylas: Authenticating Yahoo accounts (third-party guide)",
+      "url": "https://developer.nylas.com/docs/provider-guides/yahoo-authentication.md"
+    },
+    {
+      "id": "s6",
+      "title": "Nylas cookbook: How to list Yahoo email messages (third-party)",
+      "url": "https://developer.nylas.com/docs/cookbook/email/messages/list-messages-yahoo.md"
+    },
+    {
+      "id": "s7",
+      "title": "Community: OpenOptOut PR #100 (Yahoo mail scope approval)",
+      "url": "https://github.com/rlnunez/OpenOptOut/pull/100"
+    },
+    {
+      "id": "s8",
+      "title": "Yahoo developer console: create app",
+      "url": "https://developer.yahoo.com/apps/create/"
+    },
+    {
+      "id": "s9",
+      "title": "Yahoo developer: OAuth 2.0 guide overview",
+      "url": "https://developer.yahoo.com/oauth2/guide/"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://api.login.yahoo.com/.well-known/openid-configuration: issuer https://api.login.yahoo.com, scopes_supported [openid, openid2, profile, email], PKCE S256, client_secret_basic/post, revocation endpoint present",
       "GET https://developer.yahoo.com/apps/create/: 302 to login.yahoo.com (needs login)",

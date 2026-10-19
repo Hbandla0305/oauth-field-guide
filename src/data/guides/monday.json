@@ -7,32 +7,64 @@
     "category": "Work management"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth 2.0 guide", "url": "https://developer.monday.com/apps/docs/oauth" },
-    { "kind": "changelog", "label": "OAuth 2.1 migration guide", "url": "https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow" },
-    { "kind": "console", "label": "Install and share your app", "url": "https://developer.monday.com/apps/docs/install-and-share-your-apps" },
-    { "kind": "review", "label": "Marketplace submission", "url": "https://developer.monday.com/apps/docs/submit-your-app" },
-    { "kind": "api", "label": "API rate limits", "url": "https://developer.monday.com/api-reference/docs/rate-limits" }
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 guide",
+      "url": "https://developer.monday.com/apps/docs/oauth"
+    },
+    {
+      "kind": "changelog",
+      "label": "OAuth 2.1 migration guide",
+      "url": "https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow"
+    },
+    {
+      "kind": "console",
+      "label": "Install and share your app",
+      "url": "https://developer.monday.com/apps/docs/install-and-share-your-apps"
+    },
+    {
+      "kind": "review",
+      "label": "Marketplace submission",
+      "url": "https://developer.monday.com/apps/docs/submit-your-app"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits",
+      "url": "https://developer.monday.com/api-reference/docs/rate-limits"
+    }
   ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "Building an OAuth app is self-serve, and a public app can be installed by any monday.com account through a share link without review, though unreviewed apps show a 'not vetted by monday.com' banner. The required config is the new OAuth 2.1 flow (PKCE, expiring access tokens, rotating refresh tokens), which replaced non-expiring legacy tokens in 2026; Marketplace listing is optional and gated by a duplication policy.",
     "timeToDev": {
       "range": "30–90 min",
-      "hours": { "min": 0.5, "max": 1.5 },
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "Create the app in the Developer Center, set scopes and redirect URLs on the OAuth tab, turn on the New OAuth Flow for a draft version, then authorize your own account. No review is involved."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 2, "max": 24 },
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
       "assumes": "An unlisted public app shared via its install URL, which is enough for an agent reading and writing boards. A Marketplace listing is a slower, optional path (weeks to months).",
       "waitingOn": "No review needed for share-link installs. Marketplace listing waits on monday's review board (first response within 72 business hours).",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3", "s4"],
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
         "note": "The share docs say you can 'share the URL with anyone so they can install the app'. Unvetted apps show a banner."
       }
     },
@@ -42,56 +74,129 @@
     {
       "item": "A monday.com account (a free developer account is available)",
       "why": "Apps are created and managed in the Developer Center inside a monday.com account. The developer sign-up includes extended trial benefits for testing.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "item": "An HTTPS redirect URL registered on the app's OAuth tab",
       "why": "redirect_uri has to match one of the app's configured redirect URLs, and errors also redirect there.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs we read didn't say whether http://localhost is accepted." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The docs we read didn't say whether http://localhost is accepted."
+      }
     },
     {
       "item": "The app set to public (not private) before sharing",
       "why": "Private apps are limited to one account: 'Users outside of the account can't access or use the app.'",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "item": "PKCE (S256) and refresh-token handling in your OAuth client",
       "why": "The OAuth 2.1 flow requires PKCE with S256 only and issues expiring access tokens with rotating refresh tokens.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Identity and read-only workspace data",
-      "examples": ["me:read", "account:read", "users:read", "workspaces:read", "boards:read", "docs:read", "updates:read"],
+      "examples": [
+        "me:read",
+        "account:read",
+        "users:read",
+        "workspaces:read",
+        "boards:read",
+        "docs:read",
+        "updates:read"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Enough for an agent that reads boards, items, docs and updates. Installable from a share link with no review.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": "No monday doc we read ties any scope to review." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "No monday doc we read ties any scope to review."
+      }
     },
     {
       "tier": "Write scopes",
-      "examples": ["boards:write", "docs:write", "updates:write", "notifications:write", "webhooks:write"],
+      "examples": [
+        "boards:write",
+        "docs:write",
+        "updates:write",
+        "notifications:write",
+        "webhooks:write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Lets the agent create items, post updates and subscribe to webhooks. Same self-serve path; the user sees the write permissions on the consent screen.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s3"], "note": "No review requirement per scope is documented." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "No review requirement per scope is documented."
+      }
     },
     {
       "tier": "Newer scopes listed only in OAuth discovery metadata",
-      "examples": ["items:read", "items:write", "ai:consume", "apps:read", "apps:write"],
+      "examples": [
+        "items:read",
+        "items:write",
+        "ai:consume",
+        "apps:read",
+        "apps:write"
+      ],
       "reviewRequired": false,
       "time": "Unknown",
       "impact": "These appear in the live authorization-server metadata but not in the scopes table of the OAuth guide we read, so check the API reference before relying on them.",
-      "evidence": { "label": "tested", "sourceIds": ["s7"], "note": "Seen in scopes_supported at auth.monday.com/oauth_ms/.well-known/oauth-authorization-server on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Seen in scopes_supported at auth.monday.com/oauth_ms/.well-known/oauth-authorization-server on 2026-10-20."
+      }
     },
     {
       "tier": "Marketplace listing (any scopes)",
-      "examples": ["boards:read", "boards:write"],
+      "examples": [
+        "boards:read",
+        "boards:write"
+      ],
       "reviewRequired": true,
       "time": "Weeks to months",
       "impact": "Removes the unvetted banner and makes the app discoverable. Review covers product, engineering, security, privacy, content, support, documentation and legal.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "Duration isn't stated beyond the 72-business-hour first response; 'weeks to months' is from community reports." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Duration isn't stated beyond the 72-business-hour first response; 'weeks to months' is from community reports."
+      }
     }
   ],
   "steps": [
@@ -101,7 +206,13 @@
       "detail": "Sign up for a monday.com developer account, or use an existing account where you can build apps.",
       "url": "https://auth.monday.com/users/sign_up_new?developer=true",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create the app in the Developer Center",
@@ -109,7 +220,13 @@
       "detail": "In monday.com open the Developer Center, create an app, and note the Client ID and Client Secret.",
       "url": "https://developer.monday.com/apps/docs/intro",
       "duration": "5 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "We didn't confirm the exact Developer Center URL; it lives inside your monday account." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "We didn't confirm the exact Developer Center URL; it lives inside your monday account."
+      }
     },
     {
       "title": "Pick least-privilege scopes",
@@ -117,7 +234,13 @@
       "detail": "Map the API calls your agent needs to scopes (for example boards:read, updates:write) using the API reference. Requested scopes must be a subset of those configured on the app.",
       "url": "https://developer.monday.com/apps/docs/oauth",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Configure OAuth & Permissions",
@@ -125,7 +248,13 @@
       "detail": "On the OAuth & Permissions tab, add the scopes and HTTPS redirect URLs. Create a draft version and turn on the New OAuth Flow toggle (it is set per version).",
       "url": "https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the OAuth 2.1 flow",
@@ -133,7 +262,14 @@
       "detail": "Redirect to https://auth.monday.com/oauth2/authorize with client_id, redirect_uri, state and an S256 code_challenge. Exchange the code (valid 10 minutes) at https://auth.monday.com/oauth_ms/oauth/token with the code_verifier. Store the newest refresh token after every refresh.",
       "url": "https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test with your own account",
@@ -141,7 +277,14 @@
       "detail": "Set the draft version 'Active for me' and authorize. App collaborators can target a draft with the app_version_id parameter.",
       "url": null,
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Promote the version to live",
@@ -149,7 +292,14 @@
       "detail": "Promote the tested draft. Without app_version_id, the flow uses the live version's settings.",
       "url": null,
       "duration": "2 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Share the app",
@@ -157,7 +307,13 @@
       "detail": "On the Share tab accept the developer terms, click Share App and copy the install URL. You can restrict it to specific monday accounts. Any account with the URL can then install it.",
       "url": "https://developer.monday.com/apps/docs/install-and-share-your-apps",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optional: prepare the Marketplace submission",
@@ -165,7 +321,14 @@
       "detail": "Check the Marketplace for duplicate integrations, then draft listing copy, support docs and privacy answers against the listing guidelines and review checklist.",
       "url": "https://developer.monday.com/apps/docs/submit-your-app",
       "duration": "1–2 days",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optional: submit and go through the review board",
@@ -173,7 +336,14 @@
       "detail": "Submit from the Submit app tab using the auth.monday.com share link. Expect a first response within 72 business hours, then an invite to a review board that tracks fixes.",
       "url": "https://developer.monday.com/apps/docs/submit-your-app",
       "duration": "Weeks to months",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5"], "note": "Total duration comes from community reports, not official docs." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": "Total duration comes from community reports, not official docs."
+      }
     }
   ],
   "agentCanDo": [
@@ -194,79 +364,192 @@
       "symptom": "Users outside your account can't install or use the app",
       "cause": "The app is private, and private apps are limited to one account.",
       "fix": "Make the app public and share it from the Share tab.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Legacy access tokens stopped working after October 1, 2026",
       "cause": "monday required all apps to move to the OAuth 2.1 flow by that date.",
       "fix": "Enable the New OAuth Flow on a version, promote it, and convert old tokens one at a time with the temporary /oauth_ms/oauth/migrate endpoint while it still exists.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5b", "s2"], "note": "The deadline is from monday's community announcement. The migration guide itself gives no date." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5b",
+          "s2"
+        ],
+        "note": "The deadline is from monday's community announcement. The migration guide itself gives no date."
+      }
     },
     {
       "symptom": "Token exchange fails after adding the new flow",
       "cause": "A code_challenge was sent but no code_verifier, the verifier length is outside 43–128 characters, or the old /oauth2/token endpoint was used.",
       "fix": "Use S256, send the code_verifier to https://auth.monday.com/oauth_ms/oauth/token.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Users are forced to re-authorize after a long quiet period",
       "cause": "Re-authorization is needed if the refresh token goes unused for more than 3 months.",
       "fix": "Refresh tokens on a schedule for idle installs, and always store the rotated refresh token.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5b"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5b"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Marketplace submission declined as duplicate",
       "cause": "monday no longer accepts apps that duplicate existing Marketplace functionality or integrations, or apps built primarily with no-code tools or AI-generated 'vibe code'.",
       "fix": "Stay on share-link distribution, or differentiate the app before submitting.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "API calls fail with daily limit errors on small customer accounts",
       "cause": "Daily call limits depend on the customer's plan: 1,000 on Free/Standard/Basic, 10,000 on Pro, 25,000 on Enterprise.",
       "fix": "Batch reads into fewer GraphQL queries and cache results.",
-      "evidence": { "label": "sourced", "sourceIds": ["s8"], "note": "The page doesn't say whether the daily limit is shared across all apps on an account." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "The page doesn't say whether the daily limit is shared across all apps on an account."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Under OAuth 2.1, access tokens are short-lived (read the JWT exp claim; a monday team member's example was about a day) and every refresh returns a new refresh token. The original 6-month hard cap was dropped in a July 27, 2026 update.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s5b"], "note": "The one-day figure is from a staff example, not a documented constant." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5b"
+        ],
+        "note": "The one-day figure is from a staff example, not a documented constant."
+      }
     },
     {
       "text": "Users can belong to several accounts. Add subdomain=<slug> to the authorize URL to lock the account choice, or build the URL on the account's subdomain to preselect it.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limits are complexity-based: app tokens get 5,000,000 complexity points per minute for reads and for writes, plus concurrency caps of 40–250 by plan and 5,000 requests per 10 seconds per IP.",
-      "evidence": { "label": "sourced", "sourceIds": ["s8"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Apps installed from a share link without monday approval show a banner saying monday.com hasn't vetted them, which can hurt conversion with cautious admins.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The OAuth authorization server advertises a dynamic client registration endpoint (/oauth_ms/oauth/register), likely aimed at MCP clients. We found no docs on using it for production apps.",
-      "evidence": { "label": "tested", "sourceIds": ["s7"], "note": "Observed in the discovery metadata on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Observed in the discovery metadata on 2026-10-20."
+      }
     },
     {
       "text": "If the app isn't installed on the account yet, force_install_if_needed sends the user to the install page first.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "monday.com Apps docs: OAuth", "url": "https://developer.monday.com/apps/docs/oauth" },
-    { "id": "s2", "title": "monday.com Apps docs: Migrating to the new OAuth 2.1 flow", "url": "https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow" },
-    { "id": "s3", "title": "monday.com Apps docs: Install and share your apps", "url": "https://developer.monday.com/apps/docs/install-and-share-your-apps" },
-    { "id": "s4", "title": "monday.com Apps docs: Submit your app to the marketplace", "url": "https://developer.monday.com/apps/docs/submit-your-app" },
-    { "id": "s5", "title": "monday developer community: How long does the review process take", "url": "https://developer-community.monday.com/api-apps-framework-4/how-long-does-the-review-process-take-to-publish-an-app-4156" },
-    { "id": "s5b", "title": "monday developer community: OAuth 2.1 is now open for all monday developers", "url": "https://developer-community.monday.com/product-updates/oauth-2-1-is-now-open-for-all-monday-developers-5326" },
-    { "id": "s6", "title": "monday.com Apps docs: Planning your app", "url": "https://developer.monday.com/apps/docs/monday-app-development-process" },
-    { "id": "s7", "title": "monday.com OAuth authorization server metadata", "url": "https://auth.monday.com/oauth_ms/.well-known/oauth-authorization-server" },
-    { "id": "s8", "title": "monday.com API reference: Rate limits", "url": "https://developer.monday.com/api-reference/docs/rate-limits" }
+    {
+      "id": "s1",
+      "title": "monday.com Apps docs: OAuth",
+      "url": "https://developer.monday.com/apps/docs/oauth"
+    },
+    {
+      "id": "s2",
+      "title": "monday.com Apps docs: Migrating to the new OAuth 2.1 flow",
+      "url": "https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow"
+    },
+    {
+      "id": "s3",
+      "title": "monday.com Apps docs: Install and share your apps",
+      "url": "https://developer.monday.com/apps/docs/install-and-share-your-apps"
+    },
+    {
+      "id": "s4",
+      "title": "monday.com Apps docs: Submit your app to the marketplace",
+      "url": "https://developer.monday.com/apps/docs/submit-your-app"
+    },
+    {
+      "id": "s5",
+      "title": "monday developer community: How long does the review process take",
+      "url": "https://developer-community.monday.com/api-apps-framework-4/how-long-does-the-review-process-take-to-publish-an-app-4156"
+    },
+    {
+      "id": "s5b",
+      "title": "monday developer community: OAuth 2.1 is now open for all monday developers",
+      "url": "https://developer-community.monday.com/product-updates/oauth-2-1-is-now-open-for-all-monday-developers-5326"
+    },
+    {
+      "id": "s6",
+      "title": "monday.com Apps docs: Planning your app",
+      "url": "https://developer.monday.com/apps/docs/monday-app-development-process"
+    },
+    {
+      "id": "s7",
+      "title": "monday.com OAuth authorization server metadata",
+      "url": "https://auth.monday.com/oauth_ms/.well-known/oauth-authorization-server"
+    },
+    {
+      "id": "s8",
+      "title": "monday.com API reference: Rate limits",
+      "url": "https://developer.monday.com/api-reference/docs/rate-limits"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://auth.monday.com/oauth_ms/.well-known/oauth-authorization-server: issuer https://auth.monday.com, token /oauth_ms/oauth/token, registration and revocation endpoints, S256 only, scopes include items:read and ai:consume",
       "GET https://auth.monday.com/oauth2/authorize with no params: HTTP 400",

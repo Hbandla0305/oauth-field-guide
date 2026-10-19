@@ -518,6 +518,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://oauth.pipedrive.com/oauth/authorize with a bogus client_id: HTTP 401",
       "POST https://oauth.pipedrive.com/oauth/token with no body: HTTP 400 {\"error\":\"invalid_request\",\"message\":\"Invalid request: content must be application/x-www-form-urlencoded\"}",

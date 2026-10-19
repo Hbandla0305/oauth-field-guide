@@ -38,21 +38,33 @@
     "summary": "Registering an OAuth app is self-serve with no review or approval step described, API use is free, and any WordPress.com user (including Jetpack-connected self-hosted sites, with a global token) can authorize the same day. The main decisions are per-blog vs. 'global' tokens, and the classic /oauth2 endpoints vs. the newer OAuth 2.1 endpoints (PKCE, refresh tokens) advertised in WordPress.com's discovery document.",
     "timeToDev": {
       "range": "15–60 min",
-      "hours": { "min": 0.25, "max": 1 },
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "Create an app at developer.wordpress.com/apps/new, copy the client ID and secret, and run the code flow. There's no review."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 1, "max": 24 },
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
       "assumes": "An agent that reads or writes posts, media, comments or stats on users' WordPress.com or Jetpack sites via REST API tokens.",
       "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": "Neither the OAuth2 docs nor the API guidelines describe an app approval process. Automattic can terminate access at its discretion."
       }
     },
@@ -62,43 +74,95 @@
     {
       "item": "A WordPress.com account",
       "why": "Apps are created in the Applications manager, which redirects to WordPress.com login.",
-      "evidence": { "label": "tested", "sourceIds": ["s2"], "note": "https://developer.wordpress.com/apps/new/ returned 302 to wp-login.php on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "https://developer.wordpress.com/apps/new/ returned 302 to wp-login.php on 2026-10-20."
+      }
     },
     {
       "item": "An HTTPS redirect URI that matches exactly",
       "why": "All OAuth2 communication has to use HTTPS, and redirect_uri has to match the registered URI exactly (even a trailing slash matters).",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs don't address http://localhost for development." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The docs don't address http://localhost for development."
+      }
     },
     {
       "item": "A decision on per-blog vs. global access",
       "why": "Default tokens cover one blog. The global scope covers all of the user's WordPress.com sites and connected Jetpack sites.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Sign-in only",
-      "examples": ["auth", "openid", "profile", "email"],
+      "examples": [
+        "auth",
+        "openid",
+        "profile",
+        "email"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "auth limits the token to the /me endpoint. The OAuth 2.1 discovery document also advertises OIDC scopes and a userinfo endpoint.",
-      "evidence": { "label": "tested", "sourceIds": ["s1", "s4"], "note": "OIDC scopes observed in the live discovery document." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "OIDC scopes observed in the live discovery document."
+      }
     },
     {
       "tier": "Per-blog content scopes (default)",
-      "examples": ["posts", "media", "comments", "taxonomy", "stats", "sites", "menus"],
+      "examples": [
+        "posts",
+        "media",
+        "comments",
+        "taxonomy",
+        "stats",
+        "sites",
+        "menus"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "The token is bound to one blog (blog_id and blog_url are returned with it). Good for an agent that drafts posts or moderates comments on one site.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Global access",
-      "examples": ["global"],
+      "examples": [
+        "global"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Access to all of the user's WordPress.com sites and connected Jetpack sites. The docs advise requesting it only when truly needed, but no approval is described.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -108,7 +172,14 @@
       "detail": "In the Applications manager, create a new app with name, description, website, redirect URL(s) and type. Copy the Client ID and Client Secret.",
       "url": "https://developer.wordpress.com/apps/new/",
       "duration": "5–10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "Form fields beyond the redirect URI weren't observed because we didn't sign in." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Form fields beyond the redirect URI weren't observed because we didn't sign in."
+      }
     },
     {
       "title": "Choose classic OAuth2 or the OAuth 2.1 endpoints",
@@ -118,7 +189,10 @@
       "duration": "30 min",
       "evidence": {
         "label": "tested",
-        "sourceIds": ["s4", "s5"],
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
         "note": "The discovery document was observed on 2026-10-20. We found no developer guide for using /oauth2-1 with your own registered app, so treat that path as less documented."
       }
     },
@@ -128,7 +202,13 @@
       "detail": "Default to a single-blog token with only the scopes needed (for example, posts and media). Use global only if the agent truly works across many sites.",
       "url": "https://developer.wordpress.com/docs/api/oauth2/",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -136,7 +216,13 @@
       "detail": "Redirect to https://public-api.wordpress.com/oauth2/authorize?client_id=...&redirect_uri=...&response_type=code&scope=...&state=... (optionally blog=<id or URL>). POST the code to /oauth2/token with client_id, client_secret, redirect_uri, code and grant_type=authorization_code. Store access_token with blog_id/blog_url.",
       "url": "https://developer.wordpress.com/docs/api/oauth2/",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Validate tokens and handle expiry",
@@ -144,7 +230,14 @@
       "detail": "Use GET /oauth2/token-info?client_id=...&token=... to confirm user, blog and scope. Implicit tokens are documented to expire after two weeks, and code-flow expiry isn't documented, so treat a 401 as 'reconnect' (or use the 2.1 refresh_token grant).",
       "url": "https://developer.wordpress.com/docs/api/oauth2/",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test against WordPress.com and Jetpack sites",
@@ -152,7 +245,13 @@
       "detail": "Authorize with a second account that owns a WordPress.com site and, if relevant, a Jetpack-connected self-hosted site. Confirm the consent screen and API calls work for both.",
       "url": null,
       "duration": "20–30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs say the endpoints work consistently for WordPress.com and Jetpack-connected sites." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The docs say the endpoints work consistently for WordPress.com and Jetpack-connected sites."
+      }
     },
     {
       "title": "Review the API usage guidelines",
@@ -160,7 +259,13 @@
       "detail": "Check the product against Automattic's terms: no excessive calls, refresh cached data at reasonable intervals, never store user passwords, don't use 'WordPress'/'Automattic' branding without consent, and don't use user data to market competing products.",
       "url": "https://developer.wordpress.com/docs/api/guidelines-for-responsible-use-of-automattics-apis/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Launch",
@@ -168,7 +273,14 @@
       "detail": "Switch to production redirect URIs. No submission or review is described, so any WordPress.com user can connect.",
       "url": null,
       "duration": ", ",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s3"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -187,67 +299,159 @@
       "symptom": "Authorization fails with a redirect_uri mismatch",
       "cause": "The redirect_uri differs from the registered URI, even by a trailing slash.",
       "fix": "Register and send the exact same URI.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "{\"error\":\"invalid_client\",\"error_description\":\"The required \\\"client_id\\\" parameter is missing.\"}",
       "cause": "The token request is missing client credentials.",
       "fix": "POST client_id, client_secret, code, redirect_uri and grant_type as form fields.",
-      "evidence": { "label": "tested", "sourceIds": ["s6"], "note": "Empty POST to /oauth2/token on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Empty POST to /oauth2/token on 2026-10-20."
+      }
     },
     {
       "symptom": "The agent can only see one of the user's sites",
       "cause": "Tokens default to single-blog access.",
       "fix": "Request the global scope if you need all sites, or run one authorization per blog.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "API calls start returning 401 after a while",
       "cause": "The token expired (implicit tokens after two weeks) or the user revoked access.",
       "fix": "Prefer the code flow, check tokens with token-info, and send the user through consent again, or use the OAuth 2.1 refresh grant.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Password grant works locally but not for customers",
       "cause": "The password grant only works with your own credentials and is for development only.",
       "fix": "Use the authorization code flow in production. With 2FA on, use an Application Password for local testing.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "The classic docs describe no refresh tokens and conflict on lifetime (implicit tokens 'expire after two weeks', but the example shows expires_in=64800). The OAuth 2.1 discovery document does list a refresh_token grant.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "No numeric rate limits are published. Automattic only prohibits 'excessive API calls' as it determines in its sole discretion.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "API use is free, and stored WordPress.com data has to be refreshed at reasonable intervals. Automattic can end access at any time with or without cause.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "WordPress.com runs its own MCP server (OAuth 2.1 with PKCE and dynamic client registration) on paid plans, free sites for their first 30 days, and Jetpack AI/Complete. Users may connect AI clients directly without your app.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The API guidelines say nothing about AI/ML use. The restriction that does apply is not using user information to market products that compete with Automattic.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "WordPress.com developer docs: OAuth2 authentication", "url": "https://developer.wordpress.com/docs/api/oauth2/" },
-    { "id": "s2", "title": "WordPress.com Applications manager (new app)", "url": "https://developer.wordpress.com/apps/new/" },
-    { "id": "s3", "title": "Guidelines for responsible use of Automattic's APIs", "url": "https://developer.wordpress.com/docs/api/guidelines-for-responsible-use-of-automattics-apis/" },
-    { "id": "s4", "title": "WordPress.com OpenID/OAuth discovery document", "url": "https://public-api.wordpress.com/.well-known/openid-configuration" },
-    { "id": "s5", "title": "WordPress.com developer docs: MCP server", "url": "https://developer.wordpress.com/docs/mcp/" },
-    { "id": "s6", "title": "WordPress.com OAuth2 token endpoint", "url": "https://public-api.wordpress.com/oauth2/token" },
-    { "id": "s7", "title": "WordPress.com developer docs: REST API overview", "url": "https://developer.wordpress.com/docs/api/" }
+    {
+      "id": "s1",
+      "title": "WordPress.com developer docs: OAuth2 authentication",
+      "url": "https://developer.wordpress.com/docs/api/oauth2/"
+    },
+    {
+      "id": "s2",
+      "title": "WordPress.com Applications manager (new app)",
+      "url": "https://developer.wordpress.com/apps/new/"
+    },
+    {
+      "id": "s3",
+      "title": "Guidelines for responsible use of Automattic's APIs",
+      "url": "https://developer.wordpress.com/docs/api/guidelines-for-responsible-use-of-automattics-apis/"
+    },
+    {
+      "id": "s4",
+      "title": "WordPress.com OpenID/OAuth discovery document",
+      "url": "https://public-api.wordpress.com/.well-known/openid-configuration"
+    },
+    {
+      "id": "s5",
+      "title": "WordPress.com developer docs: MCP server",
+      "url": "https://developer.wordpress.com/docs/mcp/"
+    },
+    {
+      "id": "s6",
+      "title": "WordPress.com OAuth2 token endpoint",
+      "url": "https://public-api.wordpress.com/oauth2/token"
+    },
+    {
+      "id": "s7",
+      "title": "WordPress.com developer docs: REST API overview",
+      "url": "https://developer.wordpress.com/docs/api/"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://developer.wordpress.com/apps/ and /apps/new/: 302 to wp-login.php (needs login)",
       "POST https://public-api.wordpress.com/oauth2/token with no body: invalid_client, 'The required \"client_id\" parameter is missing.'",

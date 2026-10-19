@@ -515,6 +515,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://www.strava.com/oauth/authorize?client_id=1...: 401",
       "POST https://www.strava.com/oauth/token with only grant_type: 400 {\"message\":\"Bad Request\",\"errors\":[{\"resource\":\"Application\",\"field\":\"client_id\",\"code\":\"invalid\"}]}",

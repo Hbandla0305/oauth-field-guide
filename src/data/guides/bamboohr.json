@@ -522,6 +522,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://developers.bamboohr.com/login returns HTTP 200.",
       "https://example.bamboohr.com/authorize.php?request=authorize returns 302 to http://www.bamboohr.com/ for a non-existent company subdomain."

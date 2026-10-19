@@ -6,6 +6,33 @@
     "developerPortal": "https://app.notion.com/developers/connections",
     "category": "Productivity / Docs"
   },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authorization guide",
+      "url": "https://developers.notion.com/guides/get-started/authorization"
+    },
+    {
+      "kind": "scopes",
+      "label": "Capabilities",
+      "url": "https://developers.notion.com/reference/capabilities"
+    },
+    {
+      "kind": "review",
+      "label": "List on the Marketplace",
+      "url": "https://developers.notion.com/guides/get-started/marketplace-listing"
+    },
+    {
+      "kind": "api",
+      "label": "Request limits",
+      "url": "https://developers.notion.com/reference/request-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Developer portal",
+      "url": "https://app.notion.com/developers/connections"
+    }
+  ],
   "verdict": {
     "difficulty": "trivial",
     "summary": "A public (OAuth) connection is self-serve with no review step: once it is created with installation scope 'Any workspace', any Notion user can authorize it. Marketplace listing is optional and is the only part that gets reviewed; the real friction is at runtime, because the agent sees only the pages each user picks.",

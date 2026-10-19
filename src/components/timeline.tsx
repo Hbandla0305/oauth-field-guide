@@ -1,5 +1,6 @@
 import type { Guide } from "@/lib/guide-schema";
 import { DIFFICULTY } from "./difficulty";
+import type { GuideSummary } from "@/lib/guides";
 
 // Log scale from 5 minutes to 6 months, so "15 min" and "6 weeks" both read clearly.
 const MIN_H = 5 / 60;
@@ -23,16 +24,13 @@ function Band({ min, max, className }: { min: number; max: number; className: st
   return <span className={`absolute top-0 h-full rounded-full ${className}`} style={{ left: `${left}%`, width: `${width}%` }} />;
 }
 
-export function TimelineCompact({ guide }: { guide: Guide }) {
-  const { timeToDev, timeToProd, difficulty } = guide.verdict;
+type CompactProps = Pick<GuideSummary, "difficulty" | "dev" | "prod" | "devHours" | "prodHours">;
+
+export function TimelineCompact({ difficulty, dev, prod, devHours, prodHours }: CompactProps) {
   return (
-    <div
-      className="relative h-2 w-full min-w-28 rounded-full bg-faint"
-      role="img"
-      aria-label={`Working in dev: ${timeToDev.range}. Any user can connect: ${timeToProd.range}.`}
-    >
-      <Band min={timeToProd.hours.min} max={timeToProd.hours.max} className={`${DIFFICULTY[difficulty].bar} opacity-90`} />
-      <Band min={timeToDev.hours.min} max={timeToDev.hours.max} className="bg-ink" />
+    <div className="relative h-2 w-full min-w-28 rounded-full bg-faint" role="img" aria-label={`Working in dev: ${dev}. Any user can connect: ${prod}.`}>
+      <Band min={prodHours.min} max={prodHours.max} className={`${DIFFICULTY[difficulty].bar} opacity-90`} />
+      <Band min={devHours.min} max={devHours.max} className="bg-ink" />
     </div>
   );
 }

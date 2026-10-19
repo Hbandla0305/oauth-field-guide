@@ -8,7 +8,7 @@ import type { AgentEvent, StageId } from "@/lib/agent/pipeline";
 const STAGES: { id: StageId; label: string }[] = [
   { id: "screen", label: "Identify the app" },
   { id: "probe", label: "Probe live OAuth endpoints" },
-  { id: "research", label: "Research official docs" },
+  { id: "research", label: "Find and read official docs" },
   { id: "links", label: "Check every cited link" },
   { id: "audit", label: "Audit claims against sources" },
   { id: "save", label: "Save a shareable guide" },
@@ -22,6 +22,7 @@ export function GenerateRun() {
   const started = useRef(false);
   const [stages, setStages] = useState<Record<string, StageState>>({});
   const [searches, setSearches] = useState<string[]>([]);
+  const [reads, setReads] = useState<{ title: string; url: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [finished, setFinished] = useState(false);
@@ -35,6 +36,7 @@ export function GenerateRun() {
     const handle = (e: AgentEvent) => {
       if (e.type === "stage") setStages((s) => ({ ...s, [e.stage]: { status: e.status, detail: e.detail } }));
       if (e.type === "search") setSearches((s) => [...s, e.query]);
+      if (e.type === "read") setReads((r) => [...r, { title: e.title, url: e.url }]);
       if (e.type === "error") setError(e.message);
       if (e.type === "done") {
         setFinished(true);
@@ -107,6 +109,11 @@ export function GenerateRun() {
                     {searches.map((q, i) => (
                       <li key={i} className="truncate">
                         Searched “{q}”
+                      </li>
+                    ))}
+                    {reads.map((r) => (
+                      <li key={r.url} className="truncate">
+                        Read <span className="text-ink">{r.title}</span> <span className="text-muted/80">{new URL(r.url).hostname}</span>
                       </li>
                     ))}
                   </ul>

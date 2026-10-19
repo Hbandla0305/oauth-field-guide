@@ -45,6 +45,8 @@ Content rules:
 - nuances: token lifetimes, refresh behaviour, rate limits, per-workspace installs, anything that surprises developers.
 - agentCanDo / humanMustDo: short imperative phrases.
 - verification.openQuestions: what you could not confirm. Other verification fields are overwritten by the system; fill them with placeholders.
+- officialDocs: 3–6 direct links to the provider's own pages, kind one of oauth | scopes | review | console | api | changelog, with plain labels ("OAuth 2.0 guide", "Scopes reference", "App review policy").
+- No absolutes the sources don't use ("every", "only if", "always"). Opinions ("unlikely", "easy") are "inferred".
 - app.developerPortal: the URL where developers register apps. app.category: one or two words.
 - Keep text tight and practical. No marketing language.`;
 
@@ -61,3 +63,8 @@ Flag a claim when:
 For each, return the dotted path to the object that holds the evidence, e.g. "verdict.timeToProd", "steps.2", "blockers.0", "scopeTiers.1", "nuances.3", "prerequisites.0", and the new label ("inferred" if it is reasonable reasoning, "unverified" if it may be wrong) with a one-sentence reason.
 Also return up to 3 openQuestions a developer should confirm before relying on this guide.
 Return an empty downgrades list if nothing needs changing. Be selective: flag only real problems.`;
+
+export const PAGES_ADDENDUM = `Source pages for this guide are provided in the user message as <page id="s1" url="..."> blocks.
+- Cite ONLY these pages: sourceIds must be page ids (s1, s2, ...) or "probe". The "sources" array is replaced by the system; fill it with the page ids, titles and urls you used.
+- If the pages don't cover something the reader needs, say so in verification.openQuestions and label any claim about it "inferred" or "unverified".
+- officialDocs may include well-known console URLs from the pages.`;

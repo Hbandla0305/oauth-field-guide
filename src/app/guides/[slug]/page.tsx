@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { findGuide, CURATED } from "@/lib/guides";
+import { findGuide, LIBRARY } from "@/lib/guides";
 import { guideToMarkdown } from "@/lib/markdown";
 import { DifficultyBadge } from "@/components/difficulty";
 import { EvidenceTag } from "@/components/evidence";
@@ -14,7 +14,7 @@ export const dynamicParams = true;
 export const revalidate = 3600;
 
 export function generateStaticParams() {
-  return CURATED.map((g) => ({ slug: g.app.slug }));
+  return LIBRARY.map((g) => ({ slug: g.app.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const SECTIONS = [
+  ["docs", "Official docs"],
   ["before", "What you need first"],
   ["permissions", "Permission tiers"],
   ["steps", "Steps"],
@@ -35,6 +36,14 @@ const SECTIONS = [
   ["know", "Good to know"],
   ["evidence", "Evidence and sources"],
 ] as const;
+
+const BANNER = {
+  "human-verified": { cls: "bg-trivial-bg text-trivial", text: (d: string) => `Researched by agents, fact-checked, and reviewed by a person. Last checked ${d}.` },
+  "agent-researched": { cls: "bg-faint text-ink", text: (d: string) => `Researched by agents from official docs; not yet reviewed by a person. Last checked ${d}. Check the evidence labels before relying on it.` },
+  "agent-generated": { cls: "bg-moderate-bg text-moderate", text: (d: string) => `Written live by an agent on ${d} and not reviewed by a person. Check the evidence labels before relying on it.` },
+} as const;
+
+const DOC_ORDER = ["console", "oauth", "scopes", "review", "api", "changelog"] as const;
 
 const OWNER = {
   agent: { label: "Agent can do", cls: "bg-faint text-ink" },
@@ -50,7 +59,7 @@ export default async function GuidePage({ params }: Props) {
   const url = `${host ? `https://${host}` : ""}/guides/${guide.app.slug}`;
   const idx = new Map(guide.sources.map((s, i) => [s.id, i + 1]));
   const v = guide.verdict;
-  const verified = guide.verification.status === "human-verified";
+  const status = guide.verification.status;
 
   return (
     <main className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
@@ -66,11 +75,7 @@ export default async function GuidePage({ params }: Props) {
           <DifficultyBadge difficulty={v.difficulty} />
         </div>
         <p className="mt-4 text-lg leading-relaxed text-ink/90">{v.summary}</p>
-        <p className={`mt-4 rounded-md px-3 py-2 text-sm ${verified ? "bg-trivial-bg text-trivial" : "bg-moderate-bg text-moderate"}`}>
-          {verified
-            ? `Researched by agents and checked by a person on ${guide.verification.lastChecked}.`
-            : `Generated live by an agent on ${guide.verification.lastChecked} and not reviewed by a person. Check the evidence labels before relying on it.`}
-        </p>
+        <p className={`mt-4 rounded-md px-3 py-2 text-sm ${BANNER[status].cls}`}>{BANNER[status].text(guide.verification.lastChecked)}</p>
       </header>
 
       <section className="mt-8" aria-label="How long it takes">
@@ -105,6 +110,28 @@ export default async function GuidePage({ params }: Props) {
 
       <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_14rem]">
         <article className="min-w-0 max-w-3xl space-y-14">
+          {guide.officialDocs.length > 0 && (
+            <Section id="docs" title="Official docs">
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {[...guide.officialDocs]
+                  .sort((a, b) => DOC_ORDER.indexOf(a.kind) - DOC_ORDER.indexOf(b.kind))
+                  .map((d) => (
+                    <li key={d.url}>
+                      <a
+                        href={d.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-full flex-col rounded-lg border border-line bg-surface px-4 py-3 hover:border-ink"
+                      >
+                        <span className="font-medium">{d.label}</span>
+                        <span className="truncate text-sm text-muted">{new URL(d.url).hostname.replace(/^www\./, "")}</span>
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </Section>
+          )}
+
           <Section id="before" title="What you need first">
             <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
               {guide.prerequisites.map((p) => (

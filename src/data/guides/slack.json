@@ -6,6 +6,33 @@
     "developerPortal": "https://api.slack.com/apps",
     "category": "Communication"
   },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Installing with OAuth",
+      "url": "https://docs.slack.dev/authentication/installing-with-oauth"
+    },
+    {
+      "kind": "review",
+      "label": "Marketplace review guide",
+      "url": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide"
+    },
+    {
+      "kind": "api",
+      "label": "Web API rate limits",
+      "url": "https://docs.slack.dev/apis/web-api/rate-limits"
+    },
+    {
+      "kind": "changelog",
+      "label": "Rate limits for non-Marketplace apps",
+      "url": "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps"
+    },
+    {
+      "kind": "console",
+      "label": "Your apps",
+      "url": "https://api.slack.com/apps"
+    }
+  ],
   "verdict": {
     "difficulty": "hard",
     "summary": "A working app installed in your own workspace takes minutes, and unlisted public distribution is self-serve with no review. But unlisted apps that are distributed commercially get 1 request/min and 15 messages per call on conversations.history/replies, can't use the Real-time Search API or the Slack MCP server, and per Slack's API terms aren't the channel for commercial distribution, so an AI agent that reads messages realistically needs a Marketplace listing (10+ active workspaces, then weeks to months of review).",

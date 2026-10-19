@@ -9,7 +9,10 @@
     "lint": "eslint",
     "validate": "tsx scripts/validate-guides.ts",
     "db:setup": "tsx --env-file=.env.local scripts/db-setup.ts",
-    "spend": "tsx --env-file=.env.local scripts/spend.ts"
+    "spend": "tsx --env-file=.env.local scripts/spend.ts",
+    "index-guides": "tsx scripts/index-guides.ts",
+    "predev": "npm run index-guides",
+    "prebuild": "npm run index-guides"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

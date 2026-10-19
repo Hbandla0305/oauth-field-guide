@@ -73,14 +73,14 @@ export async function POST(req: NextRequest) {
         const guide = await runAgent(input, screen, cost, emit, signal);
         emit({ type: "stage", stage: "save", status: "active" });
         await saveGuide(guide, input, cost.usd);
-        await settleRun(runId, cost.usd, "done", slug);
+        await settleRun(runId, cost.usd, "done", slug, undefined, cost.firecrawlCredits);
         emit({ type: "stage", stage: "save", status: "done" });
         emit({ type: "done", slug: guide.app.slug, cached: false });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.error("generate failed", { runId, message });
         // An interrupted call may have spent tokens we never saw; keep the full reservation.
-        await settleRun(runId, Math.max(cost.usd, LIMITS.reservePerRunUsd), "failed", slug, message.slice(0, 500)).catch(() => {});
+        await settleRun(runId, Math.max(cost.usd, LIMITS.reservePerRunUsd), "failed", slug, message.slice(0, 500), Math.max(cost.firecrawlCredits, LIMITS.firecrawl.reservePerRun)).catch(() => {});
         emit({
           type: "error",
           message: signal.aborted

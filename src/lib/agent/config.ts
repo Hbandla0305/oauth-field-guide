@@ -22,6 +22,13 @@ export const LIMITS = {
   runsPerDay: 25,
   runTimeoutMs: 240_000,
   inputMaxLength: 80,
+  firecrawl: {
+    totalCredits: 400, // hard cap across all runs; free tier is enough for dev + demo
+    reservePerRun: 20,
+    resultsPerQuery: 4,
+    maxPages: 8,
+    maxCharsPerPage: 12_000,
+  },
 } as const;
 
 export type Usage = {

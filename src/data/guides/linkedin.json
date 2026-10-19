@@ -6,6 +6,33 @@
     "developerPortal": "https://www.linkedin.com/developers/apps",
     "category": "Social / Professional network"
   },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "3-legged OAuth flow",
+      "url": "https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow"
+    },
+    {
+      "kind": "scopes",
+      "label": "Getting access to LinkedIn APIs",
+      "url": "https://learn.microsoft.com/en-us/linkedin/shared/authentication/getting-access"
+    },
+    {
+      "kind": "review",
+      "label": "Community Management app review",
+      "url": "https://learn.microsoft.com/en-us/linkedin/marketing/community-management-app-review"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Developer portal",
+      "url": "https://www.linkedin.com/developers/apps"
+    }
+  ],
   "verdict": {
     "difficulty": "gated",
     "summary": "Sign-in (openid/profile/email) and posting as the member (w_member_social) are self-serve, need no review and work the same day. Everything else an agent would want (reading a member's posts, feed or connections, managing Company Pages, ads, Sales Navigator) is behind partner programs that require a registered business, page-admin verification, vetting and often a screencast, with no published turnaround.",

@@ -6,6 +6,33 @@
     "developerPortal": "https://developers.hubspot.com",
     "category": "CRM"
   },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Working with OAuth",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/oauth/working-with-oauth"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Marketplace listing requirements",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/app-marketplace-listing-requirements"
+    },
+    {
+      "kind": "changelog",
+      "label": "Install limits for unlisted apps",
+      "url": "https://developers.hubspot.com/changelog/new-marketplace-distribution-app-install-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Developer docs",
+      "url": "https://developers.hubspot.com"
+    }
+  ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "A working OAuth app built with the HubSpot CLI is self-serve and free. It can be installed in up to 25 accounts right away, but unlimited installs need an approved App Marketplace listing, which requires 3 active unaffiliated installs plus a manual review.",

@@ -26,6 +26,7 @@ export const SCHEMA = [
      status text not null default 'running',
      reserved_usd numeric(10,6) not null,
      actual_usd numeric(10,6),
+     firecrawl_credits integer not null default 0,
      error text,
      created_at timestamptz not null default now()
    )`,
@@ -94,10 +95,24 @@ export async function reserveRun(ipHash: string, input: string): Promise<Reserva
   return { ok: false, reason: "daily_rate" };
 }
 
-export async function settleRun(runId: string, actualUsd: number, status: "done" | "failed" | "rejected" | "cached", slug: string | null, error?: string) {
+export async function settleRun(
+  runId: string,
+  actualUsd: number,
+  status: "done" | "failed" | "rejected" | "cached",
+  slug: string | null,
+  error?: string,
+  firecrawlCredits = 0,
+) {
   await sql()`
-    update runs set actual_usd = ${actualUsd}, status = ${status}, slug = ${slug}, error = ${error ?? null}
+    update runs set actual_usd = ${actualUsd}, status = ${status}, slug = ${slug}, error = ${error ?? null}, firecrawl_credits = ${firecrawlCredits}
     where id = ${runId}`;
+}
+
+// Credits already spent, plus a reservation for each run still in flight.
+export async function firecrawlCreditsCommitted(): Promise<number> {
+  const rows = await sql()`
+    select coalesce(sum(case when status = 'running' then ${LIMITS.firecrawl.reservePerRun} else firecrawl_credits end), 0) as total from runs`;
+  return Number(rows[0].total);
 }
 
 export async function totalSpend(): Promise<number> {

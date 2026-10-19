@@ -6,6 +6,33 @@
     "developerPortal": "https://github.com/settings/developers",
     "category": "Developer tools"
   },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authorizing OAuth apps",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps"
+    },
+    {
+      "kind": "oauth",
+      "label": "GitHub App vs OAuth App",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes for OAuth apps",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps"
+    },
+    {
+      "kind": "console",
+      "label": "Developer settings",
+      "url": "https://github.com/settings/developers"
+    },
+    {
+      "kind": "api",
+      "label": "REST API rate limits",
+      "url": "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api"
+    }
+  ],
   "verdict": {
     "difficulty": "trivial",
     "summary": "Self-serve with no provider review: register a GitHub App (recommended) or OAuth App in Developer settings and any GitHub user can connect immediately. The real-world gate is the end user's organization: org owners must install your GitHub App, or approve your OAuth App when the org has OAuth app access restrictions turned on (the default for new orgs).",

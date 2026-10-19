@@ -645,8 +645,8 @@
     }
   ],
   "verification": {
-    "status": "agent-generated",
-    "lastChecked": "2026-10-19",
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
     "tested": [
       "GET https://www.notion.so/profile/integrations -> 307 to https://app.notion.com/profile/integrations",
       "GET https://app.notion.com/developers/connections -> 200 (logged out)",

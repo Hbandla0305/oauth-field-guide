@@ -629,8 +629,8 @@
     }
   ],
   "verification": {
-    "status": "agent-generated",
-    "lastChecked": "2026-10-19",
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
     "tested": [
       "GET https://app.hubspot.com/oauth/authorize returned 200 (bare, and with a dummy client_id, redirect_uri and scope)",
       "GET https://app.hubspot.com/signup-hubspot/developers returned 302 to /signup-hubspot/crm?intent=developer (200)",

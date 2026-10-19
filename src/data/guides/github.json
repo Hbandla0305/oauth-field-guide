@@ -720,8 +720,8 @@
     }
   ],
   "verification": {
-    "status": "agent-generated",
-    "lastChecked": "2026-10-19",
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
     "tested": [
       "GET https://github.com/login/oauth/authorize?client_id=<invalid> -> 302 to github.com/login with return_to (endpoint live, requires login)",
       "GET https://github.com/settings/apps/new and https://github.com/settings/applications/new -> 302 to login with return_to (registration pages exist)",

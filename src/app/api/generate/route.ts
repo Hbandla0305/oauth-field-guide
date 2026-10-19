@@ -1,11 +1,14 @@
 import { NextRequest } from "next/server";
 import { startGeneration, clientIp } from "@/lib/generation";
+import { crossSiteRefusal } from "@/lib/request-guard";
 import type { AgentEvent } from "@/lib/agent/pipeline";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
+  const refused = crossSiteRefusal(req);
+  if (refused) return refused;
   const body = await req.json().catch(() => null);
   const start = await startGeneration(body?.app, clientIp(req.headers));
 

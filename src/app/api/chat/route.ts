@@ -7,6 +7,7 @@ import { findGuide } from "@/lib/guides";
 import { hashIp, reserveChat, settleRun } from "@/lib/db";
 import { clientIp } from "@/lib/generation";
 import { guideContext } from "@/lib/guide-text";
+import { crossSiteRefusal } from "@/lib/request-guard";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -42,14 +43,19 @@ function profileText(p: z.infer<typeof Body>["profile"]): string {
 
 const REFUSALS = {
   budget: "Chat has used its demo budget. Everything in the guide is still on the page.",
+  daily_budget: "Chat has used today's budget. It resets within 24 hours; the guide is still on the page.",
   ip_rate: `You can ask ${LIMITS.chat.perIpPerHour} questions an hour. Try again later.`,
+  ip_daily: `You can ask ${LIMITS.chat.perIpPerDay} questions a day. Try again tomorrow.`,
   daily_rate: "Today's chat limit has been reached. Try again tomorrow.",
 } as const;
 
 export async function POST(req: NextRequest) {
+  const refused = crossSiteRefusal(req);
+  if (refused) return refused;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "That message couldn't be sent." }, { status: 400 });
   const { slug, messages, task, profile } = parsed.data;
+  if (messages.reduce((n, m) => n + m.content.length, 0) > 60_000) return Response.json({ error: "This conversation is too long. Start a new one." }, { status: 400 });
   const question = messages[messages.length - 1];
   if (question.role !== "user" || question.content.length > LIMITS.chat.maxQuestionLength) {
     return Response.json({ error: `Keep questions under ${LIMITS.chat.maxQuestionLength} characters.` }, { status: 400 });
@@ -87,7 +93,8 @@ export async function POST(req: NextRequest) {
         await settleRun(reservation.runId, usd, "answered", slug);
       } catch (err) {
         console.error("chat failed", err instanceof Error ? err.message : err);
-        await settleRun(reservation.runId, Math.max(usd, LIMITS.chat.reservePerMessageUsd), "failed", slug).catch(() => {});
+        // Only a timeout can hide spend we never saw; otherwise charge what was used.
+        await settleRun(reservation.runId, err instanceof Error && err.name === "AbortError" ? Math.max(usd, LIMITS.chat.reservePerMessageUsd) : Math.max(usd, 0.001), "failed", slug).catch(() => {});
         controller.enqueue(encoder.encode("\n\nThe answer was cut off. Try asking again."));
       } finally {
         controller.close();

@@ -15,16 +15,20 @@ export const WEB_SEARCH_USD_PER_CALL = 0.01;
 
 export const LIMITS = {
   totalBudgetUsd: 1.8, // hard stop, $0.20 under the $2 ceiling
+  dailyBudgetUsd: 0.6, // so one bad day (or one abuser) can't use up the lifetime budget
   reservePerRunUsd: 0.2, // worst case for one run, held until the run settles
   maxSearchesPerRun: 6,
   maxOutputTokens: { screen: 2_000, research: 24_000, audit: 16_000, gaps: 2_000 },
   runsPerIpPerHour: 10,
+  runsPerIpPerDay: 25,
+  failureMinimumUsd: 0.02, // charged for a failed run when we know what it spent
   runsPerDay: 40, // ~40 runs at ~$0.03 stays well under the $1.80 cap, which is the real stop
   runTimeoutMs: 240_000,
   inputMaxLength: 80,
   chat: {
     reservePerMessageUsd: 0.02, // covers the longest task (a review pack)
     perIpPerHour: 20,
+    perIpPerDay: 100,
     perDay: 300,
     maxTurns: 8, // messages in one conversation, both sides
     maxQuestionLength: 500,

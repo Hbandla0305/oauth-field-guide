@@ -10,6 +10,7 @@ import { ShareBar } from "../share-bar";
 import { ChatPanel, type AssistantTask } from "./chat-panel";
 import { ResearchTrail } from "./research-trail";
 import { ErrorBoundary } from "../error-boundary";
+import { safeHref } from "@/lib/request-guard";
 import { CopyPrompt, buildPrompt } from "./copy-prompt";
 
 const TABS = [
@@ -453,7 +454,7 @@ function StepsPanel({ guide, sources, onDo }: { guide: Guide; sources: SourceInd
                 <div className="mt-2 space-y-2 pb-1">
                   <p className="leading-relaxed [overflow-wrap:anywhere] text-ink/85">{s.detail}</p>
                   {s.url && (
-                    <a href={s.url} target="_blank" rel="noreferrer" className="block truncate text-sm text-cobalt underline underline-offset-2">
+                    <a href={safeHref(s.url)} target="_blank" rel="noreferrer" className="block truncate text-sm text-cobalt underline underline-offset-2">
                       {s.url.replace(/^https:\/\//, "")}
                     </a>
                   )}
@@ -605,7 +606,7 @@ function ResourcesPanel({ guide }: { guide: Guide }) {
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {guide.officialDocs.map((d) => (
             <li key={d.url}>
-              <a href={d.url} target="_blank" rel="noreferrer" title={d.url} className="flex h-full items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 hover:border-ink">
+              <a href={safeHref(d.url)} target="_blank" rel="noreferrer" title={d.url} className="flex h-full items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 hover:border-ink">
                 <span className="font-medium">{d.label}</span>
                 <svg viewBox="0 0 16 16" className="size-3.5 shrink-0 text-muted" aria-hidden>
                   <path d="M6 3h7v7M13 3L5 11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -625,7 +626,7 @@ function ResourcesPanel({ guide }: { guide: Guide }) {
                 <p className="font-medium">{c.claim}</p>
                 <p className="mt-1 text-muted line-through">{c.before}</p>
                 <p className="mt-0.5 text-ink">{c.after}</p>
-                <a href={c.source} target="_blank" rel="noreferrer" className="mt-1 inline-block break-all text-cobalt underline underline-offset-2">
+                <a href={safeHref(c.source)} target="_blank" rel="noreferrer" className="mt-1 inline-block break-all text-cobalt underline underline-offset-2">
                   Source
                 </a>
               </li>
@@ -652,7 +653,7 @@ function ResourcesPanel({ guide }: { guide: Guide }) {
           {guide.sources.map((s, i) => (
             <li key={s.id} id={`source-${s.id}`} className="grid grid-cols-[2rem_1fr]">
               <span className="text-muted">[{i + 1}]</span>
-              <a href={s.url} target="_blank" rel="noreferrer" className="break-words text-cobalt underline decoration-cobalt/30 underline-offset-2 hover:decoration-cobalt">
+              <a href={safeHref(s.url)} target="_blank" rel="noreferrer" className="break-words text-cobalt underline decoration-cobalt/30 underline-offset-2 hover:decoration-cobalt">
                 {s.title}
               </a>
             </li>

@@ -3,7 +3,7 @@
 import { NextRequest, after } from "next/server";
 import { answerFromGuide } from "@/lib/answer";
 import { hashIp } from "@/lib/db";
-import { slackConfigured, verifySlack, postMessage, matchApp } from "@/lib/slack";
+import { slackConfigured, verifySlack, postMessage, matchApp, esc } from "@/lib/slack";
 import { HELP, guideMessage, guideUrl, splitSection } from "../shared";
 
 export const runtime = "nodejs";
@@ -13,18 +13,19 @@ type Mention = { type: "app_mention"; text: string; channel: string; ts: string;
 
 export async function POST(req: NextRequest) {
   const raw = await req.text();
-  const body = JSON.parse(raw || "{}");
-
-  // Slack checks the endpoint once with a challenge when you save the Request URL.
-  if (body.type === "url_verification") {
-    return verifySlack(raw, req.headers.get("x-slack-request-timestamp"), req.headers.get("x-slack-signature"))
-      ? Response.json({ challenge: body.challenge })
-      : new Response("Invalid signature", { status: 401 });
-  }
-  if (!slackConfigured()) return new Response("Slack isn't configured", { status: 503 });
+  // Verify before parsing anything (Slack signs the URL check too).
   if (!verifySlack(raw, req.headers.get("x-slack-request-timestamp"), req.headers.get("x-slack-signature"))) {
     return new Response("Invalid signature", { status: 401 });
   }
+  let body: { type?: string; challenge?: string; event?: unknown; team_id?: string };
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return new Response("Bad request", { status: 400 });
+  }
+  // Slack checks the endpoint once with a challenge when you save the Request URL.
+  if (body.type === "url_verification") return Response.json({ challenge: String(body.challenge ?? "") });
+  if (!slackConfigured()) return new Response("Slack isn't configured", { status: 503 });
   // We already acknowledged the original delivery; ignore Slack's retries.
   if (req.headers.get("x-slack-retry-num")) return new Response(null, { status: 200 });
 
@@ -53,5 +54,5 @@ async function handleMention(event: Mention, team: string) {
   if (isLookup) return reply(guideMessage(guide, section));
 
   const answer = await answerFromGuide(guide, text, hashIp(`slack:${team}`));
-  await reply({ text: answer.ok ? `${answer.text}\n\n<${guideUrl(guide.app.slug)}|Full ${guide.app.name} guide>` : answer.error });
+  await reply({ text: answer.ok ? `${esc(answer.text)}\n\n<${guideUrl(guide.app.slug)}|Full ${esc(guide.app.name)} guide>` : answer.error });
 }

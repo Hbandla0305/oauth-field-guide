@@ -1,5 +1,6 @@
 import type { Evidence } from "@/lib/guide-schema";
 import { HoverCard } from "./info-tip";
+import { safeHref } from "@/lib/request-guard";
 
 export const EVIDENCE = {
   tested: { label: "Tested", meaning: "Observed directly in a setup attempt or live check", dot: "bg-tested", text: "text-tested" },
@@ -32,7 +33,7 @@ export function EvidenceTag({ evidence, sources, align = "start" }: { evidence: 
       {cited.length > 0 && (
         <span className="mt-2 block space-y-1 border-t border-surface/15 pt-2">
           {cited.map((s) => (
-            <a key={s.n} href={s.url} target="_blank" rel="noreferrer" className="block truncate underline decoration-surface/30 underline-offset-2 hover:decoration-surface">
+            <a key={s.n} href={safeHref(s.url)} target="_blank" rel="noreferrer" className="block truncate underline decoration-surface/30 underline-offset-2 hover:decoration-surface">
               [{s.n}] {s.title}
             </a>
           ))}

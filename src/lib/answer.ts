@@ -30,7 +30,8 @@ export async function answerFromGuide(guide: Guide, question: string, ipHash: st
     return { ok: true, text: res.output_text.replace(/\s*—\s*/g, ", ") };
   } catch (err) {
     console.error("answer failed", err instanceof Error ? err.message : err);
-    await settleRun(reservation.runId, Math.max(usd, LIMITS.chat.reservePerMessageUsd), "failed", guide.app.slug).catch(() => {});
+    // Only a timeout can hide spend we never saw; otherwise charge what was used.
+        await settleRun(reservation.runId, err instanceof Error && err.name === "AbortError" ? Math.max(usd, LIMITS.chat.reservePerMessageUsd) : Math.max(usd, 0.001), "failed", guide.app.slug).catch(() => {});
     return { ok: false, error: "That answer failed. Try again in a minute, or open the guide." };
   }
 }

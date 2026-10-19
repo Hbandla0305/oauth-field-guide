@@ -1,33 +1,54 @@
 // Live checks the agent runs itself. These are the only things a generated guide may
-// label "tested". The model never chooses what to fetch; our code does, and only GETs
-// public HTTPS URLs.
-import { lookup } from "node:dns/promises";
+// label "tested". The model never chooses what to fetch; our code does, and only reaches
+// public HTTPS hosts on port 443.
+import { lookup as dnsLookup } from "node:dns";
 import { isIP } from "node:net";
+import ipaddr from "ipaddr.js";
+import { Agent, fetch as pinnedFetch } from "undici";
 
 const TIMEOUT_MS = 6_000;
 const MAX_BYTES = 200_000;
 const MAX_REDIRECTS = 3;
 
-function isPrivateAddress(ip: string): boolean {
-  if (ip.includes(":")) {
-    const v6 = ip.toLowerCase();
-    if (v6.startsWith("::ffff:")) return isPrivateAddress(v6.slice(7));
-    return v6 === "::1" || v6 === "::" || v6.startsWith("fc") || v6.startsWith("fd") || v6.startsWith("fe80");
+// Only ordinary public unicast addresses. ipaddr.js classifies every special range (private,
+// loopback, link-local, CGNAT, documentation, benchmarking, multicast, NAT64, 6to4…), and
+// IPv4-mapped IPv6 is unwrapped first.
+export function isPublicAddress(ip: string): boolean {
+  try {
+    let addr = ipaddr.parse(ip);
+    if (addr.kind() === "ipv6" && (addr as ipaddr.IPv6).isIPv4MappedAddress()) addr = (addr as ipaddr.IPv6).toIPv4Address();
+    return addr.range() === "unicast";
+  } catch {
+    return false;
   }
-  const [a, b] = ip.split(".").map(Number);
-  return (
-    a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) ||
-    (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224
-  );
 }
 
-async function assertPublicHttps(raw: string): Promise<URL> {
+// The address is checked inside the connection's own DNS lookup, so the IP we validate is the
+// IP we connect to. There's no second lookup for a rebinding domain to exploit.
+const dispatcher = new Agent({
+  connect: {
+    // Node asks for every address (all: true) when it races IPv4/IPv6, and for one otherwise.
+    // Either way, refuse if any resolved address isn't public.
+    lookup: (hostname, options, callback) => {
+      dnsLookup(hostname, { ...options, all: true }, (err, addresses) => {
+        if (err) return callback(err, "", 4);
+        const list = addresses as unknown as { address: string; family: number }[];
+        if (!list.length || list.some((a) => !isPublicAddress(a.address))) {
+          return callback(Object.assign(new Error("Refusing to connect to a non-public address"), { code: "ENOTPUBLIC" }), "", 4);
+        }
+        if ((options as { all?: boolean }).all) return (callback as unknown as (e: null, a: typeof list) => void)(null, list);
+        callback(null, list[0].address, list[0].family);
+      });
+    },
+  },
+});
+
+function assertPublicHttps(raw: string): URL {
   const url = new URL(raw);
   if (url.protocol !== "https:") throw new Error("only https is allowed");
+  if (url.port && url.port !== "443") throw new Error("only port 443 is allowed");
   if (url.username || url.password) throw new Error("credentials in URL");
-  if (isIP(url.hostname)) throw new Error("IP literals are not allowed");
-  const addrs = await lookup(url.hostname, { all: true });
-  if (!addrs.length || addrs.some((a) => isPrivateAddress(a.address))) throw new Error("host resolves to a private address");
+  if (isIP(url.hostname.replace(/^\[|\]$/g, ""))) throw new Error("IP literals are not allowed");
   return url;
 }
 
@@ -38,15 +59,16 @@ export async function safeGet(raw: string): Promise<FetchResult> {
 }
 
 // GET by default; a POST body (form-encoded) is only used for the token-endpoint attempt.
-// Redirects are followed manually so every hop passes the public-HTTPS check.
+// Redirects are followed manually so every hop passes the same checks.
 async function safeRequest(raw: string, post?: Record<string, string>): Promise<FetchResult & { redirects: string[] }> {
   let current = raw;
   const redirects: string[] = [];
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const url = await assertPublicHttps(current);
-    const res = await fetch(url, {
+    const url = assertPublicHttps(current);
+    const res = await pinnedFetch(url, {
+      dispatcher,
       method: post && hop === 0 ? "POST" : "GET",
-      body: post && hop === 0 ? new URLSearchParams(post) : undefined,
+      body: post && hop === 0 ? new URLSearchParams(post).toString() : undefined,
       redirect: "manual",
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: {
@@ -81,14 +103,40 @@ async function safeRequest(raw: string, post?: Record<string, string>): Promise<
 
 export type Attempt = { id: string; title: string; url: string; observed: string };
 
-// Visible text from an HTML or JSON response, short enough to hand to the model.
-function excerpt(body: string): string {
-  return body
-    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 600);
+// What we record from a response: status, where it redirected, and an OAuth error code if the
+// body is a standard OAuth error. Never raw response text: these endpoints can be influenced by
+// whoever controls the domain, and observations end up on public pages.
+function oauthError(body: string): string | null {
+  try {
+    const j = JSON.parse(body);
+    const code = typeof j?.error === "string" ? j.error : typeof j?.error?.code === "string" ? j.error.code : null;
+    return code && /^[a-z0-9_.-]{1,40}$/i.test(code) ? code : null;
+  } catch {
+    return null;
+  }
+}
+
+function describe(r: { status: number; body: string; redirects: string[] }): string {
+  const last = r.redirects.at(-1);
+  const where = last ? `, redirected to ${new URL(last).hostname}${/login|signin|sign_in|session|auth/i.test(new URL(last).pathname) ? " (a sign-in page)" : ""}` : "";
+  const err = oauthError(r.body);
+  return `HTTP ${r.status}${where}${err ? `, OAuth error "${err}"` : ""}.`;
+}
+
+// Registrable-ish domain: the last two labels (good enough to keep checks on the provider).
+export function rootDomain(urlOrHost: string): string {
+  const host = urlOrHost.includes("://") ? new URL(urlOrHost).hostname : urlOrHost;
+  return host.replace(/^www\./, "").split(".").slice(-2).join(".");
+}
+
+function onDomain(url: string | undefined, root: string): string | undefined {
+  if (!url) return undefined;
+  try {
+    const host = new URL(url).hostname;
+    return host === root || host.endsWith(`.${root}`) ? url : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 const FAKE_CLIENT = "oauth-guide-test-client";
@@ -96,46 +144,39 @@ const FAKE_CLIENT = "oauth-guide-test-client";
 // Safe, logged-out attempts at the first steps of setup. Each tells us something a developer
 // would otherwise only learn by trying: does the authorize endpoint exist and how does it treat
 // an unknown app, does the token endpoint answer, is the developer console open to sign up?
-// Nothing here creates an account or an app.
-export async function attemptSetup(opts: { authorizeUrl?: string; tokenUrl?: string; portalUrl?: string }): Promise<Attempt[]> {
+// Nothing here creates an account or an app, and every URL must be on the provider's own domain.
+export async function attemptSetup(opts: { root: string; authorizeUrl?: string; tokenUrl?: string; portalUrl?: string }): Promise<Attempt[]> {
+  const authorizeUrl = onDomain(opts.authorizeUrl, opts.root);
+  const tokenUrl = onDomain(opts.tokenUrl, opts.root);
+  const portalUrl = onDomain(opts.portalUrl, opts.root);
   const tasks: Promise<Attempt | null>[] = [];
 
-  if (opts.authorizeUrl) {
-    const u = new URL(opts.authorizeUrl);
+  if (authorizeUrl) {
+    const u = new URL(authorizeUrl);
     u.searchParams.set("client_id", FAKE_CLIENT);
     u.searchParams.set("response_type", "code");
     u.searchParams.set("redirect_uri", "https://example.com/callback");
-    u.searchParams.set("state", "field-guide-check");
+    u.searchParams.set("state", "oauth-guide-check");
     tasks.push(
       safeRequest(u.toString())
-        .then((r) => ({
-          id: "attempt1",
-          title: "Live check: authorize URL with an unregistered test app",
-          url: opts.authorizeUrl!,
-          observed: `HTTP ${r.status}${r.redirects.length ? `, redirected to ${new URL(r.redirects.at(-1)!).hostname}${new URL(r.redirects.at(-1)!).pathname}` : ""}. Response text: "${excerpt(r.body)}"`,
-        }))
+        .then((r) => ({ id: "attempt1", title: "Live check: authorize URL with an unregistered test app", url: authorizeUrl, observed: describe(r) }))
         .catch(() => null),
     );
   }
 
-  if (opts.tokenUrl) {
+  if (tokenUrl) {
     tasks.push(
-      safeRequest(opts.tokenUrl, { grant_type: "authorization_code", code: "invalid-test-code", client_id: FAKE_CLIENT, redirect_uri: "https://example.com/callback" })
-        .then((r) => ({
-          id: "attempt2",
-          title: "Live check: token endpoint with an invalid code",
-          url: opts.tokenUrl!,
-          observed: `HTTP ${r.status}. Response: "${excerpt(r.body)}"`,
-        }))
+      safeRequest(tokenUrl, { grant_type: "authorization_code", code: "invalid-test-code", client_id: FAKE_CLIENT, redirect_uri: "https://example.com/callback" })
+        .then((r) => ({ id: "attempt2", title: "Live check: token endpoint with an invalid code", url: tokenUrl, observed: describe(r) }))
         .catch(() => null),
     );
   }
 
-  if (opts.portalUrl) {
+  if (portalUrl) {
     tasks.push(
-      safeRequest(opts.portalUrl)
+      safeRequest(portalUrl)
         .then((r) => {
-          const text = excerpt(r.body).toLowerCase();
+          const text = r.body.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").toLowerCase();
           const signals = [
             /sign up|create (an )?account|get started|register/.test(text) && "offers sign-up",
             /log ?in|sign in/.test(text) && "asks you to sign in",
@@ -145,8 +186,8 @@ export async function attemptSetup(opts: { authorizeUrl?: string; tokenUrl?: str
           return {
             id: "attempt3",
             title: "Live check: developer console, logged out",
-            url: opts.portalUrl!,
-            observed: `HTTP ${r.status}${r.redirects.length ? `, redirected to ${new URL(r.redirects.at(-1)!).hostname}` : ""}. Page ${signals.length ? signals.join(", ") : "gives no sign-up or apply signals"}.`,
+            url: portalUrl,
+            observed: `${describe(r).replace(/\.$/, "")}. Page ${signals.length ? signals.join(", ") : "gives no sign-up or apply signals"}.`,
           };
         })
         .catch(() => null),
@@ -191,14 +232,16 @@ export async function probeDiscovery(website: string): Promise<DiscoveryProbe> {
   const hit = results.find((r) => r.status === "fulfilled");
   if (!hit || hit.status !== "fulfilled") return { checkedUrls, found: null };
   const { url, json } = hit.value;
-  const list = (v: unknown) => (Array.isArray(v) ? v.slice(0, 40).map(String) : undefined);
+  const list = (v: unknown) => (Array.isArray(v) ? v.slice(0, 40).map((x) => String(x).slice(0, 100)) : undefined);
+  const root = rootDomain(host);
+  const endpoint = (v: unknown) => (typeof v === "string" && v.startsWith("https://") ? onDomain(v, root) : undefined);
   return {
     checkedUrls,
     found: {
       url,
-      issuer: json.issuer,
-      authorization_endpoint: json.authorization_endpoint,
-      token_endpoint: json.token_endpoint,
+      issuer: typeof json.issuer === "string" ? json.issuer.slice(0, 200) : undefined,
+      authorization_endpoint: endpoint(json.authorization_endpoint),
+      token_endpoint: endpoint(json.token_endpoint),
       scopes_supported: list(json.scopes_supported),
       grant_types_supported: list(json.grant_types_supported),
       code_challenge_methods_supported: list(json.code_challenge_methods_supported),

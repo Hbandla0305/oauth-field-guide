@@ -12,6 +12,10 @@ type SearchResult = { url: string; title?: string; markdown?: string; metadata?:
 // Sites that rank well but never document an OAuth process.
 const NOISE = /(^|\.)(youtube\.com|youtu\.be|capterra\.com|g2\.com|trustradius\.com|getapp\.com|softwareadvice\.com|trustpilot\.com|reddit\.com|quora\.com|facebook\.com|x\.com|twitter\.com|linkedin\.com|pinterest\.com|instagram\.com|tiktok\.com)$/;
 
+// Third-party pages are only read from well-known documentation and Q&A sites, so anyone can't
+// get a page into the agent's reading list just by mentioning a provider and "OAuth".
+const TRUSTED_THIRD_PARTY = /(^|\.)(learn\.microsoft\.com|docs\.github\.com|github\.com|stackoverflow\.com|developers\.google\.com|support\.google\.com|nango\.dev|developer\.nylas\.com|docs\.merge\.dev|developer\.mozilla\.org|oauth\.net)$/;
+
 export function firecrawlConfigured(): boolean {
   return Boolean(process.env.FIRECRAWL_API_KEY);
 }
@@ -73,7 +77,7 @@ export async function readMore(
       const key = r.url.replace(/[#?].*$/, "").replace(/\/$/, "");
       if (seen.has(key) || !r.markdown || (r.metadata?.statusCode ?? 200) >= 400) continue;
       const official = host(r.url) === root || host(r.url).endsWith(`.${root}`);
-      if (!official && (NOISE.test(host(r.url)) || !/oauth|api|app/i.test(r.markdown) || !r.markdown.toLowerCase().includes(brand))) continue;
+      if (!official && (!TRUSTED_THIRD_PARTY.test(host(r.url)) || !/oauth|api|app/i.test(r.markdown) || !r.markdown.toLowerCase().includes(brand))) continue;
       seen.add(key);
       found.push(r);
     }
@@ -108,7 +112,7 @@ export async function readOfficialDocs(
       if (seen.has(key) || !r.markdown || (r.metadata?.statusCode ?? 200) >= 400) continue;
       seen.add(key);
       if (isOfficial(r.url)) official.push(r);
-      else if (NOISE.test(host(r.url)) || /\/reviews?\b/i.test(r.url)) continue;
+      else if (NOISE.test(host(r.url)) || /\/reviews?\b/i.test(r.url) || !TRUSTED_THIRD_PARTY.test(host(r.url))) continue;
       // Third-party pages only count if they're about this provider's OAuth.
       else if (/oauth/i.test(r.markdown) && r.markdown.toLowerCase().includes(brand)) other.push(r);
     }

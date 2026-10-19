@@ -20,7 +20,7 @@ export function guideToMarkdown(g: Guide, url: string): string {
     `> ${g.verification.status === "human-verified" ? "Human-verified" : "Agent-generated, not human-reviewed"} · last checked ${g.verification.lastChecked} · ${url}`,
     "",
     "## Official docs",
-    ...g.officialDocs.map((d) => `- [${d.label}](${d.url})`),
+    ...g.officialDocs.filter((d) => /^https:\/\//.test(d.url)).map((d) => `- [${d.label.replace(/[[\]()]/g, "")}](${d.url})`),
     "",
     "## What you need first",
     ...g.prerequisites.map((p) => `- **${p.item}**: ${p.why}${ev(p.evidence)}`),
@@ -48,7 +48,7 @@ export function guideToMarkdown(g: Guide, url: string): string {
     ...(g.verification.openQuestions.length ? g.verification.openQuestions.map((q) => `- ${q}`) : ["- Nothing outstanding."]),
     "",
     "## Sources",
-    ...g.sources.map((s, i) => `${i + 1}. [${s.title}](${s.url})`),
+    ...g.sources.map((s, i) => (/^https:\/\//.test(s.url) ? `${i + 1}. [${s.title.replace(/[[\]()]/g, "")}](${s.url})` : `${i + 1}. ${s.title.replace(/[[\]()]/g, "")}`)),
   ];
   return lines.join("\n");
 }

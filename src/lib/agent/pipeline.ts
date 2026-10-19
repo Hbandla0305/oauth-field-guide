@@ -3,7 +3,7 @@ import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { Guide, type Evidence, type ResearchLog } from "../guide-schema";
 import { MODELS, LIMITS, costOf } from "./config";
-import { probeDiscovery, checkLinks, attemptSetup, type Attempt, type DiscoveryProbe } from "./probes";
+import { probeDiscovery, checkLinks, attemptSetup, rootDomain, type Attempt, type DiscoveryProbe } from "./probes";
 import { firecrawlConfigured, readOfficialDocs, readMore, type Page } from "./firecrawl";
 import { firecrawlCreditsCommitted } from "../db";
 import { RESEARCH_INSTRUCTIONS, SCREEN_INSTRUCTIONS, AUDIT_INSTRUCTIONS, PAGES_ADDENDUM, GAPS_INSTRUCTIONS, REVISE_ADDENDUM } from "./prompts";
@@ -122,7 +122,7 @@ function probeSummary(probe: DiscoveryProbe): string {
   if (!probe.found) {
     return `No OAuth/OIDC discovery document found. Checked: ${probe.checkedUrls.join(", ")}. Do not claim discovery metadata exists.`;
   }
-  return `Discovery document fetched live from ${probe.found.url}:\n${JSON.stringify(probe.found, null, 2)}\nClaims backed by this may use label "tested" with sourceIds ["probe"].`;
+  return `Discovery document fetched live from ${probe.found.url}:\n${JSON.stringify(probe.found, null, 2)}\nYou may cite it with sourceIds ["probe"], but never label claims "tested": the system records its own live checks.`;
 }
 
 export async function runAgent(input: string, screen: Screen, cost: RunCost, rawEmit: Emit, signal: AbortSignal): Promise<Guide> {
@@ -154,6 +154,7 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, raw
   // Step 4: try the first steps of setup, logged out.
   emit({ type: "stage", stage: "attempt", status: "active" });
   const attempts = await attemptSetup({
+    root: rootDomain(screen.website),
     authorizeUrl: probe.found?.authorization_endpoint ?? findEndpoint(draft.guide, "authorize"),
     tokenUrl: probe.found?.token_endpoint ?? findEndpoint(draft.guide, "token"),
     portalUrl: /^https:\/\//.test(draft.guide.app.developerPortal) ? draft.guide.app.developerPortal : undefined,
@@ -228,7 +229,7 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, raw
   const unread = guide.sources.filter((s) => s.id !== "probe" && !s.id.startsWith("attempt") && !read.has(s.url));
   const links = await checkLinks(unread.map((s) => s.url));
   const dead = new Set(links.filter((l) => !l.ok).map((l) => l.url));
-  guide = enforceEvidence(guide, dead);
+  guide = addLiveChecks(enforceEvidence(guide, dead), probe, attempts);
   for (const url of dead) rec.add(`Couldn't reach ${url}; claims relying only on it were marked unverified`);
   const total = guide.sources.filter((s) => s.id !== "probe" && !s.id.startsWith("attempt")).length;
   emit({ type: "stage", stage: "links", status: "done", detail: `${total - dead.size} of ${total} cited sources resolve` });
@@ -277,7 +278,7 @@ async function researchFromPages(screen: Screen, userContext: string, cost: RunC
   if (!pages.length) throw new Error("No documentation pages could be read.");
   for (const p of pages) emit({ type: "read", title: p.title, url: p.url });
 
-  const corpus = pages.map((p) => `<page id="${p.id}" url="${p.url}" title="${p.title.replace(/"/g, "'")}">\n${p.markdown}\n</page>`).join("\n\n");
+  const corpus = pages.map((p) => `<page id="${p.id}" url="${p.url}" title="${p.title.replace(/"/g, "'")}">\n${fence(p.markdown)}\n</page>`).join("\n\n");
   const res = await client().responses.parse(
     {
       model: MODELS.research,
@@ -331,7 +332,7 @@ async function researchWithWebSearch(userContext: string, cost: RunCost, emit: E
 // something new to add.
 async function revise(draft: Draft, attempts: Attempt[], extraPages: Page[], userContext: string, cost: RunCost, signal: AbortSignal): Promise<Guide> {
   const attemptText = attempts.map((a) => `<attempt id="${a.id}" url="${a.url}">${a.title}. Observed: ${a.observed}</attempt>`).join("\n");
-  const pageText = extraPages.map((p) => `<page id="${p.id}" url="${p.url}" title="${p.title.replace(/"/g, "'")}">\n${p.markdown}\n</page>`).join("\n\n");
+  const pageText = extraPages.map((p) => `<page id="${p.id}" url="${p.url}" title="${p.title.replace(/"/g, "'")}">\n${fence(p.markdown)}\n</page>`).join("\n\n");
   const res = await client().responses.parse(
     {
       model: MODELS.research,
@@ -361,6 +362,13 @@ function findEndpoint(g: Guide, kind: "authorize" | "token"): string | undefined
   return match.replace(/[.,;]+$/, "");
 }
 
+// Untrusted page text can't close or open our <page>/<attempt> wrappers.
+function fence(text: string): string {
+  return text.replace(/<\/?(page|attempt)\b/gi, (m) => m.replace("<", "&lt;"));
+}
+
+const httpsOnly = (u: string | null | undefined): string | null => (typeof u === "string" && /^https:\/\/[^\s"'<>]+$/.test(u) ? u : null);
+
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -369,27 +377,16 @@ function today() {
 // (when we read the pages ourselves) the source list.
 function normalise(g: Guide, screen: Screen, probe: DiscoveryProbe, pages: Page[] | null, attempts: Attempt[]): Guide {
   const sources = pages
-    ? pages.map((p) => ({ id: p.id, title: p.title, url: p.url }))
+    ? pages.filter((p) => httpsOnly(p.url)).map((p) => ({ id: p.id, title: p.title, url: p.url }))
     : g.sources.filter((s) => s.id !== "probe" && !s.id.startsWith("attempt") && /^https:\/\//.test(s.url));
   if (probe.found) sources.push({ id: "probe", title: "Live probe: OAuth discovery document", url: probe.found.url });
   for (const a of attempts) sources.push({ id: a.id, title: a.title, url: a.url });
 
-  // If the model didn't cite a live attempt on any claim, record it as its own Tested note, so
-  // what we actually observed always reaches the guide with the right label.
-  const cited = JSON.stringify(g);
-  const uncited = attempts.filter((a) => !cited.includes(`"${a.id}"`));
-  const nuances = [
-    ...g.nuances,
-    ...uncited.map((a) => ({
-      text: `Live check on ${today()}: ${a.title.replace("Live check: ", "")}. ${a.observed.length > 320 ? `${a.observed.slice(0, 319)}…` : a.observed}`,
-      evidence: { label: "tested" as const, sourceIds: [a.id], note: "Observed by our agent, logged out. Shows how the endpoint responds, not who can register an app." },
-    })),
-  ];
   return {
     ...g,
-    app: { ...g.app, name: screen.name, slug: screen.slug, website: screen.website },
-    officialDocs: g.officialDocs.filter((d) => /^https:\/\//.test(d.url)).slice(0, 6),
-    nuances,
+    app: { ...g.app, name: screen.name, slug: screen.slug, website: httpsOnly(screen.website) ?? `https://${rootDomain(screen.website)}`, developerPortal: httpsOnly(g.app.developerPortal) ?? httpsOnly(screen.website) ?? "" },
+    officialDocs: g.officialDocs.filter((d) => httpsOnly(d.url)).slice(0, 6),
+    steps: g.steps.map((st) => ({ ...st, url: httpsOnly(st.url) })),
     sources,
     verification: {
       status: "agent-generated",
@@ -407,15 +404,39 @@ function normalise(g: Guide, screen: Screen, probe: DiscoveryProbe, pages: Page[
   };
 }
 
+// "Tested" is never taken from the model. After the model's own "tested" labels are removed
+// (enforceEvidence), every live check our code actually ran is added as its own Tested note.
+function addLiveChecks(g: Guide, probe: DiscoveryProbe, attempts: Attempt[]): Guide {
+  // "Tested" is never taken from the model: every live check our code ran is added here as its
+  // own Tested note, citing the check.
+  const probeNote = probe.found
+    ? [
+        {
+          text: `Live check on ${today()}: ${probe.found.url} publishes OAuth metadata${probe.found.authorization_endpoint ? `, authorization endpoint ${probe.found.authorization_endpoint}` : ""}${probe.found.token_endpoint ? `, token endpoint ${probe.found.token_endpoint}` : ""}${probe.found.code_challenge_methods_supported?.length ? `, PKCE methods ${probe.found.code_challenge_methods_supported.join(", ")}` : ""}.`,
+          evidence: { label: "tested" as const, sourceIds: ["probe"], note: "Fetched by our agent, logged out." },
+        },
+      ]
+    : [];
+  return { ...g, nuances: [
+    ...g.nuances,
+    ...probeNote,
+    ...attempts.map((a) => ({
+      text: `Live check on ${today()}: ${a.title.replace("Live check: ", "")}. ${a.observed.length > 320 ? `${a.observed.slice(0, 319)}…` : a.observed}`,
+      evidence: { label: "tested" as const, sourceIds: [a.id], note: "Observed by our agent, logged out. Shows how the endpoint responds, not who can register an app." },
+    })),
+  ] };
+}
+
 // Code-enforced rules, applied before the audit:
-//   "tested" needs a live probe or attempt as a source; "sourced" needs at least one reachable source.
+//   the model can't mark anything "tested"; "sourced" needs at least one reachable source.
 function enforceEvidence(g: Guide, deadUrls: Set<string>): Guide {
   const deadIds = new Set(g.sources.filter((s) => deadUrls.has(s.url)).map((s) => s.id));
   const known = new Set(g.sources.map((s) => s.id));
   const fix = (e: Evidence): Evidence => {
     const sourceIds = e.sourceIds.filter((id) => known.has(id) && !deadIds.has(id));
-    if (e.label === "tested" && !sourceIds.some((id) => id === "probe" || id.startsWith("attempt"))) {
-      return { ...e, sourceIds, label: sourceIds.length ? "sourced" : "inferred" };
+    if (e.label === "tested") {
+      const docs = sourceIds.filter((id) => id !== "probe" && !id.startsWith("attempt"));
+      return { ...e, sourceIds, label: docs.length ? "sourced" : "inferred" };
     }
     if (e.label === "sourced" && sourceIds.length === 0) {
       return { ...e, sourceIds, label: "unverified", note: e.note ?? "Cited source could not be reached" };

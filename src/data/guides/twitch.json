@@ -1,0 +1,548 @@
+{
+  "app": {
+    "name": "Twitch",
+    "slug": "twitch",
+    "website": "https://www.twitch.tv",
+    "developerPortal": "https://dev.twitch.tv/console",
+    "category": "Live streaming"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Getting OAuth access tokens",
+      "url": "https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://dev.twitch.tv/docs/authentication/scopes/"
+    },
+    {
+      "kind": "console",
+      "label": "Developer console",
+      "url": "https://dev.twitch.tv/console"
+    },
+    {
+      "kind": "api",
+      "label": "Twitch API guide (rate limits)",
+      "url": "https://dev.twitch.tv/docs/api/guide/"
+    },
+    {
+      "kind": "review",
+      "label": "Token validation requirement",
+      "url": "https://dev.twitch.tv/docs/authentication/validate-tokens/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Registering an app is self-serve (2FA on your Twitch account, a captcha, a redirect URL), and there's no app review or scope approval, so any Twitch user can authorize your app the same day. The catches are operational: you're required to validate tokens hourly, rate limits are per client ID per user, and verified chatbot status (higher chat limits) is rarely granted and its reviews are currently paused.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Enable 2FA, register in the console, get the Client ID and secret, and run the authorization code flow against http://localhost:3000. There's no review step."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
+      "assumes": "An agent reading or acting on a user's Twitch data (chat, subscriptions, channel info) with user access tokens. There's no listing or review path to wait for.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "Neither the registration page nor the scopes reference mentions any app review or scope approval. The scopes page warns that requesting unneeded scopes may lead to suspension."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Twitch account with a verified email and two-factor authentication enabled",
+      "why": "The console requires 2FA before you can register an application. Refresh the console after turning it on.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A redirect URL for each environment (http://localhost:3000 works for development)",
+      "why": "Each OAuth redirect URL must be registered in the console and match the redirect_uri you send.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Twitch's own examples register http://localhost:3000. The docs don't state a general rule for other http URLs."
+      }
+    },
+    {
+      "item": "A server that can keep a client secret (confidential client), unless you build a device/desktop app",
+      "why": "The authorization code flow, which issues refreshable user tokens, needs a client secret. Public clients are limited to the device code flow.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity / sign-in",
+      "examples": [
+        "openid",
+        "user:read:email"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "OIDC sign-in with an ID token and optional email. An ID token can't be used in place of an access token for Twitch API calls.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "User and channel data (read)",
+      "examples": [
+        "user:read:chat",
+        "channel:read:subscriptions",
+        "moderator:read:chatters",
+        "user:read:follows",
+        "channel:read:redemptions"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enough for an agent that reads chat via EventSub, summarizes a stream, or reports on subscribers. Many moderator:* scopes only work in channels where the user moderates.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Acting for the user (write / manage)",
+      "examples": [
+        "user:write:chat",
+        "moderator:manage:banned_users",
+        "moderator:manage:chat_messages",
+        "channel:manage:broadcast",
+        "user:manage:whispers"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Self-serve, but output is capped by per-user chat limits (20 messages/30s for regular accounts, 1/sec per channel unless broadcaster/mod/VIP). Whispers need a phone-verified sender and are capped at 40 unique recipients/day.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s7",
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Chatbot badge (app access token + broadcaster grant)",
+      "examples": [
+        "channel:bot",
+        "user:bot"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "To show the Chat Bot badge, send via the Send Chat Message API with an app access token, after the broadcaster grants channel:bot (or the bot is a mod). Bots using user access tokens can't show the badge. Verified-bot status (7,500 messages/30s) is a separate, rarely granted request whose reviews are paused.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Enable 2FA on the developer's Twitch account",
+      "owner": "human",
+      "detail": "Sign in to Twitch, verify the email, and turn on two-factor authentication under Settings > Security and Privacy. Then reload the developer console.",
+      "url": "https://www.twitch.tv/settings/security",
+      "duration": "5–10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Register the application",
+      "owner": "human",
+      "detail": "In the console, go to Applications > Register Your Application. Enter a globally unique name, add redirect URLs (localhost for dev plus your production HTTPS callback), pick a category and client type (Confidential for a server-side agent), pass the captcha, and click Create.",
+      "url": "https://dev.twitch.tv/console/apps/create",
+      "duration": "5 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2",
+          "s1",
+          "s10"
+        ],
+        "note": "https://dev.twitch.tv/console returned HTTP 200 on 2026-10-20. We did not sign in, so the create form was not observed."
+      }
+    },
+    {
+      "title": "Copy the Client ID and generate a secret",
+      "owner": "human",
+      "detail": "Click Manage on the app, copy the Client ID, then click New Secret and store it in your secrets manager. Each product should have its own Client ID, because sharing one may lead to suspension.",
+      "url": "https://dev.twitch.tv/console/apps",
+      "duration": "2 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Pick least-privilege scopes",
+      "owner": "agent",
+      "detail": "Map each feature to the exact scope strings it needs. Requesting more than your APIs need may lead Twitch to suspend API access.",
+      "url": "https://dev.twitch.tv/docs/authentication/scopes/",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=...&redirect_uri=...&scope=...&state=<random>. Exchange the code at POST https://id.twitch.tv/oauth2/token with client_secret in the body (client_secret_post). Send Authorization: Bearer and Client-Id headers on Helix calls.",
+      "url": "https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5",
+          "s6"
+        ],
+        "note": "The discovery document lists client_secret_post as the only token endpoint auth method and S256 PKCE."
+      }
+    },
+    {
+      "title": "Add refresh-on-401 and hourly validation",
+      "owner": "agent",
+      "detail": "Refresh with grant_type=refresh_token when an API returns 401 (Twitch discourages proactive refresh based on expires_in) and store the newest refresh token. Call GET https://id.twitch.tv/oauth2/validate at startup and hourly per session, and end sessions whose token comes back invalid.",
+      "url": "https://dev.twitch.tv/docs/authentication/validate-tokens/",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Use EventSub instead of polling for chat and events",
+      "owner": "agent",
+      "detail": "Subscribe to channel.chat.message and other events via EventSub (WebSocket for per-user sessions, webhooks or conduits at scale). Webhook subscriptions need an app access token from the client credentials flow, not a user token.",
+      "url": "https://dev.twitch.tv/docs/chat/",
+      "duration": "2–4 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7",
+          "s11"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test with a second Twitch account",
+      "owner": "human",
+      "detail": "Authorize the app from a non-developer account to confirm the consent screen, scopes and refresh path. Disconnect it from Settings > Connections to confirm your app handles revoked tokens.",
+      "url": "https://www.twitch.tv/settings/connections",
+      "duration": "15 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s11"
+        ],
+        "note": "Disconnecting the app invalidates its tokens per the authentication overview."
+      }
+    },
+    {
+      "title": "Launch to all users",
+      "owner": "agent",
+      "detail": "Swap in the production redirect URL. No submission or review step is documented, so any Twitch user can connect once you ship.",
+      "url": null,
+      "duration": "—",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Choose the minimal scope set",
+    "Implement the code flow, refresh-on-401 and hourly /validate",
+    "Set up EventSub subscriptions and handle 429s",
+    "Probe the OIDC discovery and token endpoints"
+  ],
+  "humanMustDo": [
+    "Enable 2FA on the Twitch account",
+    "Register the app and solve the captcha",
+    "Generate and store the client secret",
+    "Test consent with a second account"
+  ],
+  "blockers": [
+    {
+      "symptom": "The console won't let you register an application",
+      "cause": "Two-factor authentication isn't enabled, or the console hasn't picked up the change.",
+      "fix": "Enable 2FA in Security and Privacy settings, then refresh the console.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "redirect_mismatch / 'Parameter redirect_uri does not match registered URI'",
+      "cause": "The redirect_uri in the authorize request isn't one of the URLs registered on the app.",
+      "fix": "Add the exact URL (scheme, host, port, path) under OAuth Redirect URLs.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The registration doc requires registered callback URLs. The exact error string is from community reports, not official docs."
+      }
+    },
+    {
+      "symptom": "EventSub webhook subscription fails when created with a user token",
+      "cause": "Webhook-based EventSub calls require an app access token.",
+      "fix": "Get an app access token with the client credentials flow for webhook subscriptions. Use user tokens for WebSocket subscriptions.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 Too Many Requests from Helix",
+      "cause": "The app-access or user-access bucket (per client ID per user) ran out within the minute, or an endpoint has its own limit.",
+      "fix": "Back off until the Ratelimit-Reset epoch and read the error message, since some endpoints 429 for other reasons.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "The bot's chat messages silently stop appearing for an hour",
+      "cause": "The bot exceeded chat rate limits, so Twitch ignores its messages for 1 hour (except where it's broadcaster, mod or VIP).",
+      "fix": "Throttle to 20 messages/30s and 1/sec per channel, or have broadcasters make the bot a moderator.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Refresh returns 401 / 'Invalid refresh token'",
+      "cause": "The user changed their password or disconnected the app, or a public-client refresh token passed its 30-day expiry.",
+      "fix": "Send the user back through consent. Store the newest refresh token after every refresh.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens are short-lived (device-flow tokens last about 4 hours, and examples show ~4h for code-flow tokens). Confidential-client refresh tokens mostly don't expire. Public-client refresh tokens expire after 30 days and are single-use.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": "Code-flow lifetime is inferred from the example expires_in of 14124 seconds."
+      }
+    },
+    {
+      "text": "Hourly token validation is a stated requirement for apps that maintain an OAuth session. Twitch audits for it and may revoke your key or throttle you if it isn't fixed.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "A single refresh token supports at most 50 valid access tokens at once, so refresh in one worker and share the result.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits use a token bucket with separate app-access and user-access buckets. With user tokens, limits apply per client ID per user per minute. The doc's 800-point header is only an example.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Verified chatbot status (7,500 messages/30s, 2,000 joins/10s) is 'rarely granted' and its reviews are temporarily paused, so plan for regular-account limits.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "EventSub plus the Twitch API is Twitch's preferred way to read and send chat. IRC is described as having limited features.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Twitch docs: Getting OAuth access tokens",
+      "url": "https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/"
+    },
+    {
+      "id": "s2",
+      "title": "Twitch docs: Register your app",
+      "url": "https://dev.twitch.tv/docs/authentication/register-app/"
+    },
+    {
+      "id": "s3",
+      "title": "Twitch docs: Twitch access token scopes",
+      "url": "https://dev.twitch.tv/docs/authentication/scopes/"
+    },
+    {
+      "id": "s4",
+      "title": "Twitch docs: Refreshing access tokens",
+      "url": "https://dev.twitch.tv/docs/authentication/refresh-tokens/"
+    },
+    {
+      "id": "s5",
+      "title": "Twitch OIDC discovery document",
+      "url": "https://id.twitch.tv/oauth2/.well-known/openid-configuration"
+    },
+    {
+      "id": "s6",
+      "title": "Twitch docs: Twitch API guide (rate limits)",
+      "url": "https://dev.twitch.tv/docs/api/guide/"
+    },
+    {
+      "id": "s7",
+      "title": "Twitch docs: Chat & chatbots",
+      "url": "https://dev.twitch.tv/docs/chat/"
+    },
+    {
+      "id": "s8",
+      "title": "Twitch docs: Whispers",
+      "url": "https://dev.twitch.tv/docs/chat/whispers/"
+    },
+    {
+      "id": "s9",
+      "title": "Twitch docs: Validating tokens",
+      "url": "https://dev.twitch.tv/docs/authentication/validate-tokens/"
+    },
+    {
+      "id": "s10",
+      "title": "Twitch developer console",
+      "url": "https://dev.twitch.tv/console"
+    },
+    {
+      "id": "s11",
+      "title": "Twitch docs: Authentication overview",
+      "url": "https://dev.twitch.tv/docs/authentication/"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://id.twitch.tv/oauth2/.well-known/openid-configuration: issuer https://id.twitch.tv/oauth2, token auth client_secret_post, PKCE S256, scopes_supported [openid]",
+      "GET https://dev.twitch.tv/console: HTTP 200",
+      "GET https://id.twitch.tv/oauth2/validate without a token: {\"status\":401,\"message\":\"missing authorization token\"}",
+      "POST https://id.twitch.tv/oauth2/token with no params: {\"status\":400,\"message\":\"missing client id\"}"
+    ],
+    "openQuestions": [
+      "The actual default Helix points-per-minute budget (docs only show 800 as an example header)",
+      "Whether non-localhost http:// redirect URLs are rejected",
+      "What the Developer Services Agreement says about storing Twitch data or using it with LLMs (the agreement page didn't render for us)",
+      "Whether there's any limit on the number of applications per account",
+      "When chatbot verification reviews will resume"
+    ]
+  }
+}

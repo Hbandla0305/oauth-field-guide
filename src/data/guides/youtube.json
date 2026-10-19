@@ -1,0 +1,581 @@
+{
+  "app": {
+    "name": "YouTube Data API",
+    "slug": "youtube",
+    "website": "https://www.youtube.com",
+    "developerPortal": "https://console.cloud.google.com/apis/library/youtube.googleapis.com",
+    "category": "Video"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 for web server apps (YouTube)",
+      "url": "https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps"
+    },
+    {
+      "kind": "review",
+      "label": "Quota and compliance audits",
+      "url": "https://developers.google.com/youtube/v3/guides/quota_and_compliance_audits"
+    },
+    {
+      "kind": "review",
+      "label": "YouTube API Services developer policies",
+      "url": "https://developers.google.com/youtube/terms/developer-policies"
+    },
+    {
+      "kind": "review",
+      "label": "Sensitive scope verification",
+      "url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+    },
+    {
+      "kind": "changelog",
+      "label": "Data API revision history",
+      "url": "https://developers.google.com/youtube/v3/revision_history"
+    },
+    {
+      "kind": "console",
+      "label": "Google Cloud quotas page",
+      "url": "https://console.cloud.google.com/iam-admin/quotas"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "YouTube scopes are treated as sensitive, so a public app needs Google OAuth verification (typically 3–5 business days) before it can drop the unverified warning and the 100-user cap. Separately, every project is capped at 10,000 units/day plus 100 search.list and 100 videos.insert calls, and the only way past that is a manual YouTube API compliance audit with no published timeline and a real chance of rejection for analytics- or scraping-like use cases.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s8"
+        ],
+        "note": "Create a Cloud project, enable YouTube Data API v3, set up the consent screen in Testing with test users, and create a web OAuth client. No review needed."
+      }
+    },
+    "timeToProd": {
+      "range": "3 weeks–4 months",
+      "hours": {
+        "min": 504,
+        "max": 2880
+      },
+      "assumes": "An agent that reads channel/video data for many users and needs more than the default quota, so it needs both sensitive-scope verification and a quota audit. If 10,000 units/day is enough, only OAuth verification applies (about 1–3 weeks).",
+      "waitingOn": "Google Trust & Safety sensitive-scope verification, then the YouTube API Services compliance audit and quota extension review.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4",
+          "s2",
+          "s10"
+        ],
+        "note": "Google states 3–5 business days for sensitive verification. YouTube's audit page only says the team will reach out 'as soon as possible'. The several-weeks-to-months audit range is from a third-party guide."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Google Cloud project with YouTube Data API v3 enabled",
+      "why": "Quota, OAuth clients and the audit are all tied to the project.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A verified domain with a public homepage and privacy policy on the same domain",
+      "why": "Sensitive-scope verification requires Search Console domain verification and a privacy policy linked from the consent screen.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A YouTube-compliant privacy policy and data handling",
+      "why": "YouTube policies require users to agree to a privacy policy, a link to Google's security settings for revocation, deletion within 7 days of in-app revocation, and refresh or deletion of stored data every 30 days.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A demo video uploaded to YouTube as Unlisted",
+      "why": "Verification asks for a video showing the consent flow and how each sensitive scope is used.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Public data with an API key (no OAuth)",
+      "examples": [
+        "API key only"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Public videos, channels, playlists and comments can be read with an API key, with no consent screen. Default quota limits still apply and storage limits for non-authorized data are 30 days.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "Unauthenticated calls are rejected; an API key or OAuth identity is required (observed live)."
+      }
+    },
+    {
+      "tier": "Read the user's own channel",
+      "examples": [
+        "https://www.googleapis.com/auth/youtube.readonly"
+      ],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Lets an agent list the user's channel, playlists, subscriptions and ratings. Needs sensitive-scope verification for public use; otherwise test users only, with 7-day refresh tokens, or a lifetime cap of 100 users behind the unverified warning.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s8",
+          "s11"
+        ],
+        "note": "Google's docs use 'deleting a YouTube video' as a sensitive-scope example but don't publish a per-scope table; the sensitive classification of youtube.readonly comes from third-party sources. Check the Data Access page in Cloud Console."
+      }
+    },
+    {
+      "tier": "Manage, comment, upload",
+      "examples": [
+        "https://www.googleapis.com/auth/youtube.force-ssl",
+        "https://www.googleapis.com/auth/youtube",
+        "https://www.googleapis.com/auth/youtube.upload"
+      ],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Write access: post comments, edit metadata, upload. Same verification path, with stronger justification needed for each scope. Uploads are capped at 100 videos.insert calls per day per project.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Content owner / partner",
+      "examples": [
+        "https://www.googleapis.com/auth/youtubepartner",
+        "https://www.googleapis.com/auth/youtube.channel-memberships.creator"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks or more",
+      "impact": "For YouTube partners and content owners. Most AI agents don't need these. Membership data is creator-only.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Quota beyond defaults (any scope)",
+      "examples": [
+        "Audit and Quota Extension Form"
+      ],
+      "reviewRequired": true,
+      "time": "Several weeks–months",
+      "impact": "Needed once you outgrow 10,000 units/day or 100 search.list calls/day. Extra quota may only be used for the approved use case; a changed use case needs a new audit.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3",
+          "s10"
+        ],
+        "note": "Timeline is from a third-party guide; Google publishes none."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a Cloud project and enable YouTube Data API v3",
+      "owner": "human",
+      "detail": "Create or pick a Google Cloud project and enable YouTube Data API v3 in the API Library.",
+      "url": "https://console.cloud.google.com/apis/library/youtube.googleapis.com",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Configure branding, audience and data access",
+      "owner": "human",
+      "detail": "In Google Auth Platform, set app name, support email, homepage and privacy policy; add test users; declare the YouTube scopes you'll request.",
+      "url": "https://console.cloud.google.com/auth/overview",
+      "duration": "20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create a web OAuth client and build the flow",
+      "owner": "agent",
+      "detail": "Use https://accounts.google.com/o/oauth2/v2/auth with access_type=offline and the narrowest YouTube scope, then exchange at https://oauth2.googleapis.com/token. Use incremental authorization for write scopes.",
+      "url": "https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Budget quota per feature",
+      "owner": "agent",
+      "detail": "Map each agent action to its bucket: search.list (100 calls/day), videos.insert (100 calls/day), videos.batchGetStats (own 10,000/day bucket), everything else from 10,000 units/day. Cache aggressively within the 30-day storage limit.",
+      "url": "https://developers.google.com/youtube/v3/revision_history",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the privacy policy and YouTube compliance features",
+      "owner": "agent",
+      "detail": "Write a policy covering YouTube data access, a link to https://myaccount.google.com/permissions, 30-day refresh/delete, 7-day deletion after revocation, and a contact method. Add an in-app disconnect that revokes the token.",
+      "url": "https://developers.google.com/youtube/terms/developer-policies",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Verify the domain and record the demo video",
+      "owner": "human",
+      "detail": "Verify every authorized domain in Search Console, then record the end-to-end consent flow showing each scope in use and upload it to YouTube as Unlisted.",
+      "url": "https://search.google.com/search-console",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit for sensitive-scope verification",
+      "owner": "human",
+      "detail": "Publish the app and submit verification with the scope justifications the agent drafted.",
+      "url": "https://console.cloud.google.com/auth/verification",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for Google verification",
+      "owner": "wait",
+      "detail": "Google says sensitive verification typically takes 3–5 business days; respond quickly to Trust & Safety emails.",
+      "url": null,
+      "duration": "3–5 business days, often longer",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit the YouTube Audit and Quota Extension Form",
+      "owner": "human",
+      "detail": "Describe the use case, show the product (screenshots or test account), and estimate quota per method. Incomplete forms delay processing.",
+      "url": "https://support.google.com/youtube/contact/yt_api_form",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for the compliance audit",
+      "owner": "wait",
+      "detail": "A YouTube API Services team member contacts you; they may ask for account access to all features. Approved quota can be lower than requested.",
+      "url": null,
+      "duration": "Several weeks–months",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s2",
+          "s3",
+          "s10"
+        ],
+        "note": "Duration from a third-party guide; Google gives no SLA."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Pick the narrowest scope per feature and write scope justifications",
+    "Estimate daily quota per method and draft the audit form answers",
+    "Draft a YouTube-compliant privacy policy",
+    "Implement token revocation and 30-day refresh/delete jobs",
+    "Write the demo video script"
+  ],
+  "humanMustDo": [
+    "Create the Cloud project and OAuth client",
+    "Verify domain ownership in Search Console",
+    "Record and upload the demo video",
+    "Submit Google verification and the YouTube audit form",
+    "Give YouTube reviewers test account access if asked"
+  ],
+  "blockers": [
+    {
+      "symptom": "403 quotaExceeded after a few dozen searches",
+      "cause": "search.list now has its own bucket of 100 calls/day per project, separate from the 10,000-unit pool.",
+      "fix": "Cache search results, prefer playlistItems/channels lookups, or request more search quota through the audit form.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "'Google hasn't verified this app' warning on consent",
+      "cause": "App is published with YouTube scopes but hasn't passed sensitive-scope verification.",
+      "fix": "Complete verification. Until then, at most 100 new users can ever pass the warning for this project.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Refresh tokens stop working after 7 days",
+      "cause": "App is in Testing mode; test-user authorizations expire seven days after consent.",
+      "fix": "Publish the app to Production (and verify) for long-lived refresh tokens.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Audit rejected or granted much less quota than requested",
+      "cause": "Use case looks like bulk harvesting, competitive analytics or scraping, or stores/derives data in ways the policies forbid.",
+      "fix": "Narrow the use case to user-authorized data, drop derived metrics, and resubmit or appeal via the appeals form.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s10",
+          "s3"
+        ],
+        "note": "Rejection patterns from a third-party guide; derived-data ban is in official policy."
+      }
+    },
+    {
+      "symptom": "403 'Method doesn't allow unregistered callers'",
+      "cause": "Call made with neither an API key nor an OAuth token.",
+      "fix": "Send an API key for public data or a Bearer token for user data.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [],
+        "note": "Observed live on GET https://www.googleapis.com/youtube/v3/channels?part=id&mine=true without credentials."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Authorized data can be stored for at most 30 days before you refresh or delete it; analytics data can be kept longer but you must recheck authorization every 30 days. Since June 2026, audited analytics developers can request to store some statistics longer.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "YouTube policies forbid using API data to create new or derived data or metrics, which matters for agents that summarize or score channels. A separate derived-metrics policy applies only to audited analytics developers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s7"
+        ],
+        "note": "The policy page doesn't mention AI or LLMs explicitly; whether summaries count as 'derived data' is our open question."
+      }
+    },
+    {
+      "text": "Quota is moving to per-method buckets (from June 1, 2026), and upload cost dropped from about 1,600 units to about 100 units (Dec 2025); videos.insert now costs 1 unit in its own 100-call bucket.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Videos uploaded from unverified API projects are no longer restricted to private; uploads default to public unless creator account settings say otherwise.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Older guidance said unaudited projects created after July 28, 2020 uploaded private-only; the current videos.insert page says otherwise."
+      }
+    },
+    {
+      "text": "Quota is per Cloud project and resets at midnight Pacific; there is no paid tier to buy more.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s10"
+        ],
+        "note": "From a third-party guide."
+      }
+    },
+    {
+      "text": "After a merger, acquisition or other change of control you must file a Change of Control form, and YouTube may run periodic re-audits at any time.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Using OAuth 2.0 for Web Server Applications (YouTube Data API)",
+      "url": "https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps"
+    },
+    {
+      "id": "s2",
+      "title": "YouTube Data API - Quota and Compliance Audits",
+      "url": "https://developers.google.com/youtube/v3/guides/quota_and_compliance_audits"
+    },
+    {
+      "id": "s3",
+      "title": "YouTube API Services - Developer Policies",
+      "url": "https://developers.google.com/youtube/terms/developer-policies"
+    },
+    {
+      "id": "s4",
+      "title": "Sensitive scope verification",
+      "url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+    },
+    {
+      "id": "s5",
+      "title": "YouTube Data API revision history",
+      "url": "https://developers.google.com/youtube/v3/revision_history"
+    },
+    {
+      "id": "s6",
+      "title": "Videos: insert",
+      "url": "https://developers.google.com/youtube/v3/docs/videos/insert"
+    },
+    {
+      "id": "s7",
+      "title": "YouTube API Services terms revision history",
+      "url": "https://developers.google.com/youtube/terms/revision-history"
+    },
+    {
+      "id": "s8",
+      "title": "Manage App Audience (Google Auth Platform)",
+      "url": "https://support.google.com/cloud/answer/15549945"
+    },
+    {
+      "id": "s9",
+      "title": "OAuth verification requirements",
+      "url": "https://support.google.com/cloud/answer/13464321"
+    },
+    {
+      "id": "s10",
+      "title": "Phyllo: Is the YouTube API free in 2026? (third-party)",
+      "url": "https://www.getphyllo.com/post/is-the-youtube-api-free-in-2026-quota-limits-costs-when-to-pay"
+    },
+    {
+      "id": "s11",
+      "title": "Phyllo: YouTube OAuth scopes explained (third-party)",
+      "url": "https://www.getphyllo.com/post/youtube-oauth-scopes"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "Fetched https://accounts.google.com/.well-known/openid-configuration; authorization endpoint is https://accounts.google.com/o/oauth2/v2/auth.",
+      "Unauthenticated GET to /youtube/v3/channels?mine=true returned 403 'Method doesn't allow unregistered callers'.",
+      "https://support.google.com/youtube/contact/yt_api_form returns HTTP 200."
+    ],
+    "openQuestions": [
+      "Official per-scope sensitive/restricted classification for each YouTube scope.",
+      "Typical turnaround of the YouTube compliance audit in 2026.",
+      "Whether LLM summaries of video data count as prohibited 'derived data'.",
+      "Whether search.list quota can be raised independently of the 10,000-unit pool."
+    ]
+  }
+}

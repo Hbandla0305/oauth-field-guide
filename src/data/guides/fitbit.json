@@ -1,0 +1,341 @@
+{
+  "app": {
+    "name": "Fitbit (Google Health API)",
+    "slug": "fitbit",
+    "website": "https://www.fitbit.com",
+    "developerPortal": "https://developers.google.com/health",
+    "category": "Health & fitness"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Google Cloud and OAuth setup",
+      "url": "https://developers.google.com/health/setup"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://developers.google.com/health/scopes"
+    },
+    {
+      "kind": "review",
+      "label": "App verification (restricted scopes + CASA)",
+      "url": "https://developers.google.com/health/app-verification"
+    },
+    {
+      "kind": "changelog",
+      "label": "Fitbit Web API migration guide",
+      "url": "https://developers.google.com/health/migration"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developers.google.com/health/rate-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Enable the Google Health API",
+      "url": "https://console.developers.google.com/apis/library/health.googleapis.com"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "The legacy Fitbit Web API (dev.fitbit.com) is turned off on October 30, 2026, so new integrations go through the Google Health API, a Google Cloud project with Google OAuth where every health scope is Restricted. Dev works in under an hour for up to 100 test users, but going past 100 users needs Google's restricted-scope verification plus a paid third-party CASA security assessment.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s2"],
+        "note": "Self-serve: create a Cloud project, enable health.googleapis.com, add test users on the Audience page, pick scopes, create a Web client. The test account also has to link Google Health in the Google Health mobile app first, which adds a few minutes."
+      }
+    },
+    "timeToProd": {
+      "range": "4–12 weeks",
+      "hours": {
+        "min": 672,
+        "max": 2016
+      },
+      "assumes": "Reading activity, sleep and health metrics for more than 100 users, which needs restricted-scope verification and CASA. There is no faster path: staying under 100 users in Testing mode is the only review-free option.",
+      "waitingOn": "Google Trust & Safety OAuth verification, then a CASA assessor (2–3 weeks for tier 2, 4–6 weeks for tier 3), then Letter of Validation submission",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s7"],
+        "note": "The CASA durations are Google's stated figures. Trust & Safety review time for Google Health scopes isn't published; the total is our estimate based on Google's general restricted-scope process."
+      }
+    },
+    "cost": "No Google fee. CASA assessor fees of US$500–4,500 per assessment (Google's stated range), repeated annually."
+  },
+  "prerequisites": [
+    {
+      "item": "A Google Cloud project you administer",
+      "why": "Google Health API clients are ordinary Google OAuth clients in a Cloud project; there's no separate Fitbit developer console for new apps.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "item": "Test users who have linked their Google Account in the Google Health mobile app",
+      "why": "Without that link, users.getIdentity and data calls return HTTP 400 ACCOUNT_NOT_LINKED.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "item": "A verified domain with homepage and privacy policy, plus an in-app data disclosure",
+      "why": "Restricted-scope verification checks app identity and requires an in-app disclosure of what health data is used and why.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The domain/homepage requirement comes from Google's general OAuth verification rules; the in-app disclosure is stated on the Health verification page." }
+    },
+    {
+      "item": "Budget for an annual CASA security assessment",
+      "why": "Required to pass verification and lift the 100-user cap.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s8"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Testing mode, any scopes (up to 100 users)",
+      "examples": [
+        "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly",
+        "https://www.googleapis.com/auth/googlehealth.sleep.readonly"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Works immediately for listed test users, but refresh tokens expire after 7 days and you're capped at 100 users.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "tier": "Read scopes (Restricted)",
+      "examples": [
+        "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly",
+        "https://www.googleapis.com/auth/googlehealth.sleep.readonly",
+        "https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly",
+        "https://www.googleapis.com/auth/googlehealth.nutrition.readonly",
+        "https://www.googleapis.com/auth/googlehealth.profile.readonly"
+      ],
+      "reviewRequired": true,
+      "time": "4–12 weeks",
+      "impact": "What a typical agent needs. Each scope needs a specific justification, then CASA.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": "Google says all Google Health API scopes are Restricted." }
+    },
+    {
+      "tier": "Clinical and location reads (Restricted, harder to justify)",
+      "examples": [
+        "https://www.googleapis.com/auth/googlehealth.ecg.readonly",
+        "https://www.googleapis.com/auth/googlehealth.irn.readonly",
+        "https://www.googleapis.com/auth/googlehealth.location.readonly"
+      ],
+      "reviewRequired": true,
+      "time": "4–12+ weeks",
+      "impact": "Same process, but ECG, irregular-rhythm and exercise GPS data invite closer scrutiny of the justification.",
+      "evidence": { "label": "inferred", "sourceIds": ["s5", "s3"], "note": "Google doesn't publish separate rules for these scopes; 'closer scrutiny' is our expectation." }
+    },
+    {
+      "tier": "Write scopes (Restricted)",
+      "examples": [
+        "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.writeonly",
+        "https://www.googleapis.com/auth/googlehealth.nutrition.writeonly",
+        "https://www.googleapis.com/auth/googlehealth.sleep.writeonly"
+      ],
+      "reviewRequired": true,
+      "time": "4–12 weeks",
+      "impact": "Google advises requesting write only if your app sends data to Google Health. Adding write later means another verification round.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": "'Another verification round' is inferred from Google's general rule that newly added restricted scopes need verification." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create or pick a Google Cloud project",
+      "owner": "human",
+      "detail": "Sign in as the project administrator. Use separate projects for dev, staging and prod; there is no sandbox.",
+      "url": "https://console.cloud.google.com/projectcreate",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Enable the Google Health API",
+      "owner": "human",
+      "detail": "Enable health.googleapis.com in the API library.",
+      "url": "https://console.developers.google.com/apis/library/health.googleapis.com",
+      "duration": "2 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Configure audience and test users",
+      "owner": "human",
+      "detail": "On the Audience page, keep External + Testing and add up to 100 test users by email.",
+      "url": "https://console.developers.google.com/auth/audience",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Choose least-privilege scopes",
+      "owner": "agent",
+      "detail": "Map the agent's features to googlehealth.*.readonly scopes; avoid write scopes unless you push data. Add them on the Data Access page.",
+      "url": "https://console.developers.google.com/auth/scopes",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s5"], "note": null }
+    },
+    {
+      "title": "Create a Web Server OAuth client",
+      "owner": "human",
+      "detail": "Create OAuth 2.0 credentials (Web application), set HTTPS redirect URIs, save the client ID/secret.",
+      "url": "https://console.developers.google.com/apis/credentials",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Implement OAuth and account-link check",
+      "owner": "agent",
+      "detail": "Use access_type=offline, exchange the code at oauth2.googleapis.com/token, then call GET https://health.googleapis.com/v4/users/me/identity. Treat ACCOUNT_NOT_LINKED as not connected and tell the user to link Google Health in the mobile app.",
+      "url": "https://developers.google.com/health/setup",
+      "duration": "1–3 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "title": "Migrate legacy Fitbit users (if any)",
+      "owner": "agent",
+      "detail": "Legacy tokens can't be transferred. Build dismissible re-consent prompts, map old 6-character Fitbit IDs to healthUserId via users.getIdentity, revoke legacy tokens, and backfill gaps after re-auth.",
+      "url": "https://developers.google.com/health/migration",
+      "duration": "1–3 days",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Draft scope justifications, privacy policy and in-app disclosure",
+      "owner": "agent",
+      "detail": "Write one specific justification per scope and an in-app disclosure such as '{App} collects health and fitness data to enable {feature}…'. Cover AI use within Google's Limited Use rules.",
+      "url": "https://developers.google.com/health/app-verification",
+      "duration": "1–2 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s8"], "note": null }
+    },
+    {
+      "title": "Submit for OAuth verification",
+      "owner": "human",
+      "detail": "Publish to production on the Audience page and submit the verification request in the Cloud console.",
+      "url": "https://console.developers.google.com/auth/audience",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Trust & Safety review",
+      "owner": "wait",
+      "detail": "Google reviews identity, scopes and justifications, then tells you when to start CASA.",
+      "url": null,
+      "duration": "1–6 weeks",
+      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": "No duration published for Health scopes; estimate based on Google's general restricted-scope timelines." }
+    },
+    {
+      "title": "Complete CASA with an authorized assessor",
+      "owner": "human",
+      "detail": "Engage an assessor, pay the fee, remediate findings. SOC 2 / ISO 27001 / HITRUST evidence can be reused via the CASA Accelerator.",
+      "url": "https://developers.google.com/health/app-verification",
+      "duration": "2–6 weeks",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Submit the Letter of Validation",
+      "owner": "wait",
+      "detail": "Send the LOV to Trust & Safety; once accepted the 100-user cap lifts. Repeat CASA annually.",
+      "url": null,
+      "duration": "Days",
+      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": "The time between LOV submission and approval isn't stated." }
+    }
+  ],
+  "agentCanDo": [
+    "Map features to the minimum googlehealth.* scopes",
+    "Implement Google OAuth with offline access and refresh handling",
+    "Handle ACCOUNT_NOT_LINKED and 429 backoff",
+    "Build the legacy-Fitbit re-consent and ID-mapping flow",
+    "Draft scope justifications, privacy policy and in-app disclosure"
+  ],
+  "humanMustDo": [
+    "Create the Cloud project, enable the API and create the OAuth client",
+    "Link test accounts in the Google Health mobile app",
+    "Submit OAuth verification and answer Trust & Safety",
+    "Hire and pay a CASA assessor, remediate findings, renew yearly"
+  ],
+  "blockers": [
+    {
+      "symptom": "HTTP 400 ACCOUNT_NOT_LINKED from users.getIdentity or data calls after a successful OAuth exchange",
+      "cause": "The user hasn't linked Google Health to their Google Account in the Google Health mobile app (or hasn't moved their Fitbit account to Google).",
+      "fix": "Don't mark the account connected; tell the user to open the Google Health app and link their Google Account, then retry.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s2"], "note": null }
+    },
+    {
+      "symptom": "Users get disconnected roughly a week after connecting",
+      "cause": "Refresh tokens expire after 7 days while the app is in Testing status.",
+      "fix": "Publish to production and complete verification; published apps' refresh tokens don't expire unless revoked or unused for about six months.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "New users can't connect once you reach 100",
+      "cause": "Unverified apps are limited to 100 users.",
+      "fix": "Complete restricted-scope verification and CASA.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "symptom": "Legacy api.fitbit.com integration stops returning data",
+      "cause": "Fitbit Web API support ended September 30, 2026 and the API is turned off October 30, 2026; legacy tokens can't be transferred.",
+      "fix": "Re-implement on health.googleapis.com/v4 and have users re-consent with Google OAuth.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4", "s6"], "note": null }
+    },
+    {
+      "symptom": "429 Too Many Requests",
+      "cause": "Per-user limit of 300 requests/minute, or the 250 QPS total cap for unverified apps.",
+      "fix": "Back off and retry; use webhooks instead of polling; request a quota adjustment in the Cloud console.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last about 1 hour (expires_in 3599). Refresh at oauth2.googleapis.com/token, on demand rather than in batches. Add prompt=consent when you change scopes.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "The Google Health API is an aggregation layer: one connection can return reconciled data from several sources, not just Fitbit devices, so dedupe by source.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "User IDs change from the 6-character Fitbit ID to a healthUserId of up to 63 characters.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "text": "Google's User Data Policy limits use of restricted-scope data to providing or improving user-facing features; other transfers and uses are prohibited. Check this before feeding health data into model training.",
+      "evidence": { "label": "sourced", "sourceIds": ["s8"], "note": "The policy page we read doesn't name AI/ML training explicitly; applying Limited Use to it is our reading." }
+    },
+    {
+      "text": "Default quotas: 86.4M requests/day and 120,000/minute per project, 300/minute per user.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+    },
+    {
+      "text": "Google says the API is still evolving and may ship changes that require updates on your side.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "About the Google Health API", "url": "https://developers.google.com/health/about" },
+    { "id": "s2", "title": "Google Health API: Google Cloud and OAuth setup", "url": "https://developers.google.com/health/setup" },
+    { "id": "s3", "title": "Google Health API: App verification", "url": "https://developers.google.com/health/app-verification" },
+    { "id": "s4", "title": "Fitbit Web API migration guide", "url": "https://developers.google.com/health/migration" },
+    { "id": "s5", "title": "Google Health API scopes", "url": "https://developers.google.com/health/scopes" },
+    { "id": "s6", "title": "Health & Fitness Google Developer Newsletter (Aug 2026)", "url": "https://developers.google.com/health/newsletters" },
+    { "id": "s7", "title": "Google Health API rate limits", "url": "https://developers.google.com/health/rate-limits" },
+    { "id": "s8", "title": "Google API Services User Data Policy", "url": "https://developers.google.com/terms/api-services-user-data-policy" },
+    { "id": "s9", "title": "Google Health API discovery document (v4)", "url": "https://health.googleapis.com/$discovery/rest?version=v4" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://health.googleapis.com/v4/users/me/identity without a token: HTTP 401 UNAUTHENTICATED (Google-style error)",
+      "GET https://health.googleapis.com/$discovery/rest?version=v4: HTTP 200, revision 20261016, resources shl/projects/users. It lists 20 googlehealth.* scopes, including reproductive_health.readonly, logged_symptoms.readonly and mindfulness.readonly, which aren't on the public scopes page",
+      "GET https://api.fitbit.com/1/user/-/profile.json without a token: HTTP 401 with a Google-format error body, so the legacy host now sits behind Google's front end",
+      "GET https://dev.fitbit.com/apps/new: 302 to dev.fitbit.com/login (we didn't sign in, so whether new legacy registrations are still accepted is unconfirmed)"
+    ],
+    "openQuestions": [
+      "Typical Trust & Safety review time specifically for Google Health scopes",
+      "Whether new app registrations on dev.fitbit.com are closed (claimed only by third-party blogs)",
+      "Which CASA tier Google Health apps are usually assigned",
+      "Whether the extra readonly scopes in the discovery document (reproductive_health, logged_symptoms, mindfulness) can be requested yet"
+    ]
+  }
+}

@@ -1,0 +1,587 @@
+{
+  "app": {
+    "name": "Workday",
+    "slug": "workday",
+    "website": "https://www.workday.com",
+    "developerPortal": "https://developer.workday.com",
+    "category": "HR / ERP"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authorization code grant",
+      "url": "https://developer.workday.com/doc/yai1528997518068.md"
+    },
+    {
+      "kind": "console",
+      "label": "Create your API client (Developer Site console)",
+      "url": "https://developer.workday.com/doc/zwx1518028675482.md"
+    },
+    {
+      "kind": "api",
+      "label": "API gateways and authorization base URLs",
+      "url": "https://developer.workday.com/doc/dlh1653340161856.md"
+    },
+    {
+      "kind": "review",
+      "label": "Built on Workday apps (distribution and approval)",
+      "url": "https://developer.workday.com/doc/GUID-dbf7dcc5-c295-45f2-a124-cefc8d6ac089.md"
+    },
+    {
+      "kind": "console",
+      "label": "Personal Account development tenants",
+      "url": "https://developer.workday.com/doc/GUID-4f875963-a845-43b5-868a-0f77e6261eb7-enHYPHENus.md"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "There is no global, self-serve OAuth app that any Workday customer can click to connect: API clients live per account or per tenant, so each customer's Workday admin has to register a client (or allowlist yours) before their users can authorize. You can now prototype on a free-to-request personal development tenant, but distributing to many customers at scale goes through the Built on Workday producer program with Workday app approval.",
+    "timeToDev": {
+      "range": "1 hour–2 weeks",
+      "hours": {
+        "min": 1,
+        "max": 336
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s10"
+        ],
+        "note": "Workday says a personal development tenant is usually ready within 15 minutes of the request, but the personal tenant is labelled beta and an earlier post described a waitlist, so access may take longer. Without a personal account you need a customer's tenant."
+      }
+    },
+    "timeToProd": {
+      "range": "1–6 weeks per customer",
+      "hours": {
+        "min": 168,
+        "max": 1008
+      },
+      "assumes": "The common SaaS path where each customer's Workday admin registers an API client (authorization code grant) in their own tenant and gives you the credentials and endpoints; Built on Workday distribution adds partner onboarding and Workday app review on top.",
+      "waitingOn": "Each customer's Workday security/integration admin to register the API client, pick functional-area scopes and grant domain permissions; for Built on Workday, Workday's app review and the partner order process.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s11",
+          "s12",
+          "s9"
+        ],
+        "note": "No source gives timings. The range reflects enterprise change-control for a per-tenant client and is our estimate; there is no single 'go live for everyone' moment."
+      }
+    },
+    "cost": "No fee is documented for a personal developer account. Built on Workday distribution runs through a Workday partner order process whose terms aren't public."
+  },
+  "prerequisites": [
+    {
+      "item": "A Workday Developer Site account (personal email works for the developer program) or access to a customer tenant",
+      "why": "API clients are created in the Developer Site console or in a tenant; Console tools need a Workday developer account.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s10"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A Workday administrator at each customer with Integration/Security admin rights",
+      "why": "Per-tenant API clients are registered with the Register API Client task by a tenant administrator; Developer Site clients must be allowlisted on non-development tenants by a Company Administrator.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s11",
+          "s12"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "The customer's region-specific API gateway and authorization base URL plus tenant alias",
+      "why": "Each account is tied to one region; calling another region's gateway can return 401.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s12"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Producer account membership (for Built on Workday distribution)",
+      "why": "Built on Workday apps are distributed by a Producer, typically a Workday Partner, after Workday approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8",
+          "s9"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Your own development tenant",
+      "examples": [
+        "Staffing",
+        "Tenant Non-Configurable",
+        "System - Workday Query Language (WQL)"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Development tenants are automatically authorized for all of your account's API clients. Sample data only (GMS staged company).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s7"
+        ],
+        "note": "Scopes in Workday are functional areas selected on the client, not OAuth scope strings you send."
+      }
+    },
+    {
+      "tier": "HR read access in a customer tenant",
+      "examples": [
+        "Staffing",
+        "Public Data",
+        "Tenant Non-Configurable",
+        "Organizations and Roles",
+        "Contact Information"
+      ],
+      "reviewRequired": true,
+      "time": "1–6 weeks per customer",
+      "impact": "No Workday review, but the customer's admin registers or allowlists the client and the authorizing user (or ISU) needs domain security permissions for every endpoint.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11",
+          "s12"
+        ],
+        "note": "'reviewRequired' here means customer-admin approval, not provider review. Time is our estimate."
+      }
+    },
+    {
+      "tier": "Sensitive areas (payroll, compensation, time tracking writes)",
+      "examples": [
+        "Payroll",
+        "Compensation",
+        "Time Tracking"
+      ],
+      "reviewRequired": true,
+      "time": "Longer customer security review",
+      "impact": "Same mechanism, but specific domains (for example Payroll Public API (Payroll Input)) must be granted; expect more internal scrutiny at the customer.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s12"
+        ],
+        "note": "'Longer review' is our inference."
+      }
+    },
+    {
+      "tier": "Built on Workday app (multi-customer distribution)",
+      "examples": [
+        "Extend / Orchestrate app scopes"
+      ],
+      "reviewRequired": true,
+      "time": "Months (partner onboarding + review)",
+      "impact": "Producers can distribute only after Workday approves the app; approval expires after 1 year. Customers install from App Manager without needing the Extend SKU.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8",
+          "s9"
+        ],
+        "note": "Time is our estimate; Workday publishes no review SLA."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Join the Workday developer program",
+      "owner": "human",
+      "detail": "Sign up at the Workday Developer Site with a personal email to get a Personal Account.",
+      "url": "https://developer.workday.com/about",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Request a personal development tenant",
+      "owner": "human",
+      "detail": "Console > Tenants > Development Tenants > +. Workday emails sign-in details (usually within 15 minutes); sign in and change the password within 72 hours. The tenant expires after 7 days without login, and you can have only 1 active at a time.",
+      "url": "https://developer.workday.com/doc/GUID-4f875963-a845-43b5-868a-0f77e6261eb7-enHYPHENus.md",
+      "duration": "15 min–days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create an API client",
+      "owner": "human",
+      "detail": "Console > API Clients > Create API Client: client name, HTTPS redirect URI, CORS domains if needed, and functional-area scopes. Save the client ID and secret.",
+      "url": "https://developer.workday.com/doc/zwx1518028675482.md",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Authorize at <auth base>/v1/authorize (e.g. https://auth.api.workday.com, or https://api.odp.wcp.workday.com/auth for personal accounts); POST to <auth base>/v1/token with an 'Authorization: ID <base64(client_id:client_secret)>' header. Map scopes by reading endpoint descriptions in the REST/Graph API explorers.",
+      "url": "https://developer.workday.com/doc/yai1528997518068.md",
+      "duration": "Half a day",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle refresh and user-bound tokens",
+      "owner": "agent",
+      "detail": "Exchange refresh tokens for a new access + refresh token pair. Access token lifetime follows the user's session timeout; refresh tokens die if the user is renamed or deactivated.",
+      "url": "https://developer.workday.com/doc/cqa1553122177664.md",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Write the customer admin setup guide",
+      "owner": "agent",
+      "detail": "Document for customer admins: run Register API Client (Authorization Code Grant, Bearer, your redirect URI, needed functional areas, optional non-expiring refresh tokens), grant domain security, then send you the client ID/secret, REST endpoint, authorization endpoint and tenant alias from View API Clients.",
+      "url": "https://nango.dev/docs/api-integrations/workday-oauth/how-to-register-your-own-workday-oauth-app",
+      "duration": "2–3 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11",
+          "s12"
+        ],
+        "note": "This per-tenant flow is documented by integration vendors; Workday's own admin guide is behind its customer community."
+      }
+    },
+    {
+      "title": "Build per-tenant credential storage",
+      "owner": "agent",
+      "detail": "Store client credentials, region gateway, auth base URL and tenant alias per customer; your connect screen collects them before starting OAuth.",
+      "url": null,
+      "duration": "Half a day",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4",
+          "s12"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Customer admin registers or allowlists the client",
+      "owner": "wait",
+      "detail": "Either the customer registers a tenant API client, or (for a Developer Site client) their Company Administrator adds the target IMPL/SBOX/PROD tenant via Modify Authorized Tenants. Tenant refreshes from PROD can require re-consent.",
+      "url": "https://developer.workday.com/doc/GUID-a600ff24-400c-4621-8f23-1ec27a56fc61-enHYPHENus.md",
+      "duration": "1–6 weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s7",
+          "s12"
+        ],
+        "note": "Duration is our estimate."
+      }
+    },
+    {
+      "title": "Optional: become a Built on Workday producer",
+      "owner": "human",
+      "detail": "Create the app with 'Create as a Built on Workday App', click Submit to Review, promote to Production after approval, then complete the partner order process.",
+      "url": "https://developer.workday.com/doc/GUID-3ae2414a-7a29-47f4-b3f6-38d1efbe14dd.md",
+      "duration": "Weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Workday app approval",
+      "owner": "wait",
+      "detail": "Workday reviews and certifies the app; editing an app in Review sends it back to In Development. Approval expires after 1 year.",
+      "url": "https://developer.workday.com/doc/GUID-dbf7dcc5-c295-45f2-a124-cefc8d6ac089.md",
+      "duration": "Unknown",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Write the step-by-step admin guide for registering the API client in each tenant",
+    "Map the endpoints your agent needs to functional-area scopes and security domains",
+    "Implement the auth-code flow with the 'Authorization: ID' header and per-region base URLs",
+    "Build per-tenant credential storage and refresh handling",
+    "Check that each customer's endpoints and tenant alias resolve"
+  ],
+  "humanMustDo": [
+    "Sign up for the developer program and request a development tenant",
+    "Create the API client in the Developer Site console",
+    "Get each customer's Workday admin to register or allowlist the client and grant domain permissions",
+    "Sign the partner order and submit for review if distributing as Built on Workday"
+  ],
+  "blockers": [
+    {
+      "symptom": "401 Unauthorized calling the API gateway with a valid token",
+      "cause": "The account is tied to a different region's API gateway.",
+      "fix": "Use the gateway and auth base URL shown on your Developer Site profile (US, EU, SG, UK or ODP).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Client works in the development tenant but not in the customer's IMPL/SBOX/PROD tenant",
+      "cause": "Non-development tenants aren't automatically authorized for API clients.",
+      "fix": "Have the customer's Company Administrator add the tenant under Modify Authorized Tenants, or register a tenant-specific client.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Refresh suddenly fails for one customer",
+      "cause": "Refresh tokens are tied to the user who authorized; renaming or deactivating that user invalidates them.",
+      "fix": "Have customers authorize with a stable service account/ISU and re-authorize on failure.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Token endpoint returns {\"error\":\"Invalid Credentials\"} (401)",
+      "cause": "Missing or malformed client authentication; Workday uses 'Authorization: ID <base64>' rather than plain Basic.",
+      "fix": "Base64-encode client_id:client_secret with no space and send 'ID ' plus the value.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "POST https://auth.api.workday.com/v1/token without credentials returned this 401 on 2026-10-20."
+      }
+    },
+    {
+      "symptom": "API returns permission errors for an endpoint despite a valid token",
+      "cause": "The functional-area scope isn't enabled on the client, or the user lacks the domain security policy.",
+      "fix": "Enable the scope listed in the endpoint description and have the admin grant the domain to the user/ISU.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s14"
+        ],
+        "note": "The exact error body is not documented."
+      }
+    },
+    {
+      "symptom": "Personal development tenant disappears",
+      "cause": "Personal Account tenants expire after 7 days without login.",
+      "fix": "Log in at least weekly, or recreate it (data is lost).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access token lifetime follows the session timeout the Workday admin configured for the user, so it varies per customer.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Tenant-registered clients can be set to issue non-expiring refresh tokens; integration vendors recommend enabling this for long-lived access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11"
+        ],
+        "note": "From Nango's guide, not Workday's public docs."
+      }
+    },
+    {
+      "text": "Scopes are Workday functional areas chosen on the client, and access is further limited by the user's domain security policies.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s14"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Service-to-service apps can use the client credentials grant mapped to an Integration System User (ISU), which avoids tying access to a person.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s14"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Workday recommends using only sample data, never PII, in WCP development tenants.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Workday's developer program now targets AI builders (Developer Agent, agent-ready MCP tools), so a Workday-hosted agent may be an alternative to an external OAuth connector.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Workday: Create Your API Client",
+      "url": "https://developer.workday.com/doc/zwx1518028675482.md"
+    },
+    {
+      "id": "s2",
+      "title": "Workday: Authenticate Using the Authorization Code Grant Type",
+      "url": "https://developer.workday.com/doc/yai1528997518068.md"
+    },
+    {
+      "id": "s3",
+      "title": "Workday: Request a New Access Token with a Refresh Token",
+      "url": "https://developer.workday.com/doc/cqa1553122177664.md"
+    },
+    {
+      "id": "s4",
+      "title": "Workday: Extend API Gateways and Authorization Base URLs",
+      "url": "https://developer.workday.com/doc/dlh1653340161856.md"
+    },
+    {
+      "id": "s5",
+      "title": "Workday: Create and Manage Personal Account Development Tenants",
+      "url": "https://developer.workday.com/doc/GUID-4f875963-a845-43b5-868a-0f77e6261eb7-enHYPHENus.md"
+    },
+    {
+      "id": "s6",
+      "title": "Workday: Concept: WCP Development Tenants",
+      "url": "https://developer.workday.com/doc/wqd1574121373563.md"
+    },
+    {
+      "id": "s7",
+      "title": "Workday: Modify Authorized Non-Development Tenants for API Clients",
+      "url": "https://developer.workday.com/doc/GUID-a600ff24-400c-4621-8f23-1ec27a56fc61-enHYPHENus.md"
+    },
+    {
+      "id": "s8",
+      "title": "Workday: Concept: Built on Workday Apps",
+      "url": "https://developer.workday.com/doc/GUID-dbf7dcc5-c295-45f2-a124-cefc8d6ac089.md"
+    },
+    {
+      "id": "s9",
+      "title": "Workday: Steps: Distribute Built on Workday Apps",
+      "url": "https://developer.workday.com/doc/GUID-3ae2414a-7a29-47f4-b3f6-38d1efbe14dd.md"
+    },
+    {
+      "id": "s10",
+      "title": "Workday blog: The Workday Developer Program Is Open",
+      "url": "https://blog.workday.com/en-us/workday-open-developer-platform-generally-available.html"
+    },
+    {
+      "id": "s11",
+      "title": "Nango: How to register your own Workday OAuth app",
+      "url": "https://nango.dev/docs/api-integrations/workday-oauth/how-to-register-your-own-workday-oauth-app"
+    },
+    {
+      "id": "s12",
+      "title": "Merge: Workday partner credentials for OAuth",
+      "url": "https://help.ah.merge.dev/articles/2335595504-workday-how-do-set-up-my-partner-credentials-for-oauth"
+    },
+    {
+      "id": "s14",
+      "title": "Workday: Authenticate Using the Client Credentials Grant Type",
+      "url": "https://developer.workday.com/doc/vle1524593542839.md"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://auth.api.workday.com/v1/authorize?client_id=x...: 200 (serves a JS sign-in app shell)",
+      "POST https://auth.api.workday.com/v1/token with no credentials: 401 {\"error\":\"Invalid Credentials\"}",
+      "GET https://auth.api.workday.com/.well-known/openid-configuration: 404 (no OIDC discovery)",
+      "GET https://api.odp.wcp.workday.com/auth/v1/authorize: 200",
+      "GET https://developer.workday.com/: 302 to /about (developer program sign-up page, 200)"
+    ],
+    "openQuestions": [
+      "Whether a personal (ODP) account's API client can be allowlisted on a customer's production tenant, or whether only accounts the customer controls can",
+      "Whether the personal development tenant is instantly available or still waitlisted, and whether it is free",
+      "Built on Workday partner fees, order terms and typical review time",
+      "Rate limits for the REST APIs (only unofficial figures found)",
+      "Whether Workday plans to retire the plain authorization code grant in favour of PKCE for these clients"
+    ]
+  }
+}

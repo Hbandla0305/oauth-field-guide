@@ -1,0 +1,537 @@
+{
+  "app": {
+    "name": "BambooHR",
+    "slug": "bamboohr",
+    "website": "https://www.bamboohr.com",
+    "developerPortal": "https://developers.bamboohr.com/login",
+    "category": "HR"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Getting started (API key and OAuth 2.0)",
+      "url": "https://documentation.bamboohr.com/docs/getting-started"
+    },
+    {
+      "kind": "scopes",
+      "label": "OAuth scopes (beta)",
+      "url": "https://documentation.bamboohr.com/reference/scopes"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Portal",
+      "url": "https://developers.bamboohr.com/login"
+    },
+    {
+      "kind": "review",
+      "label": "Marketplace partner application",
+      "url": "https://www.bamboohr.com/partner-programs/apps-marketplace-application"
+    },
+    {
+      "kind": "changelog",
+      "label": "OpenID Connect login deprecation notice",
+      "url": "https://documentation.bamboohr.com/page/authenticate-integration"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "OAuth apps are self-serve in a free Developer Portal with no documented review, so any BambooHR customer can authorize your app once you register a redirect URI and pick scopes. The catches are that there's no sandbox until you're accepted into the Marketplace partner program (which needs 100+ customers), scopes are still in beta, and rate limits aren't published.",
+    "timeToDev": {
+      "range": "1–4 hours",
+      "hours": {
+        "min": 1,
+        "max": 4
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "Assumes you already have access to a BambooHR company to test against. Without one, add time to get a trial or a customer's test account, because BambooHR provides sandboxes only to Marketplace partners."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
+      "assumes": "An unlisted OAuth app reading employee data, connected by customers who enter their company domain; Marketplace listing is optional and only for companies with 100+ customers.",
+      "waitingOn": "Nothing — no review documented for unlisted OAuth apps. Marketplace listing waits on Partner Team review with no published timeline.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s6",
+          "s7"
+        ],
+        "note": "BambooHR says 'Anyone can build an integration using the BambooHR API'. Neither BambooHR nor third-party setup guides mention an app approval step, but BambooHR doesn't state outright that there's none."
+      }
+    },
+    "cost": "Free Developer Portal account. A Marketplace listing requires a signed partner agreement; no fees are published."
+  },
+  "prerequisites": [
+    {
+      "item": "A free BambooHR Developer Portal account",
+      "why": "OAuth client ID, client secret, redirect URIs and scopes are all managed there.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Access to a BambooHR company to test against",
+      "why": "The authorize and token endpoints live on each customer's company subdomain, and BambooHR provides sandbox accounts only after you join the Marketplace Partner Program.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "For a Marketplace listing: 100+ total customers, a security questionnaire, and the Marketplace Partner Agreement",
+      "why": "These are the stated eligibility requirements for the Marketplace program.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "SOC 2, ISO 27001, FedRAMP or HITRUST are preferred, not required."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity and refresh",
+      "examples": [
+        "openid",
+        "email",
+        "offline_access",
+        "user"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "offline_access is the only way to get a refresh token; without it users must re-authorize about every hour.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": "Scope names beyond offline_access come from a third-party guide (Unified)."
+      }
+    },
+    {
+      "tier": "Basic employee directory and org data",
+      "examples": [
+        "employee",
+        "employee:name",
+        "employee:contact",
+        "employee:job",
+        "company:info",
+        "time_off"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enough for an HR helper agent that looks up people, managers and time off. Each scope can be set to No Access, Read or Read/Write in the portal.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7",
+          "s2"
+        ],
+        "note": "BambooHR's scopes page is in beta and lists no scopes; names are from Unified's setup guide."
+      }
+    },
+    {
+      "tier": "Sensitive employee data",
+      "examples": [
+        "employee:compensation",
+        "employee:payroll",
+        "employee:dependent:ssn",
+        "sensitive_employee:protected_info",
+        "employee:custom_fields_encrypted"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "No separate review is documented, but customers see these on the consent screen and the connecting user's own BambooHR permissions still limit what is returned.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7",
+          "s6"
+        ],
+        "note": "Scope names from a third-party guide; the absence of extra review is our inference."
+      }
+    },
+    {
+      "tier": "Write scopes",
+      "examples": [
+        "employee.write",
+        "time_off:requests.write",
+        "company_file.write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Lets an agent update records or file time-off requests. Request only what you need; customers' admins see the list.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Exact write-scope strings should be confirmed in the Developer Portal."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a Developer Portal account",
+      "owner": "human",
+      "detail": "Sign up for a free account at the BambooHR Developer Portal.",
+      "url": "https://developers.bamboohr.com/login",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Add an application",
+      "owner": "human",
+      "detail": "On the Applications page select Add application, name it, then copy the Client ID, Client Secret and Application Key.",
+      "url": "https://developers.bamboohr.com/home/applications",
+      "duration": "5 min",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7",
+          "s8"
+        ],
+        "note": "Portal layout from third-party guides."
+      }
+    },
+    {
+      "title": "Register the redirect URI and select scopes",
+      "owner": "human",
+      "detail": "Add your exact HTTPS callback under Redirect URIs, then under Application Scopes pick No Access, Read or Read/Write per category, and add offline_access under Miscellaneous.",
+      "url": "https://developers.bamboohr.com/home/applications",
+      "duration": "15 min",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7",
+          "s8",
+          "s1"
+        ],
+        "note": "Exact-match redirect requirement is official; UI labels are from third-party guides."
+      }
+    },
+    {
+      "title": "Draft the minimal scope list",
+      "owner": "agent",
+      "detail": "Map each agent feature to the fields it needs and pick the narrowest scope per category, checking field-to-scope mappings shown in the portal.",
+      "url": "https://documentation.bamboohr.com/reference/scopes",
+      "duration": "30 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the domain-aware OAuth flow",
+      "owner": "agent",
+      "detail": "Ask the user for their company subdomain, redirect to https://{companyDomain}.bamboohr.com/authorize.php?request=authorize with response_type=code, scopes joined by '+', and state, then exchange at https://{companyDomain}.bamboohr.com/token.php?request=token.",
+      "url": "https://documentation.bamboohr.com/docs/getting-started",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test against a real BambooHR company",
+      "owner": "human",
+      "detail": "Authorize with a test or customer account and confirm the consent screen lists the expected scopes and that fields come back.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Add backoff and refresh handling",
+      "owner": "agent",
+      "detail": "Refresh before the 1-hour expiry, store the newest refresh token, and retry 429/503 with exponential backoff and jitter, honoring Retry-After when present.",
+      "url": null,
+      "duration": "1 hour",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "Rate-limit behavior from a third-party engineering guide."
+      }
+    },
+    {
+      "title": "Optionally apply to the Marketplace",
+      "owner": "human",
+      "detail": "If you have 100+ customers, submit the partner application, complete the security questionnaire, sign the agreement, and submit a listing with docs, logo, images, help guide and demo URL.",
+      "url": "https://www.bamboohr.com/partner-programs/apps-marketplace-application",
+      "duration": "1–2 days of prep",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for Marketplace Partner Team review",
+      "owner": "wait",
+      "detail": "The Partner Team reviews and follows up; no timeline is published. Not needed for unlisted OAuth.",
+      "url": null,
+      "duration": "Unknown",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Pick minimal scopes per feature",
+    "Build the per-subdomain authorize and token exchange code",
+    "Implement refresh and 429/503 backoff",
+    "Batch employee field requests under the 400-field cap",
+    "Draft Marketplace listing docs and help guide"
+  ],
+  "humanMustDo": [
+    "Create the Developer Portal account and app",
+    "Copy the client secret into your secret store",
+    "Provide a BambooHR company to test against",
+    "Apply for the Marketplace and sign the partner agreement"
+  ],
+  "blockers": [
+    {
+      "symptom": "Authorization fails with a redirect error",
+      "cause": "redirect_uri differs from the registered one, even by a trailing slash or letter case.",
+      "fix": "Register and send the exact same URI.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "No refresh_token in the token response; users must reconnect every hour",
+      "cause": "offline_access scope wasn't requested or assigned.",
+      "fix": "Add offline_access in the portal and include it in the scope parameter.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Authorize URL redirects to bamboohr.com homepage or API returns 404",
+      "cause": "Wrong or renamed company subdomain.",
+      "fix": "Ask the customer for their exact subdomain and store it as editable config.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "https://example.bamboohr.com/authorize.php?request=authorize returned 302 to http://www.bamboohr.com/ for a non-existent company."
+      }
+    },
+    {
+      "symptom": "Fields silently missing from employee responses",
+      "cause": "Scope or the authorizing user's BambooHR permissions don't cover those fields; the API omits them without error.",
+      "fix": "Add the right scope and have a user with sufficient access authorize.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Described for API keys in a third-party guide; we infer the same for OAuth."
+      }
+    },
+    {
+      "symptom": "Can't use OpenID Connect Login API to fetch an API key for new customers",
+      "cause": "BambooHR closed that method to new integrations.",
+      "fix": "Use OAuth 2.0 access tokens instead.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "A third-party guide dates the deprecation to April 14, 2025; BambooHR's page gives no date."
+      }
+    },
+    {
+      "symptom": "HTTP 503 or 429 under load",
+      "cause": "Unpublished rate limits.",
+      "fix": "Back off exponentially with jitter and spread syncs over time.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire after 3600 seconds; refresh tokens are only issued with offline_access and their lifetime isn't documented.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Every customer has its own subdomain for authorize, token and API calls, so your connect flow must collect it before redirecting.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "OAuth scopes are labeled beta and 'in active development'; scope names and field coverage may change.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "OAuth fixes a classic API-key problem: keys are tied to a person and break when that user leaves, while app scopes are visible to customers before install.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "A single Get Employee request is capped at 400 fields.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Third-party engineering guide."
+      }
+    },
+    {
+      "text": "Marketplace partners must answer leads within 1 business day and support customers using the integration.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "BambooHR API - Getting started",
+      "url": "https://documentation.bamboohr.com/docs/getting-started"
+    },
+    {
+      "id": "s2",
+      "title": "BambooHR OAuth Scopes (beta)",
+      "url": "https://documentation.bamboohr.com/reference/scopes"
+    },
+    {
+      "id": "s3",
+      "title": "Using OpenID Connect to Authenticate and Retrieve an API Key (deprecated)",
+      "url": "https://documentation.bamboohr.com/page/authenticate-integration"
+    },
+    {
+      "id": "s4",
+      "title": "BambooHR Marketplace Application",
+      "url": "https://www.bamboohr.com/partner-programs/apps-marketplace-application"
+    },
+    {
+      "id": "s5",
+      "title": "BambooHR Marketplace requirements",
+      "url": "https://www.bamboohr.com/partner-programs/marketplace-requirements"
+    },
+    {
+      "id": "s6",
+      "title": "Truto: How to integrate with the BambooHR API (2026, third-party)",
+      "url": "https://truto.one/blog/how-to-integrate-with-the-bamboohr-api-2026-engineering-guide/"
+    },
+    {
+      "id": "s7",
+      "title": "Unified.to: Connecting BambooHR via OAuth 2 (third-party)",
+      "url": "https://docs.unified.to/guides/connecting_bamboohr_via_oauth_2.md"
+    },
+    {
+      "id": "s8",
+      "title": "Nango: Register your own BambooHR OAuth app (third-party)",
+      "url": "https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://developers.bamboohr.com/login returns HTTP 200.",
+      "https://example.bamboohr.com/authorize.php?request=authorize returns 302 to http://www.bamboohr.com/ for a non-existent company subdomain."
+    ],
+    "openQuestions": [
+      "Whether BambooHR reviews or can block unlisted OAuth apps before other companies install them.",
+      "Whether the authorizing user needs an admin role, and how user permissions combine with app scopes.",
+      "Official, stable list of scope strings (the scopes page is beta and lists none).",
+      "Refresh token lifetime and rotation behavior.",
+      "Published API rate limits."
+    ]
+  }
+}

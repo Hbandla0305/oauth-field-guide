@@ -1,0 +1,507 @@
+{
+  "app": {
+    "name": "Square",
+    "slug": "square",
+    "website": "https://squareup.com",
+    "developerPortal": "https://developer.squareup.com/apps",
+    "category": "Payments / POS"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth API overview",
+      "url": "https://developer.squareup.com/docs/oauth-api/overview"
+    },
+    {
+      "kind": "scopes",
+      "label": "Permissions reference",
+      "url": "https://developer.squareup.com/docs/oauth-api/square-permissions"
+    },
+    {
+      "kind": "oauth",
+      "label": "Move OAuth to production",
+      "url": "https://developer.squareup.com/docs/oauth-api/movetoprod"
+    },
+    {
+      "kind": "api",
+      "label": "OAuth best practices",
+      "url": "https://developer.squareup.com/docs/oauth-api/best-practices"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Console",
+      "url": "https://developer.squareup.com/apps"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Square's move-to-production checklist has no review step, and a Square-affiliated forum reply says production credentials work 'the moment the app is created' if you don't list on the App Marketplace, so any seller can authorize an unlisted app the same day. The App Marketplace is optional and, per a Square staff reply in September 2026, paused for developers without an assigned Partnerships contact.",
+    "timeToDev": {
+      "range": "30–60 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "Create the app, set the Sandbox redirect URL, open a Sandbox test account dashboard, and run the code flow against connect.squareupsandbox.com."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
+      "assumes": "An unlisted production app using the code flow with read permissions such as PAYMENTS_READ and ORDERS_READ. An App Marketplace listing is a separate, currently paused, partner track.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s3",
+          "s6",
+          "s7"
+        ],
+        "note": "The official checklist mentions no review. 'No approval needed' comes from forum replies (one from a user named Bryan-Square, 2023; one from a non-staff user, 2026), not Square policy."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Square account with Developer Console access",
+      "why": "Apps, Sandbox test accounts and production credentials are all created in the Developer Console.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "developer.squareup.com/apps redirected to squareup.com/signup?v=developers when not logged in (2026-10-20)."
+      }
+    },
+    {
+      "item": "An HTTPS production redirect URL",
+      "why": "The move-to-production checklist says to create a production redirect URL that uses HTTPS.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A server to store and encrypt tokens",
+      "why": "Square asks you to keep tokens on your application server, encrypt them (e.g. AES), and refresh at least every 7 days.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read permissions",
+      "examples": [
+        "MERCHANT_PROFILE_READ",
+        "PAYMENTS_READ",
+        "ORDERS_READ",
+        "CUSTOMERS_READ",
+        "ITEMS_READ",
+        "INVENTORY_READ",
+        "INVOICES_READ"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enough for an agent that analyses sales, catalog, customers and inventory. The permissions page doesn't mark any permission as needing approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Write permissions",
+      "examples": [
+        "ORDERS_WRITE",
+        "CUSTOMERS_WRITE",
+        "ITEMS_WRITE",
+        "INVENTORY_WRITE",
+        "INVOICES_WRITE",
+        "APPOINTMENTS_ALL_WRITE"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Same self-serve path. Seller-level Bookings access needs APPOINTMENTS_ALL_* on top of the base permission.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Money movement",
+      "examples": [
+        "PAYMENTS_WRITE",
+        "PAYMENTS_WRITE_ADDITIONAL_RECIPIENTS",
+        "PAYOUTS_READ"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "No documented approval, but sellers see these at consent. CreatePayment and RefundPayment need PAYMENTS_WRITE_ADDITIONAL_RECIPIENTS alongside PAYMENTS_WRITE.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Not available via OAuth",
+      "examples": [
+        "Events API",
+        "Webhook Subscriptions API"
+      ],
+      "reviewRequired": false,
+      "time": "N/A",
+      "impact": "These endpoints take your application's personal access token, not a seller's OAuth token. Webhook subscriptions are configured per app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in and create an application",
+      "owner": "human",
+      "detail": "Sign in to the Developer Console and create an app. Copy the Sandbox and Production application IDs and secrets from the OAuth page.",
+      "url": "https://developer.squareup.com/apps",
+      "duration": "10 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Choose permissions",
+      "owner": "agent",
+      "detail": "Map the agent's API calls to permissions and request only those; missing ones cause INSUFFICIENT_SCOPES.",
+      "url": "https://developer.squareup.com/docs/oauth-api/square-permissions",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the code flow",
+      "owner": "agent",
+      "detail": "Send sellers to https://connect.squareup.com/oauth2/authorize?client_id=...&scope=...&session=false&state=...; exchange the code (5 min, single use) at /oauth2/token. Use PKCE only for public clients, and don't mix flows.",
+      "url": "https://developer.squareup.com/docs/oauth-api/overview",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test in Sandbox",
+      "owner": "human",
+      "detail": "Open a Sandbox test account's dashboard from the Developer Console first (you can't sign in directly to the Sandbox authorize page), then authorize against connect.squareupsandbox.com. session=false isn't supported in Sandbox.",
+      "url": "https://developer.squareup.com/apps",
+      "duration": "15–30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build refresh, encryption and revocation handling",
+      "owner": "agent",
+      "detail": "Refresh every 7 days or less, alert if a token is older than 8 days, encrypt tokens, subscribe to oauth.authorization.revoked, and handle ACCESS_TOKEN_EXPIRED / ACCESS_TOKEN_REVOKED.",
+      "url": "https://developer.squareup.com/docs/oauth-api/best-practices",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Set the production redirect URL",
+      "owner": "human",
+      "detail": "In the app's OAuth page, switch to Production and add the HTTPS redirect URL.",
+      "url": "https://developer.squareup.com/apps",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Switch to production credentials and base URL",
+      "owner": "agent",
+      "detail": "Use the production application ID and https://connect.squareup.com; forgetting this is a common error.",
+      "url": "https://developer.squareup.com/docs/oauth-api/movetoprod",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Connect a real seller account",
+      "owner": "human",
+      "detail": "Authorize with a real Square seller account to confirm production access before onboarding customers.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Pick the minimal permission set",
+    "Implement the code flow, 7-day refresh and token encryption",
+    "Handle revocation webhooks and token error codes",
+    "Switch base URLs and credentials between Sandbox and production",
+    "Check the authorize and token endpoints"
+  ],
+  "humanMustDo": [
+    "Sign in and create the app in the Developer Console",
+    "Open a Sandbox test account dashboard to test authorization",
+    "Add the HTTPS production redirect URL",
+    "Authorize a real seller account for the first production test"
+  ],
+  "blockers": [
+    {
+      "symptom": "AUTHENTICATION_ERROR / UNAUTHORIZED on every call",
+      "cause": "Sandbox tokens used against production (or vice versa); tokens are environment-specific.",
+      "fix": "Match the base URL (connect.squareupsandbox.com vs connect.squareup.com) to the credentials.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Can't sign in on the Sandbox authorize page",
+      "cause": "Sandbox authorization needs an open Sandbox test account dashboard first.",
+      "fix": "Open the test account from the Developer Console, then start the flow in the same browser.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "INSUFFICIENT_SCOPES on an API call",
+      "cause": "The permission for that endpoint wasn't requested.",
+      "fix": "Add it to the scope parameter and have the seller re-authorize.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "ACCESS_TOKEN_EXPIRED, then UNAUTHORIZED, after a month",
+      "cause": "Access tokens expire after 30 days and weren't refreshed.",
+      "fix": "Refresh every 7 days or less on a schedule, regardless of seller activity.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "App Marketplace integration review stuck at pending",
+      "cause": "Marketplace onboarding is paused for developers without an assigned Square Partnerships contact.",
+      "fix": "Distribute as an unlisted app; the pause doesn't affect API access.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "Reply from user jseok (appears to be Square staff), 2026-09-03."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire after 30 days. Code-flow refresh tokens don't expire until access is revoked; PKCE refresh tokens are single-use and expire after 90 days.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Square says partner developers must not request or use sellers' personal access tokens; use OAuth instead.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Set session=false in production so sellers sign in to the specific account they're authorizing.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Sellers can disconnect your app from My Applications in the Square Dashboard, which revokes all their tokens.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The App Marketplace is a separate partner track. A September 2026 staff reply says onboarding without an assigned Partnerships contact is paused, and the App Marketplace docs pages (developer.squareup.com/docs/app-marketplace, /faq) now return 404.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "The 404s were observed on 2026-10-20. Search snippets of the older page mentioned partner approval with a reply within 14 business days, but we couldn't open it."
+      }
+    },
+    {
+      "text": "A separate OIDC issuer exists for Square users (authorize at squareup.com/oauth2/users/authorize, scopes openid and person_alias_read), distinct from the seller OAuth used for API access.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "Seen in the live discovery document on 2026-10-20. Not covered in the OAuth docs we read."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Square docs: OAuth API overview",
+      "url": "https://developer.squareup.com/docs/oauth-api/overview"
+    },
+    {
+      "id": "s2",
+      "title": "Square docs: Permissions reference",
+      "url": "https://developer.squareup.com/docs/oauth-api/square-permissions"
+    },
+    {
+      "id": "s3",
+      "title": "Square docs: Move OAuth to production",
+      "url": "https://developer.squareup.com/docs/oauth-api/movetoprod"
+    },
+    {
+      "id": "s4",
+      "title": "Square docs: OAuth best practices",
+      "url": "https://developer.squareup.com/docs/oauth-api/best-practices"
+    },
+    {
+      "id": "s6",
+      "title": "Square forum: Do we need to get approved to use our Square integration in production? (2023)",
+      "url": "https://developer.squareup.com/forums/t/do-we-need-to-get-approved-to-use-our-square-integration-in-production/8413"
+    },
+    {
+      "id": "s7",
+      "title": "Square forum: Clarification on OAuth limits for unlisted/private production applications (2026)",
+      "url": "https://developer.squareup.com/forums/t/clarification-on-oauth-limits-for-unlisted-private-production-applications/25389"
+    },
+    {
+      "id": "s8",
+      "title": "Square forum: Square App Marketplace integration review timeline (2026)",
+      "url": "https://developer.squareup.com/forums/t/square-app-marketplace-integration-review-timeline/27453"
+    },
+    {
+      "id": "s9",
+      "title": "Square OpenID configuration (live)",
+      "url": "https://connect.squareup.com/.well-known/openid-configuration"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://connect.squareup.com/oauth2/authorize?client_id=sq0idp-invalid&...: 302 to https://squareup.com/oauth2/authorize",
+      "POST https://connect.squareup.com/oauth2/token with only grant_type: {\"message\":\"missing required parameter 'client_id'\",\"type\":\"bad_request.missing_parameter\"}",
+      "GET https://connect.squareup.com/.well-known/openid-configuration: issuer https://connect.squareup.com, authorize https://squareup.com/oauth2/users/authorize, scopes openid and person_alias_read, ES256",
+      "GET https://developer.squareup.com/apps: 302 to squareup.com/signup?v=developers (needs login)",
+      "GET https://developer.squareup.com/docs/app-marketplace and /docs/app-marketplace/faq: HTTP 404"
+    ],
+    "openQuestions": [
+      "Official Square confirmation that unlisted production apps have no seller cap or review (only forum replies found)",
+      "Rate limits per application or per seller for OAuth tokens",
+      "Whether Square's terms restrict sending seller data to third-party AI providers",
+      "When App Marketplace partner onboarding will reopen"
+    ]
+  }
+}

@@ -1,0 +1,525 @@
+{
+  "app": {
+    "name": "Constant Contact",
+    "slug": "constant-contact",
+    "website": "https://www.constantcontact.com",
+    "developerPortal": "https://app.constantcontact.com/pages/dma/portal/",
+    "category": "Email marketing"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth2 overview",
+      "url": "https://developer.constantcontact.com/api_guide/auth_overview.html"
+    },
+    {
+      "kind": "oauth",
+      "label": "Authorization code flow",
+      "url": "https://developer.constantcontact.com/api_guide/server_flow.html"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://developer.constantcontact.com/api_guide/scopes.html"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developer.constantcontact.com/api_guide/rate_limits.html"
+    },
+    {
+      "kind": "review",
+      "label": "Getting started (private access and approval)",
+      "url": "https://developer.constantcontact.com/api_guide/getting-started/getting-started"
+    },
+    {
+      "kind": "console",
+      "label": "My Applications (developer portal)",
+      "url": "https://app.constantcontact.com/pages/dma/portal/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Creating a V3 app is self-serve and works for your own account within the hour, but new apps are private: only the Constant Contact user who created the app can authorize it until you phone support (866-289-2101) to start an approval process with no published criteria or timeline. Plan around the per-API-key limit of 10,000 requests a day and 4 per second, which the docs state for the key rather than per connected account.",
+    "timeToDev": {
+      "range": "30–60 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Sign up for a developer account (which creates a trial Constant Contact account), create the app, generate a secret, and authorize it with that same user."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 weeks",
+      "hours": {
+        "min": 168,
+        "max": 504
+      },
+      "assumes": "An authorization-code app that reads and writes contacts and campaigns for any Constant Contact customer, which needs Constant Contact to lift the private-access restriction; there is no faster path for other users.",
+      "waitingOn": "Constant Contact support's approval to open the app to all users, started by phone. A Technology Partner account (for managing client accounts) is a separate, several-week process.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "The phone-call approval requirement is sourced; the docs give no duration, so the 1–3 week range is our estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A V3 developer account (comes with a trial Constant Contact account)",
+      "why": "My Applications is where you register apps and get the API key (client_id); signing up creates a trial account for testing.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Approval from Constant Contact to open the app to all users",
+      "why": "New applications are limited to private access; only the creating user can grant access until support approves the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A redirect URI (absolute; wildcards only at domain root)",
+      "why": "Authorization codes are returned to a registered redirect_uri. Multiple redirect URIs per app are allowed; the docs' examples use https://localhost:8888.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Account and identity",
+      "examples": [
+        "account_read",
+        "account_update",
+        "offline_access",
+        "openid",
+        "profile",
+        "email"
+      ],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Read account details and get refresh tokens (offline_access). No scope is exempt from the private-access limit; approval is per app, not per scope.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": "openid/profile/email are inferred from the documented id_token; the Scopes page lists only account_read, account_update, contact_data, campaign_data and offline_access."
+      }
+    },
+    {
+      "tier": "Contacts and lists",
+      "examples": [
+        "contact_data"
+      ],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Read and write contacts, lists, custom fields, segments, bulk activities and contact reports. What a CRM-sync or audience agent needs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "reviewRequired=true reflects the app-level approval, not a scope-specific review."
+      }
+    },
+    {
+      "tier": "Campaigns and reporting",
+      "examples": [
+        "campaign_data"
+      ],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Read and write email campaigns and read email reports. Lets an agent draft and schedule sends, so add your own confirmation step.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Technology Partner endpoints",
+      "examples": [
+        "partner_client_id + partner_secret (not OAuth scopes)"
+      ],
+      "reviewRequired": true,
+      "time": "Several weeks",
+      "impact": "Create and manage Constant Contact client accounts under your partner account. Only for authorized technology partners; not needed to act on users' own accounts.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign up for a developer account",
+      "owner": "human",
+      "detail": "In the V3 Developer Portal, open My Applications and click Sign up (email, password, name, organization, phone). A trial Constant Contact account is created for testing.",
+      "url": "https://app.constantcontact.com/pages/dma/portal/",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The portal URL returned HTTP 200 on 2026-10-20; we didn't sign in."
+      }
+    },
+    {
+      "title": "Create the application",
+      "owner": "human",
+      "detail": "Click New Application, enter the consent-screen name, pick 'Authorization Code Flow and Implicit Flow' (server apps) or PKCE, and choose Rotating (recommended) or Long Lived refresh tokens. Developers are limited to 50 applications.",
+      "url": "https://app.constantcontact.com/pages/dma/portal/",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Get the API key and generate a secret",
+      "owner": "human",
+      "detail": "Click edit on the app to see the API Key (client_id), click Generate Client Secret and store it; it's shown once. Add your redirect URIs and Save.",
+      "url": "https://app.constantcontact.com/pages/dma/portal/",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://authz.constantcontact.com/oauth2/default/v1/authorize with client_id, redirect_uri, response_type=code, state and space-delimited scope (include offline_access). Exchange the code within 5 minutes at https://authz.constantcontact.com/oauth2/default/v1/token using Basic auth (base64 client_id:client_secret).",
+      "url": "https://developer.constantcontact.com/api_guide/server_flow.html",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement refresh handling",
+      "owner": "agent",
+      "detail": "Refresh only when the access token is expired or close to it; each refresh returns a new refresh_token (store it atomically with rotating tokens). Refreshing before every call risks 429s on the token endpoint.",
+      "url": "https://developer.constantcontact.com/api_guide/server_flow.html",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build a shared request budget",
+      "owner": "agent",
+      "detail": "Track usage against 10,000 requests/day and 4 requests/second per API key, reset at 00:00 UTC. Back off on 429 with error_key 'throttled' and stop on 'quota_exceeded'. Use bulk activity endpoints for large imports.",
+      "url": "https://developer.constantcontact.com/api_guide/rate_limits.html",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test end to end with the creating user",
+      "owner": "human",
+      "detail": "Authorize the app with the same Constant Contact user that created it (the only user allowed before approval) and exercise each scope.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the approval request",
+      "owner": "agent",
+      "detail": "Prepare a short description of the integration: app name and API key, scopes and why, expected number of connected accounts and daily request volume, and whether you'll need a higher rate limit.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Constant Contact doesn't publish what the approval asks for."
+      }
+    },
+    {
+      "title": "Call support to open the app to all users",
+      "owner": "human",
+      "detail": "Call 866-289-2101 to begin the approval process that lets any Constant Contact user grant access.",
+      "url": "https://developer.constantcontact.com/api_guide/getting-started/getting-started",
+      "duration": "30 min call",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for approval",
+      "owner": "wait",
+      "detail": "No published SLA. Optionally apply as a Technology Partner in parallel if you need to provision client accounts; that review may take several weeks.",
+      "url": null,
+      "duration": "1–3 weeks (estimate)",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the authorization code or PKCE flow with offline_access",
+    "Handle rotating refresh tokens and token-endpoint backoff",
+    "Build a per-key daily and per-second request budget",
+    "Draft the approval request and scope justifications",
+    "Check redirect URIs and authorize URL parameters"
+  ],
+  "humanMustDo": [
+    "Sign up for the developer account and create the app",
+    "Generate and store the client secret",
+    "Test authorization with the creating user",
+    "Phone support (866-289-2101) to request approval for all users",
+    "Apply as a Technology Partner if you need client-account management"
+  ],
+  "blockers": [
+    {
+      "symptom": "Other Constant Contact users can't authorize your app, while your own account works",
+      "cause": "New applications are limited to private access; only the user who created the app can grant access.",
+      "fix": "Call support at 866-289-2101 to begin the approval process for all users.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "The exact error or screen other users see wasn't documented."
+      }
+    },
+    {
+      "symptom": "HTTP 429 with {\"error_key\": \"quota_exceeded\", \"error_message\": \"Limit Exceeded\"}",
+      "cause": "The API key passed 10,000 requests for the day.",
+      "fix": "Wait for the 00:00 UTC reset, cache and batch calls, and ask Constant Contact about higher limits during approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Whether higher limits can be granted isn't documented."
+      }
+    },
+    {
+      "symptom": "HTTP 429 with {\"error_key\": \"throttled\", \"error_message\": \"Too Many Requests\"}",
+      "cause": "More than 4 requests per second.",
+      "fix": "Queue requests globally per API key and retry with backoff.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "No refresh_token in the token response",
+      "cause": "The authorize request didn't include the offline_access scope (or the app uses the implicit flow).",
+      "fix": "Add offline_access to scope and use the authorization code or PKCE flow.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "403 when calling an endpoint with a valid token",
+      "cause": "The token lacks the scope the route needs (e.g. /emails needs campaign_data).",
+      "fix": "Request the right scopes and have the user re-authorize.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Token exchange fails with an expired or invalid code",
+      "cause": "Authorization codes expire after 300 seconds.",
+      "fix": "Exchange the code immediately on the callback.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens (JWTs of 1,000–1,200 characters) expire after 1,440 minutes with a 24-hour maximum; implicit-flow tokens last 8 hours. Size your token columns accordingly.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The server-flow page's sample response shows expires_in 28800, which conflicts with the 1,440-minute figure."
+      }
+    },
+    {
+      "text": "Refresh tokens are 42 characters and expire after 180 days if never used. Choose Rotating (recommended, new token on each refresh) or Long Lived when creating the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The 10,000/day and 4/second limits are stated for 'your API key', so a multi-tenant agent may share one budget across all connected accounts.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "The docs don't say whether limits are per key or per key-and-account; we read 'your API key' literally."
+      }
+    },
+    {
+      "text": "Constant Contact doesn't publish an OIDC discovery document at its Okta-style issuer, although it returns an id_token with name and email.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "https://authz.constantcontact.com/oauth2/default/.well-known/openid-configuration returned HTTP 404 on 2026-10-20."
+      }
+    },
+    {
+      "text": "Device Authorization and PKCE flows are supported for CLIs and public clients, so an agent running locally doesn't need to hold a client secret.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Constant Contact V3: OAuth2 overview",
+      "url": "https://developer.constantcontact.com/api_guide/auth_overview.html"
+    },
+    {
+      "id": "s2",
+      "title": "Constant Contact V3: Getting started",
+      "url": "https://developer.constantcontact.com/api_guide/getting-started/getting-started"
+    },
+    {
+      "id": "s3",
+      "title": "Constant Contact V3: Technology Partner overview",
+      "url": "https://developer.constantcontact.com/api_guide/technology-partners/partners-overview"
+    },
+    {
+      "id": "s4",
+      "title": "Constant Contact V3: OAuth2 authorization code flow",
+      "url": "https://developer.constantcontact.com/api_guide/server_flow.html"
+    },
+    {
+      "id": "s5",
+      "title": "Constant Contact V3: Authorization scopes",
+      "url": "https://developer.constantcontact.com/api_guide/scopes.html"
+    },
+    {
+      "id": "s6",
+      "title": "Constant Contact V3: Rate limits",
+      "url": "https://developer.constantcontact.com/api_guide/rate_limits.html"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://app.constantcontact.com/pages/dma/portal/: HTTP 200",
+      "GET https://authz.constantcontact.com/oauth2/default/.well-known/openid-configuration: HTTP 404",
+      "GET https://authz.constantcontact.com/oauth2/default/.well-known/oauth-authorization-server: HTTP 404",
+      "GET developer.constantcontact.com auth_overview, server_flow, scopes, rate_limits pages: HTTP 200; apps_create.html: HTTP 404 (moved)"
+    ],
+    "openQuestions": [
+      "What the phone approval asks for and how long it typically takes",
+      "Whether rate limits are per API key across all accounts or per key and account, and whether they can be raised",
+      "Whether localhost redirect URIs work over http (docs only show https://localhost:8888)",
+      "Whether openid/profile/email scopes are formally supported (id_token is documented, scopes aren't listed)"
+    ]
+  }
+}

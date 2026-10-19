@@ -1,0 +1,560 @@
+{
+  "app": {
+    "name": "Gusto",
+    "slug": "gusto",
+    "website": "https://gusto.com",
+    "developerPortal": "https://dev.gusto.com",
+    "category": "Payroll"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth2 guide",
+      "url": "https://docs.gusto.com/app-integrations/docs/oauth2"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes",
+      "url": "https://docs.gusto.com/app-integrations/docs/scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Introduction and Production Pre-Approval",
+      "url": "https://docs.gusto.com/app-integrations/docs/introduction"
+    },
+    {
+      "kind": "review",
+      "label": "Security review",
+      "url": "https://docs.gusto.com/app-integrations/docs/security-review"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://docs.gusto.com/app-integrations/docs/rate-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Portal",
+      "url": "https://dev.gusto.com/dashboard"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "Demo keys and auto-populated demo companies are self-serve within an hour, but the Gusto API is restricted to App Integration and Embedded partners: production keys need an approved Production Pre-Approval, a third-party security review and a QA review of your build, and Gusto says not all applications are approved. Early-stage products without a track record serving small businesses are listed as not currently supported.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Sign up, create an organization and an application with a redirect URI, then create a demo company that comes pre-filled with employees and past payrolls."
+      }
+    },
+    "timeToProd": {
+      "range": "4–10 weeks",
+      "hours": {
+        "min": 672,
+        "max": 1680
+      },
+      "assumes": "A direct Integrated App reading employee and payroll data, with a SOC 2 or ISO 27001 report on hand; going through an approved Unified API partner still requires the same pre-approval and security review.",
+      "waitingOn": "Partnerships review of Production Pre-Approval, then the GRC security review (run with VISO Trust), then Developer Relations QA of your Partner Checklist before production keys are issued.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3",
+          "s7"
+        ],
+        "note": "Gusto publishes no timeline. Finch's guide says Gusto 'typically takes at least 2 weeks to respond' to the questionnaire, the security review step takes 2–4 weeks, and there's no fast track. QA time depends on your build."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A software product serving businesses, with shared Gusto customers and an established track record",
+      "why": "Gusto lists early-stage products and customers connecting their own systems as not currently supported.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Gusto customers connecting their own company should use the Gusto CLI or Gusto MCP server instead."
+      }
+    },
+    {
+      "item": "An approved Production Pre-Approval application",
+      "why": "Without it Gusto won't provide implementation support, QA review or production keys.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Security documentation: SOC 2 Type 2, ISO 27001 or PCI DSS, pen test reports, and security and privacy policies",
+      "why": "The pre-approval questionnaire feeds the security review; without a formal audit you answer a long list of control questions.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Users who are primary or full-access admins in Gusto",
+      "why": "Only those admins can enable and authorize a new application for a company.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Demo environment (any scope you build against)",
+      "examples": [
+        "companies:read",
+        "employees:read",
+        "payrolls:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Demo keys only work against https://api.gusto-demo.com with demo companies.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Core HR and org data (production)",
+      "examples": [
+        "companies:read",
+        "employees:read",
+        "company_admin:read",
+        "pay_schedules:read",
+        "time_off_policies:read"
+      ],
+      "reviewRequired": true,
+      "time": "4–10 weeks",
+      "impact": "Scopes aren't requested in the authorize URL; Gusto assigns them to your app during review based on your use case, and calls outside them are rejected in production.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Payroll and write access",
+      "examples": [
+        "payrolls:read",
+        "payrolls:write",
+        "companies:write"
+      ],
+      "reviewRequired": true,
+      "time": "4–10 weeks",
+      "impact": "Same review, but you must justify write access to payroll in your use case and demonstrate it in QA.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4",
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Sensitive benefits and PHI",
+      "examples": [
+        "company_benefits:read",
+        "company_benefits:read:phi"
+      ],
+      "reviewRequired": true,
+      "time": "Longer, may be refused",
+      "impact": "Benefits containing PHI are only visible with the :phi scope. Without SOC 2/ISO/PCI reports, sensitive PII such as benefits data needs a separate discussion with Gusto.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8",
+          "s7"
+        ],
+        "note": "The SOC 2 requirement for benefits data comes from Finch's guide."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a Developer Portal account and organization",
+      "owner": "human",
+      "detail": "Sign up, complete Organization setup, and invite teammates under Organizations > Team.",
+      "url": "https://dev.gusto.com/dashboard",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the Production Pre-Approval answers",
+      "owner": "agent",
+      "detail": "Write the use case, shared-customer story, data fields needed and the security control answers, mapped to the documents you have.",
+      "url": "https://docs.gusto.com/app-integrations/docs/security-review",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit Production Pre-Approval before building",
+      "owner": "human",
+      "detail": "Submit the Qualtrics application with security reports and contacts. Gusto strongly recommends approval before you invest in a build.",
+      "url": "https://gusto.az1.qualtrics.com/jfe/form/SV_7ZGyGtL3JFlTIEe?track=build",
+      "duration": "30–60 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for pre-approval and security review",
+      "owner": "wait",
+      "detail": "Partnerships reviews first; if approved, the GRC team starts the security review. Reply fast to follow-up questions or the review is put on hold.",
+      "url": null,
+      "duration": "2–6 weeks",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s7"
+        ],
+        "note": "Duration from Finch's guide, not Gusto."
+      }
+    },
+    {
+      "title": "Create a demo application and demo company",
+      "owner": "human",
+      "detail": "Create an application with at least one exact redirect URI (no wildcards or fragments), copy the client_id and secret, then create a demo company.",
+      "url": "https://dev.gusto.com/dashboard",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the OAuth flow against demo",
+      "owner": "agent",
+      "detail": "Redirect to /oauth/authorize, exchange at /oauth/token (JSON body), store tokens per company UUID, and rotate the single-use refresh token on every refresh. Use https://api.gusto-demo.com.",
+      "url": "https://docs.gusto.com/app-integrations/docs/oauth2",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Complete the Partner Checklist",
+      "owner": "agent",
+      "detail": "After pre-approval you get the Partner Checklist; copy it and fill in each item from your build, including the scopes you exercise in demo.",
+      "url": "https://docs.gusto.com/app-integrations/docs/introduction",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit for QA review",
+      "owner": "human",
+      "detail": "Share the completed Partner Checklist with developer@gusto.com and walk Gusto through the demo integration.",
+      "url": null,
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for QA and production keys",
+      "owner": "wait",
+      "detail": "Developer Relations assigns scopes and issues production keys in the portal once approved. Production redirect URIs can only be changed by emailing developer@gusto.com.",
+      "url": null,
+      "duration": "1–3 weeks",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Gusto gives no QA duration."
+      }
+    },
+    {
+      "title": "Launch and request scope changes as needed",
+      "owner": "human",
+      "detail": "Move to https://api.gusto.com. Request extra scopes by emailing developer@gusto.com. You can't test with demo accounts in production.",
+      "url": null,
+      "duration": "1 day",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Draft the Pre-Approval use case and security answers",
+    "Build the OAuth flow with single-use refresh token rotation",
+    "Store one grant per company and handle multi-company admins",
+    "Fill in the Partner Checklist from the build",
+    "Implement 429 backoff under 200 requests/min per grant"
+  ],
+  "humanMustDo": [
+    "Create the Developer Portal account and organization",
+    "Submit Production Pre-Approval with real security reports",
+    "Answer GRC follow-up questions",
+    "Submit the Partner Checklist for QA",
+    "Email Gusto for production redirect or scope changes"
+  ],
+  "blockers": [
+    {
+      "symptom": "Pre-Approval declined",
+      "cause": "Product is early-stage, the use case doesn't map to a supported category, or it's a customer connecting their own company.",
+      "fix": "Apply once you have shared customers and a track record; for internal use, use Gusto CLI or the Gusto MCP server.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Production API calls rejected for an endpoint that worked in demo",
+      "cause": "The endpoint's scope wasn't assigned to your app during review.",
+      "fix": "Email developer@gusto.com to request the additional scope.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Refresh fails with invalid_grant after a retry or race",
+      "cause": "Refresh tokens are single-use; the first refresh invalidated it.",
+      "fix": "Serialize refreshes per grant and persist the new refresh token atomically.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Gusto states refresh tokens are 'invalid after one use'; the error string is our assumption."
+      }
+    },
+    {
+      "symptom": "403 Forbidden with a token that used to work across companies",
+      "cause": "Since v2023-05-01, tokens must be strict access tokens scoped to a single company.",
+      "fix": "Have the admin authorize each company separately, or exchange legacy tokens with grant_type=strict_access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "User can't authorize the app",
+      "cause": "They aren't a primary admin or full-access admin on the Gusto company.",
+      "fix": "Ask a primary or full-access admin to connect.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "429 Too Many Requests",
+      "cause": "Over 200 requests in a rolling 60-second window for one OAuth grant.",
+      "fix": "Throttle per grant and back off until the window clears.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire after 2 hours; refresh tokens never expire but are invalid after one use, and each refresh returns a new pair.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Each OAuth grant covers exactly one company; accountants and multi-company admins must authorize every company separately.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limit is 200 requests per minute per OAuth grant, on a 60-second rolling window.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Demo and production use different hosts (api.gusto-demo.com vs api.gusto.com) and different keys; test companies aren't supported in production.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Going through an approved Unified API platform doesn't skip Gusto's pre-approval and security review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Gusto offers its own CLI and MCP server for customers connecting their own company, which is the intended path for an internal AI agent rather than a partner app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Gusto App Integrations - Introduction",
+      "url": "https://docs.gusto.com/app-integrations/docs/introduction"
+    },
+    {
+      "id": "s2",
+      "title": "Gusto App Integrations - OAuth2",
+      "url": "https://docs.gusto.com/app-integrations/docs/oauth2"
+    },
+    {
+      "id": "s3",
+      "title": "Gusto App Integrations - Security Review",
+      "url": "https://docs.gusto.com/app-integrations/docs/security-review"
+    },
+    {
+      "id": "s4",
+      "title": "Gusto App Integrations - Scopes",
+      "url": "https://docs.gusto.com/app-integrations/docs/scopes"
+    },
+    {
+      "id": "s5",
+      "title": "Gusto App Integrations - Strict Access",
+      "url": "https://docs.gusto.com/app-integrations/docs/strict-access"
+    },
+    {
+      "id": "s6",
+      "title": "Gusto App Integrations - Rate Limits",
+      "url": "https://docs.gusto.com/app-integrations/docs/rate-limits"
+    },
+    {
+      "id": "s7",
+      "title": "Finch: Gusto integration guide (third-party)",
+      "url": "https://developer.tryfinch.com/integrations/guides/Gusto.md"
+    },
+    {
+      "id": "s8",
+      "title": "Gusto App Integrations - docs index with per-endpoint scopes",
+      "url": "https://docs.gusto.com/app-integrations/llms.txt"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://api.gusto.com/oauth/authorize returns 302 to https://app.gusto.com/login?return_to=%2Foauth%2Fauthorize.",
+      "https://dev.gusto.com/accounts/sign_in returned 403 to an automated request (likely bot protection), so the portal wasn't confirmed live."
+    ],
+    "openQuestions": [
+      "Typical QA review duration after the Partner Checklist is submitted.",
+      "What share of Pre-Approval applications are declined, and what counts as 'early-stage'.",
+      "Whether AI agent products are treated as a supported category.",
+      "Exact invalid_grant behavior when a used refresh token is replayed."
+    ]
+  }
+}

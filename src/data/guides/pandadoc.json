@@ -1,0 +1,469 @@
+{
+  "app": {
+    "name": "PandaDoc",
+    "slug": "pandadoc",
+    "website": "https://www.pandadoc.com",
+    "developerPortal": "https://developers.pandadoc.com",
+    "category": "E-signature"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 authentication process",
+      "url": "https://developers.pandadoc.com/reference/authentication-process"
+    },
+    {
+      "kind": "scopes",
+      "label": "Create or refresh an access token (scopes)",
+      "url": "https://developers.pandadoc.com/reference/access-token"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Dashboard (Dev Center)",
+      "url": "https://app.pandadoc.com/a/#/settings/api-dashboard/configuration"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits",
+      "url": "https://developers.pandadoc.com/reference/limits"
+    },
+    {
+      "kind": "review",
+      "label": "API feature access by plan",
+      "url": "https://support.pandadoc.com/en/articles/17236207-compare-api-feature-access-by-plan"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "There's no app review, but PandaDoc's plan table marks Applications/OAuth as unavailable on Free and Starter, included in the API Developer Plan, and a paid add-on on Business and Enterprise, so you need to pay before you can even create an OAuth app. Once you have it, the flow is simple: two scopes (read, write) and access tokens that last about a year.",
+    "timeToDev": {
+      "range": "1–3 hours",
+      "hours": {
+        "min": 1,
+        "max": 3
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3",
+          "s5"
+        ],
+        "note": "Assumes you buy the API Developer Plan self-serve. If you're on Business/Enterprise and need the OAuth add-on through sales, add days. API keys (sandbox) work sooner, but they aren't OAuth."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
+      "assumes": "You're on a plan that includes OAuth applications (API Developer Plan) and your agent reads and writes documents in users' own PandaDoc workspaces.",
+      "waitingOn": "Nothing — no review. The only gate is the paid plan or add-on (and sales, if you go the add-on route).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3",
+          "s4"
+        ],
+        "note": "None of the PandaDoc pages we read mention an app review or marketplace approval for OAuth apps. That doesn't rule out terms-of-use checks."
+      }
+    },
+    "cost": "API Developer Plan, $40/month including 40 documents sent per month and $4 per extra document; or a paid OAuth add-on on Business/Enterprise (contact sales)."
+  },
+  "prerequisites": [
+    {
+      "item": "A PandaDoc plan that includes Applications/OAuth",
+      "why": "The plan table marks Applications/OAuth as unavailable on Free and Starter, included on the API Developer Plan, and a paid add-on on Business and Enterprise.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Account owner or admin role, with the Dev Center enabled",
+      "why": "Only the owner and admin-role users can open the Dev Center, which is enabled under Settings > API and Integrations > API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A verified email and production API access",
+      "why": "The OAuth guide says application creation is only available with production API access enabled; the sandbox key is for testing the public API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A redirect URL that matches the app settings exactly",
+      "why": "redirect_uri in the authorize request has to match the application settings.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read",
+      "examples": [
+        "read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "View templates and document details. Enough for an agent that summarizes or tracks document status.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Read and write",
+      "examples": [
+        "read write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Create, send, delete and download documents. Most agents that generate or send documents need this. 'read+write' is deprecated; send 'read write' (space-separated).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Get a plan that includes OAuth applications",
+      "owner": "human",
+      "detail": "Subscribe to the API Developer Plan, or ask sales for the Applications/OAuth add-on on Business or Enterprise.",
+      "url": "https://www.pandadoc.com/api/pricing",
+      "duration": "15 min to several days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": "Self-serve vs sales timing is our estimate."
+      }
+    },
+    {
+      "title": "Enable the Dev Center",
+      "owner": "human",
+      "detail": "As account owner or admin, go to Settings > API and Integrations > API and click Enable.",
+      "url": "https://support.pandadoc.com/en/articles/9714958-pandadoc-api",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the application details",
+      "owner": "agent",
+      "detail": "Prepare the application name, publisher, redirect URL, description, support email and app website.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the application",
+      "owner": "human",
+      "detail": "Dev Center > Configuration > Create application. Fill in the fields, agree to the PandaDoc API terms of use, and copy the generated client_id and client_secret.",
+      "url": "https://app.pandadoc.com/a/#/settings/api-dashboard/configuration",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorize redirect",
+      "owner": "agent",
+      "detail": "Send users to https://app.pandadoc.com/oauth2/authorize?client_id=...&redirect_uri=...&scope=read+write&response_type=code (encode the space in 'read write'). PandaDoc redirects back with ?code=.",
+      "url": "https://developers.pandadoc.com/reference/authentication-process",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Exchange the code and store tokens",
+      "owner": "agent",
+      "detail": "POST form-encoded grant_type=authorization_code, client_id, client_secret and code to https://api.pandadoc.com/oauth2/access_token. Store access_token and refresh_token per user.",
+      "url": "https://developers.pandadoc.com/reference/access-token",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle 401 with a refresh",
+      "owner": "agent",
+      "detail": "On 401 Unauthorized, POST grant_type=refresh_token with the stored refresh token. On invalid_grant, send the user back through authorization.",
+      "url": "https://developers.pandadoc.com/reference/access-token",
+      "duration": "20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test with a second PandaDoc account",
+      "owner": "human",
+      "detail": "Sign in as a different PandaDoc user and connect through your app to confirm it works outside your own workspace and on the end user's plan.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "We couldn't confirm whether end users on Free or Starter can authorize a third-party OAuth app; testing this is the point of the step."
+      }
+    },
+    {
+      "title": "Add 429 backoff",
+      "owner": "agent",
+      "detail": "Respect per-user, per-endpoint limits (for example 100 RPM on Download Document) and back off on 429.",
+      "url": "https://developers.pandadoc.com/reference/limits",
+      "duration": "20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Draft the application name, description and redirect URL",
+    "Implement the authorize, token exchange and refresh flow",
+    "Build per-endpoint rate limiting and 429 backoff",
+    "Check the authorize and token endpoints respond"
+  ],
+  "humanMustDo": [
+    "Pay for the API Developer Plan or OAuth add-on",
+    "Enable the Dev Center as account owner or admin",
+    "Create the application and accept the API terms of use",
+    "Test the connection from a second PandaDoc account"
+  ],
+  "blockers": [
+    {
+      "symptom": "No 'Create application' option, or no Dev Center under Settings",
+      "cause": "Your plan doesn't include Applications/OAuth (Free and Starter don't), or you're not the owner/admin, or the Dev Center isn't enabled.",
+      "fix": "Upgrade to the API Developer Plan or buy the add-on, then enable the Dev Center as owner/admin.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Token endpoint returns {\"error\": \"unsupported_grant_type\"}",
+      "cause": "grant_type missing, or the body was sent as JSON instead of form-encoded.",
+      "fix": "Send Content-Type: application/x-www-form-urlencoded with grant_type=authorization_code (or refresh_token).",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s7",
+          "s2"
+        ],
+        "note": "An empty POST to api.pandadoc.com/oauth2/access_token returned this on 2026-10-20."
+      }
+    },
+    {
+      "symptom": "Refresh returns invalid_grant",
+      "cause": "The refresh token is invalid, for example because a newer token pair was generated and invalidated the old one.",
+      "fix": "Re-run authorization. Avoid generating parallel token pairs for the same user.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 Too Many Requests",
+      "cause": "You exceeded a per-user, per-endpoint limit over the 60-second sliding window (10 RPM on any sandbox endpoint).",
+      "fix": "Back off and spread calls. Limits are per user, so each connected user has their own budget.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Document creation errors after a while in production",
+      "cause": "Production API calls consume usage credits, and creation can fail once credits run out.",
+      "fix": "Monitor credit usage and buy more volume; budget $4 per extra document on the Developer Plan.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": "Which account's credits an OAuth call consumes (yours or the end user's) wasn't stated."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens currently last 31,535,999 seconds (about one year). The refresh token lifetime and whether it rotates aren't documented.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Generating a new token invalidates the old one, and each access/refresh pair needs a fresh authorization code.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits apply to production and OAuth keys per user, not per key, and vary by endpoint (for example 600 RPM for document details, 100 RPM for downloads). Sandbox keys get 10 RPM on any endpoint.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "PandaDoc's plan lineup changed in 2026: the Free plan gained API access around June 2026, but the plan table still excludes Applications/OAuth on Free and Starter, so an API key works where OAuth doesn't.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The June 2026 date comes from search-result summaries of a PandaDoc blog post we couldn't open (HTTP 429). The plan table (s3) shows a Free column with API features but no OAuth."
+      }
+    },
+    {
+      "text": "Request bodies are capped at 2 MB and PDF uploads at 50 MB (413 if larger).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "PandaDoc: OAuth 2.0 Authentication Process",
+      "url": "https://developers.pandadoc.com/reference/authentication-process"
+    },
+    {
+      "id": "s2",
+      "title": "PandaDoc: Create/refresh access token",
+      "url": "https://developers.pandadoc.com/reference/access-token"
+    },
+    {
+      "id": "s3",
+      "title": "PandaDoc Help: Compare API feature access by plan",
+      "url": "https://support.pandadoc.com/en/articles/17236207-compare-api-feature-access-by-plan"
+    },
+    {
+      "id": "s4",
+      "title": "PandaDoc API pricing",
+      "url": "https://www.pandadoc.com/api/pricing"
+    },
+    {
+      "id": "s5",
+      "title": "PandaDoc Help: PandaDoc API (Dev Center, creating applications)",
+      "url": "https://support.pandadoc.com/en/articles/9714958-pandadoc-api"
+    },
+    {
+      "id": "s6",
+      "title": "PandaDoc: API limits",
+      "url": "https://developers.pandadoc.com/reference/limits"
+    },
+    {
+      "id": "s7",
+      "title": "Live check: PandaDoc token endpoint",
+      "url": "https://api.pandadoc.com/oauth2/access_token"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://app.pandadoc.com/oauth2/authorize: 302 to /login/?next=/oauth2/authorize",
+      "POST https://api.pandadoc.com/oauth2/access_token with no body: {\"error\": \"unsupported_grant_type\"}"
+    ],
+    "openQuestions": [
+      "Whether end users on Free or Starter plans can authorize a third-party OAuth app (the plan table may only restrict creating apps)",
+      "Whose usage credits OAuth API calls consume: the app owner's or the connecting user's",
+      "Refresh token lifetime and rotation behavior",
+      "The price of the OAuth add-on on Business/Enterprise; the $40 Developer Plan figures come from search snippets of the pricing page, which returned HTTP 429 when fetched directly"
+    ]
+  }
+}

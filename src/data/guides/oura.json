@@ -1,0 +1,275 @@
+{
+  "app": {
+    "name": "Oura",
+    "slug": "oura",
+    "website": "https://ouraring.com",
+    "developerPortal": "https://developer.ouraring.com",
+    "category": "Health & fitness"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 authentication guide",
+      "url": "https://cloud.ouraring.com/docs/authentication"
+    },
+    {
+      "kind": "api",
+      "label": "API v2 reference (scopes, limits, webhooks)",
+      "url": "https://cloud.ouraring.com/v2/docs"
+    },
+    {
+      "kind": "review",
+      "label": "Oura API and MCP Agreement",
+      "url": "https://cloud.ouraring.com/legal/api-agreement"
+    },
+    {
+      "kind": "console",
+      "label": "Developer portal",
+      "url": "https://developer.ouraring.com"
+    },
+    {
+      "kind": "console",
+      "label": "API applications (previous portal)",
+      "url": "https://cloud.ouraring.com/oauth/applications"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "OAuth setup is self-serve and works for 10 users, and Oura must approve the app before more can connect. The bigger problem for AI agents is the June 8, 2026 API agreement: it says non-aggregators may use Oura data with an LLM only through Oura's MCP Server and bars using the Oura API to prompt or supply AI models, so an agent that sends API data to an LLM needs Oura's prior written consent.",
+    "timeToDev": {
+      "range": "30–60 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s2"],
+        "note": "Register an app, implement the auth-code flow, and call /v2/usercollection/personal_info. The spec also has /v2/sandbox/usercollection/* endpoints for building without a ring. The test user needs an active Oura Membership on Gen3+ rings."
+      }
+    },
+    "timeToProd": {
+      "range": "Unknown (weeks+)",
+      "hours": {
+        "min": 336,
+        "max": 2160
+      },
+      "assumes": "An AI agent that reads Oura data through the REST API and sends it to an LLM, which needs both Oura's approval past 10 users and written consent under §4. A non-AI dashboard needs only the 10-user approval.",
+      "waitingOn": "Oura's approval to exceed 10 users (no published process or timeline) and, for LLM use, a negotiated written consent from Oura",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": ["s2", "s3"],
+        "note": "Oura publishes no review timeline or approval form. The 2–12 week bar is a placeholder estimate, and written consent might never be granted."
+      }
+    },
+    "cost": "No API fee today; the agreement (§3(h)) reserves the right to add fees with notice. End users need an active Oura Membership (Gen3 and later rings)."
+  },
+  "prerequisites": [
+    {
+      "item": "An Oura account to sign in to the developer portal",
+      "why": "Apps are registered in the developer portal (new apps) or at cloud.ouraring.com/oauth/applications (editing existing ones).",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s2"], "note": null }
+    },
+    {
+      "item": "Test users with an active Oura Membership (Gen3 and later)",
+      "why": "Gen3+ users without membership can't access data through the API, including through partner apps; the API returns 403 when a subscription has expired.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s2"], "note": null }
+    },
+    {
+      "item": "A server-side backend",
+      "why": "Only the server-side (code) flow issues refresh tokens; client-side tokens expire after 30 days with no refresh.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "item": "Legal review of the Oura API and MCP Agreement",
+      "why": "§4(a), §4(d) and §6(g) restrict AI training, embeddings and prompting with Oura data.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Up to 10 users, any scopes",
+      "examples": ["personal", "daily", "heartrate", "workout", "session"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Self-serve for a pilot or personal agent. Each user consents per data type and can untick scopes.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "tier": "More than 10 users (non-AI use)",
+      "examples": ["email", "personal", "daily", "heartrate", "workout", "tag", "session", "spo2", "heart_health"],
+      "reviewRequired": true,
+      "time": "Unknown",
+      "impact": "Needs approval from Oura; no limit once approved. The approval process isn't documented publicly.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "heart_health appears in the v2 OpenAPI spec but not on the authentication page." }
+    },
+    {
+      "tier": "Feeding API data to an LLM / AI agent",
+      "examples": ["daily", "heartrate", "personal"],
+      "reviewRequired": true,
+      "time": "Unknown",
+      "impact": "§4(d) says non-aggregators may use Oura data with an LLM solely through the MCP Server, and the API may not be used to prompt or provide input to AI models; §4(a) prohibited uses can be unlocked only with Oura's prior written consent.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "Scopes don't change this; the restriction is on use, not on scope. Whether Oura grants consent to agent builders is unknown." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Read the API and MCP Agreement against your agent design",
+      "owner": "agent",
+      "detail": "Map how Oura data reaches your LLM against §2(c), §4(a), §4(d) and §6(g). Decide whether to use Oura's MCP Server route or seek written consent.",
+      "url": "https://cloud.ouraring.com/legal/api-agreement",
+      "duration": "1 hour",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Sign in to the developer portal",
+      "owner": "human",
+      "detail": "Sign in with an Oura account. New apps are created in the newest portal; the old portal still edits existing apps.",
+      "url": "https://developer.ouraring.com",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s4"], "note": "developer.ouraring.com loads a sign-in page. We didn't sign in." }
+    },
+    {
+      "title": "Register the API application",
+      "owner": "human",
+      "detail": "Set the name, description, privacy policy/terms URLs and HTTPS redirect URIs; copy the client ID and secret.",
+      "url": "https://cloud.ouraring.com/oauth/applications",
+      "duration": "10 min",
+      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "The exact form fields weren't visible without signing in." }
+    },
+    {
+      "title": "Implement the server-side OAuth flow",
+      "owner": "agent",
+      "detail": "Redirect to https://cloud.ouraring.com/oauth/authorize (response_type=code, optional PKCE S256), exchange at https://api.ouraring.com/oauth/token, rotate the single-use refresh token on every refresh.",
+      "url": "https://cloud.ouraring.com/docs/authentication",
+      "duration": "1–2 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Build against sandbox, then real data",
+      "owner": "agent",
+      "detail": "Use /v2/sandbox/usercollection/* for fixtures, then /v2/usercollection/* with a member's token.",
+      "url": "https://cloud.ouraring.com/v2/docs",
+      "duration": "1–4 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Set up webhooks",
+      "owner": "agent",
+      "detail": "Do one historical pull on connect, then subscribe to webhooks (x-client-id / x-client-secret headers). Notifications arrive about 30 seconds after the app syncs.",
+      "url": "https://cloud.ouraring.com/v2/docs",
+      "duration": "1–2 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "title": "Request approval for more than 10 users",
+      "owner": "human",
+      "detail": "Ask Oura to approve the app (via the portal or api-support@ouraring.com). For LLM use, ask for prior written consent under §4 at the same time.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": { "label": "inferred", "sourceIds": ["s2", "s3"], "note": "Oura doesn't document how to request approval; api-support@ouraring.com is the contact listed in the docs for rate limits." }
+    },
+    {
+      "title": "Wait for Oura's decision",
+      "owner": "wait",
+      "detail": "No published SLA.",
+      "url": null,
+      "duration": "Unknown",
+      "evidence": { "label": "unverified", "sourceIds": ["s2"], "note": "No timeline found in official or community sources." }
+    }
+  ],
+  "agentCanDo": [
+    "Implement auth-code + PKCE with refresh-token rotation",
+    "Build sandbox fixtures and webhook ingestion",
+    "Handle 403 (membership lapsed) and 429 Retry-After",
+    "Map the agent's data flow against the API agreement's AI clauses",
+    "Draft the approval and written-consent request to Oura"
+  ],
+  "humanMustDo": [
+    "Sign in and register the app in the developer portal",
+    "Provide test users with active Oura Memberships",
+    "Request approval past 10 users and negotiate AI-use consent",
+    "Accept the API and MCP Agreement (legal sign-off)"
+  ],
+  "blockers": [
+    {
+      "symptom": "The 11th user can't connect",
+      "cause": "API applications are limited to 10 users before Oura's approval.",
+      "fix": "Get the app approved by Oura.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "The exact error shown to the 11th user isn't documented." }
+    },
+    {
+      "symptom": "403 Forbidden on data endpoints for a connected user",
+      "cause": "The resource needs more permissions (the user unticked a scope) or the user's Oura subscription expired.",
+      "fix": "Re-prompt for the missing scope, or tell the user that Gen3+ rings need an active membership.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "symptom": "Refresh suddenly fails with invalid_grant after working before",
+      "cause": "Refresh tokens are single-use; reusing an old one (for example, two workers refreshing at once) invalidates it.",
+      "fix": "Store the new refresh token atomically on each refresh and serialize refreshes per user.",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "Single-use is sourced; the exact error string and race cause are inferred." }
+    },
+    {
+      "symptom": "Personal access token setup instructions no longer work",
+      "cause": "Personal access tokens were deprecated in December 2025 and are no longer available.",
+      "fix": "Use OAuth2, even for a single-user agent.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "429 Too Many Requests with X-RateLimit-Tier header",
+      "cause": "Per-token or per-application rate limit hit.",
+      "fix": "Honor Retry-After, switch polling to webhooks, or email api-support@ouraring.com for higher limits.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "The agreement's §6(g) says using user data to train or improve any AI model is a material breach, and §4(a)(iv) covers embeddings and persistent representations, so vector-storing Oura data needs consent too.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "Aggregators may not relay Oura data or derived data to any AI system (§2(c)) and need prior approval per end customer (§3(e)).",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "Client-side (implicit) tokens last 30 days with no refresh; server-side tokens refresh with single-use refresh tokens.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "Sleep data appears only after the user opens the Oura app; activity and stress may sync in the background.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "If no scope is passed, all scopes are requested, and users can untick individual scopes at consent.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "text": "Oura can change rate limits and access controls without notice and suspend access at its discretion (§3(d), §4(e)).",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Oura API authentication (OAuth2)", "url": "https://cloud.ouraring.com/docs/authentication" },
+    { "id": "s2", "title": "Oura API v2 documentation and OpenAPI spec", "url": "https://cloud.ouraring.com/v2/docs" },
+    { "id": "s3", "title": "Oura API and MCP Agreement (effective June 8, 2026)", "url": "https://cloud.ouraring.com/legal/api-agreement" },
+    { "id": "s4", "title": "Oura Help: The Oura API", "url": "https://support.ouraring.com/hc/en-us/articles/4415266939155-The-Oura-API" },
+    { "id": "s5", "title": "Terra: Oura API for AI apps (third-party analysis)", "url": "https://tryterra.co/blog/oura-api-ai-apps-access-permissions-commercial-restrictions" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://cloud.ouraring.com/v2/static/json/openapi-1.42.json: OAuth2 authorizationUrl https://cloud.ouraring.com/oauth/authorize, tokenUrl https://api.ouraring.com/oauth/token, nine scopes including heart_health, and /v2/sandbox/usercollection/* paths",
+      "GET https://developer.ouraring.com/authorize: 307 to cloud.ouraring.com/oauth/authorize?prompt=consent&acr_values=urn:se:curity:...",
+      "GET https://api.ouraring.com/v2/usercollection/personal_info without a token: 400 {\"detail\":\"Token is missing from Request Authorization Heade\"}",
+      "GET https://cloud.ouraring.com/oauth/applications: 302 to /user/sign-in (needs login)"
+    ],
+    "openQuestions": [
+      "How to request approval past 10 users, and how long it takes",
+      "Whether Oura grants §4 written consent to third-party AI agents, and on what terms",
+      "Whether Oura's own MCP Server is open to third-party apps and how to access it",
+      "Access-token lifetime for the server-side flow (docs only say expires_in)"
+    ]
+  }
+}

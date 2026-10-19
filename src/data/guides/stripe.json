@@ -1,0 +1,456 @@
+{
+  "app": {
+    "name": "Stripe",
+    "slug": "stripe",
+    "website": "https://stripe.com",
+    "developerPortal": "https://dashboard.stripe.com/apps",
+    "category": "Payments"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 for Stripe Apps",
+      "url": "https://docs.stripe.com/stripe-apps/api-authentication/oauth"
+    },
+    {
+      "kind": "scopes",
+      "label": "Stripe Apps permissions reference",
+      "url": "https://docs.stripe.com/stripe-apps/reference/permissions"
+    },
+    {
+      "kind": "review",
+      "label": "Publish to the App Marketplace",
+      "url": "https://docs.stripe.com/stripe-apps/publish-app"
+    },
+    {
+      "kind": "review",
+      "label": "App review requirements",
+      "url": "https://docs.stripe.com/stripe-apps/review-requirements"
+    },
+    {
+      "kind": "api",
+      "label": "Connect OAuth reference (platforms)",
+      "url": "https://docs.stripe.com/connect/oauth-reference"
+    },
+    {
+      "kind": "console",
+      "label": "Apps in the Dashboard",
+      "url": "https://dashboard.stripe.com/apps"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "An agent that reads or acts on other businesses' existing Stripe accounts should be a Stripe App with OAuth, not a Connect platform: Connect OAuth is for platforms routing payments, read_only scope is limited to extensions, and Stripe's publishing guide says it deprecated the Connect authentication method in favour of Stripe Apps OAuth. Up to 25 external testers can install before review, but the public install link only works after App Marketplace review (Stripe quotes a 4-business-day response).",
+    "timeToDev": {
+      "range": "1–3 hours",
+      "hours": {
+        "min": 1,
+        "max": 3
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s4"],
+        "note": "stripe apps create, set stripe_api_access_type=oauth and distribution_type=public, upload, then use the External test tab's Test OAuth links."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 weeks",
+      "hours": {
+        "min": 168,
+        "max": 504
+      },
+      "assumes": "A public Stripe App using OAuth with read permissions (customer_read, charge_read, etc.). External testing for up to 25 accounts works the same day without review.",
+      "waitingOn": "App Marketplace review: an approval or feedback email within 4 business days per submission, plus any resubmissions.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s4"],
+        "note": "The 4-business-day figure is Stripe's. The 1–3 weeks adds listing prep (screenshots, test credentials) and one possible resubmission."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "An activated Stripe account",
+      "why": "Publishing requires an activated account, and live OAuth external tests need an app uploaded from a live account.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3", "s4"],
+        "note": null
+      }
+    },
+    {
+      "item": "The Stripe CLI with the apps plugin",
+      "why": "Apps are created and uploaded with stripe apps create / stripe apps upload.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s3"],
+        "note": null
+      }
+    },
+    {
+      "item": "A public website, privacy policy, support channel and HTTPS redirect URIs",
+      "why": "The listing requires a privacy policy and support channel; allowed_redirect_uris must not contain localhost or dummy URLs at submission; live redirects must be HTTPS.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3", "s1"],
+        "note": null
+      }
+    },
+    {
+      "item": "A business that isn't on Stripe's Prohibited and Restricted Businesses list, in a non-embargoed country",
+      "why": "Listed as a publishing requirement and a legal review requirement.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3", "s5"],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read permissions (typical agent)",
+      "examples": ["customer_read", "charge_read", "invoice_read", "subscription_read", "payment_intent_read", "balance_read", "event_read"],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Each permission needs a purpose string that installers see. Public install needs Marketplace review regardless of which permissions you pick.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s3"],
+        "note": null
+      }
+    },
+    {
+      "tier": "Write permissions (money movement and edits)",
+      "examples": ["customer_write", "invoice_write", "charge_write", "payout_write", "transfer_write"],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Same review path. Reviewers check for thorough descriptions and justifications for each permission, and the guide says apps can only use data needed for clearly communicated functionality.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s3", "s5"],
+        "note": "Whether money-moving permissions get extra scrutiny isn't stated."
+      }
+    },
+    {
+      "tier": "Sensitive account-wide permissions",
+      "examples": ["webhook_read", "webhook_write", "user_email_read"],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Stripe calls webhook permissions sensitive because they allow subscribing to events across the whole account. Expect to justify them.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2"],
+        "note": "'Expect to justify' is inferred."
+      }
+    },
+    {
+      "tier": "External test only (no review)",
+      "examples": ["any permission in the manifest"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Up to 25 testers per app via External test links, meant for testing only. Testers need Apps administrator rights.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4"],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Decide: Stripe App vs Connect platform",
+      "owner": "agent",
+      "detail": "If the agent reads or acts on users' own existing Stripe accounts, build a Stripe App with OAuth. Use Connect only if you're a platform onboarding sellers and routing payments; Connect OAuth read_write can't connect to Standard accounts controlled by another platform.",
+      "url": "https://docs.stripe.com/connect/oauth-changes-for-standard-platforms",
+      "duration": "15 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s6", "s7", "s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Activate the Stripe account",
+      "owner": "human",
+      "detail": "Complete account activation in the Dashboard so you can upload a live app and publish.",
+      "url": "https://dashboard.stripe.com/apps",
+      "duration": "15–30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the app and manifest",
+      "owner": "agent",
+      "detail": "Run stripe apps create <name>, set stripe_api_access_type to oauth, distribution_type to public, allowed_redirect_uris (HTTPS), and sandbox_install_compatible. Leave ui_extension views empty for a data-only integration.",
+      "url": "https://docs.stripe.com/stripe-apps/api-authentication/oauth",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Add permissions with purposes",
+      "owner": "agent",
+      "detail": "stripe apps grant permission \"customer_read\" \"<why>\" for each object the agent reads, writes or expands.",
+      "url": "https://docs.stripe.com/stripe-apps/reference/permissions",
+      "duration": "15–30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2"],
+        "note": null
+      }
+    },
+    {
+      "title": "Upload the app",
+      "owner": "human",
+      "detail": "Run stripe apps upload while signed in to the account, then select the version on the Apps page.",
+      "url": "https://dashboard.stripe.com/apps",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement install link and token exchange",
+      "owner": "agent",
+      "detail": "Redirect to https://marketplace.stripe.com/oauth/v2/authorize?client_id=...&redirect_uri=...&state=... ; exchange the code (single use, 5 min) at https://api.stripe.com/v1/oauth/token using your own secret key for the matching mode; refresh hourly and store the rolled refresh token.",
+      "url": "https://docs.stripe.com/stripe-apps/api-authentication/oauth",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Run an external test",
+      "owner": "human",
+      "detail": "On the app's External test tab click Get started, choose link access and version, and use the Test OAuth links (separate for live, test-mode sandbox and sandboxes). Up to 25 testers.",
+      "url": "https://docs.stripe.com/stripe-apps/test-app",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s4", "s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the listing",
+      "owner": "agent",
+      "detail": "Write name (35 chars, no 'Stripe', 'app', 'free', 'paid'), subtitle, about, three key features, pricing, support, privacy policy link, testing guidance and test credentials without 2FA.",
+      "url": "https://docs.stripe.com/stripe-apps/publish-app",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Produce screenshots and the install page",
+      "owner": "human",
+      "detail": "Capture key-feature images (1600px+ wide, no real customer data) and host an install page that uses the public OAuth link from the Settings tab, not the External test link.",
+      "url": null,
+      "duration": "1–3 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3", "s1"],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit for review",
+      "owner": "human",
+      "detail": "Submit the listing form from the Apps page.",
+      "url": "https://dashboard.stripe.com/apps",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for App Review",
+      "owner": "wait",
+      "detail": "Stripe emails an approval or feedback in 4 business days. Changes to the app or listing need another review.",
+      "url": null,
+      "duration": "4 business days per round",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": null
+      }
+    },
+    {
+      "title": "Publish",
+      "owner": "human",
+      "detail": "On the Apps page, click Review and publish, then Publish. Any Stripe account user can then install via the public link.",
+      "url": "https://dashboard.stripe.com/apps",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Choose Stripe Apps OAuth vs Connect for the use case",
+    "Write the app manifest and grant permissions with purpose strings",
+    "Implement the install link, code exchange and rolling refresh",
+    "Draft the listing copy, testing guidance and privacy policy",
+    "Check redirect URIs for localhost or dummy entries before submission"
+  ],
+  "humanMustDo": [
+    "Activate the Stripe account and sign in to the CLI",
+    "Upload the app and run external tests with real accounts",
+    "Create screenshots and test credentials for reviewers",
+    "Submit the listing, respond to feedback and click Publish"
+  ],
+  "blockers": [
+    {
+      "symptom": "Public install link from the Settings tab doesn't work for your users",
+      "cause": "Public OAuth install links don't work until the app is published; only the review team can use them before that.",
+      "fix": "Use External test links (up to 25 testers) until Marketplace approval, then publish.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s4"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Review rejected for using the wrong install link",
+      "cause": "The install URL given to App Review used the External test link instead of the live-mode public link.",
+      "fix": "Point the install page at the public link from the Settings tab.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3", "s1"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_grant on the token exchange",
+      "cause": "The code expired (5 min), was already used, or the API key mode doesn't match the link (live vs test vs sandbox).",
+      "fix": "Exchange immediately, once, using the developer account's key for that mode; pass the link type in state.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1", "s7"],
+        "note": "invalid_grant is documented for Connect's token endpoint; we assume the same code for Stripe Apps."
+      }
+    },
+    {
+      "symptom": "Permission error when refreshing the access token",
+      "cause": "The refresh call was authorized with a refresh token, access token or restricted key instead of your account's secret key.",
+      "fix": "Authorize the refresh with your own secret key.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Connect OAuth user is pushed to create a new Standard account",
+      "cause": "Platforms using read_write can't connect to Standard accounts controlled by another platform (since June 2021).",
+      "fix": "Build a Stripe App instead, or contact Stripe to register as an Extension if you're on Connect.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s6"],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid request error on an API call or expand",
+      "cause": "The app lacks the permission for that object, including expanded objects.",
+      "fix": "Add the matching permission, upload a new version, and get it reviewed if published.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s2", "s3"],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens expire in 1 hour and refresh tokens after 1 year. Refresh tokens roll on every exchange, so refreshing within a year keeps access indefinitely.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    },
+    {
+      "text": "You can publish only one app per Stripe account, and listings must be in English.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": null
+      }
+    },
+    {
+      "text": "Connect OAuth's access_token and refresh_token response fields are marked deprecated; platforms should use the Stripe-Account header with their own secret key. read_only scope is limited to Extensions.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s7", "s6"],
+        "note": null
+      }
+    },
+    {
+      "text": "Any change to the app or listing needs another review round before it reaches published users.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s3"],
+        "note": null
+      }
+    },
+    {
+      "text": "The review guide says apps can only use user data and endpoints needed for clearly communicated functionality, and can't resell or publish data obtained from Stripe users — relevant if you send Stripe data to an LLM provider.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s5"],
+        "note": "The LLM implication is our reading; there's no AI-specific policy on the page."
+      }
+    },
+    {
+      "text": "Live OAuth links, test-mode sandbox links and sandbox links each need the matching API key for the code exchange (live key, test key, or managed sandbox key).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Stripe docs: OAuth 2.0 for Stripe Apps", "url": "https://docs.stripe.com/stripe-apps/api-authentication/oauth" },
+    { "id": "s2", "title": "Stripe docs: Stripe Apps permissions reference", "url": "https://docs.stripe.com/stripe-apps/reference/permissions" },
+    { "id": "s3", "title": "Stripe docs: Publish an app to the Stripe App Marketplace", "url": "https://docs.stripe.com/stripe-apps/publish-app" },
+    { "id": "s4", "title": "Stripe docs: Test your app externally", "url": "https://docs.stripe.com/stripe-apps/test-app" },
+    { "id": "s5", "title": "Stripe docs: Stripe Apps quality requirements", "url": "https://docs.stripe.com/stripe-apps/review-requirements" },
+    { "id": "s6", "title": "Stripe docs: OAuth changes for platform-controlled Standard accounts", "url": "https://docs.stripe.com/connect/oauth-changes-for-standard-platforms" },
+    { "id": "s7", "title": "Stripe docs: Connect OAuth reference", "url": "https://docs.stripe.com/connect/oauth-reference" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://marketplace.stripe.com/oauth/v2/authorize?client_id=ca_test&...: HTTP 200 (page renders without login)",
+      "GET https://connect.stripe.com/oauth/authorize?...: 302 to https://connect.stripe.com/oauth/v2/authorize",
+      "POST https://api.stripe.com/v1/oauth/token without a key: error 'You did not provide an API key'",
+      "GET https://connect.stripe.com/.well-known/openid-configuration: no discovery document returned"
+    ],
+    "openQuestions": [
+      "Whether Stripe has formally deprecated Connect OAuth for new platforms, or only the 'Connect Stripe' auth method inside Stripe Apps (the publish guide's wording is ambiguous)",
+      "Whether data-only apps without a Dashboard UI face extra review friction",
+      "Real-world review durations and rejection rates in 2026",
+      "Whether money-moving write permissions get extra scrutiny in review"
+    ]
+  }
+}

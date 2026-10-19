@@ -1,0 +1,559 @@
+{
+  "app": {
+    "name": "BigCommerce",
+    "slug": "bigcommerce",
+    "website": "https://www.bigcommerce.com",
+    "developerPortal": "https://devtools.bigcommerce.com/my/apps",
+    "category": "E-commerce"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Implementing OAuth for apps",
+      "url": "https://docs.bigcommerce.com/docs/integrations/apps/guide/auth"
+    },
+    {
+      "kind": "scopes",
+      "label": "API accounts and OAuth scopes",
+      "url": "https://docs.bigcommerce.com/docs/start/authentication/api-accounts"
+    },
+    {
+      "kind": "review",
+      "label": "App Marketplace approval requirements",
+      "url": "https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/approval-requirements"
+    },
+    {
+      "kind": "review",
+      "label": "Publishing an app",
+      "url": "https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/publishing-apps"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits",
+      "url": "https://docs.bigcommerce.com/docs/start/best-practices/api-rate-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Portal",
+      "url": "https://devtools.bigcommerce.com/my/apps"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "A draft single-click app installs on your own sandbox store within an hour, but draft apps only install on stores registered to your Developer Portal email. Letting any merchant connect requires becoming a BigCommerce partner and passing App Marketplace review, which charges a review and listing fee.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Register the draft app, set auth/load/uninstall callbacks to a public HTTPS tunnel, then install from Apps → My Apps → My Draft Apps on a sandbox store."
+      }
+    },
+    "timeToProd": {
+      "range": "3–8 weeks",
+      "hours": {
+        "min": 504,
+        "max": 1344
+      },
+      "assumes": "A public single-click app that any merchant can install, reading orders/products/customers; merchants can alternatively paste a store-level API token with no review, but that isn't OAuth.",
+      "waitingOn": "Partner application approval (to get a Partner ID), then Marketplace team review and testing; you have 30 days to answer each round of feedback.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s3",
+          "s4"
+        ],
+        "note": "BigCommerce doesn't publish review timelines. The range is our estimate for partner approval plus one or two review rounds."
+      }
+    },
+    "cost": "A review and listing fee is paid at Marketplace submission (amount not published in the docs we read). A free sandbox/trial store is enough for development."
+  },
+  "prerequisites": [
+    {
+      "item": "A BigCommerce sandbox or trial store registered to the same email as your Developer Portal account",
+      "why": "Draft apps can only be installed on stores registered to the Developer Portal email.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Public HTTPS URLs for the auth, load and uninstall callbacks",
+      "why": "BigCommerce calls these over the internet and renders the app in a control-panel iframe; production callbacks must be fully qualified and served over TLS.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "BigCommerce Technology Partner status (Partner ID)",
+      "why": "A Partner ID is required for Marketplace submission and is assigned after partner approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Complete listing assets, branded install page and support resources",
+      "why": "All listing fields are required for approval, and the install callback must return styled, branded HTML rather than a blank page.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read-only store data",
+      "examples": [
+        "store_v2_orders_read_only",
+        "store_v2_products_read_only",
+        "store_v2_customers_read_only",
+        "store_v2_information_read_only",
+        "store_inventory_read_only"
+      ],
+      "reviewRequired": true,
+      "time": "3–8 weeks",
+      "impact": "Works immediately on your own draft-app stores; standard Marketplace review for other merchants. Merchants must accept all requested scopes as a set.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s1",
+          "s4"
+        ],
+        "note": "Review is required for distribution, not per scope. Timeline is an estimate."
+      }
+    },
+    {
+      "tier": "Write scopes",
+      "examples": [
+        "store_v2_orders",
+        "store_v2_products",
+        "store_inventory",
+        "store_order_fulfillment_manage",
+        "store_v2_customers"
+      ],
+      "reviewRequired": true,
+      "time": "3–8 weeks",
+      "impact": "Same review path. Apps that create orders must set external_source to the app's ID.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Checkout content and payments",
+      "examples": [
+        "store_content_checkout",
+        "store_checkout",
+        "store_payments_access_token_create",
+        "store_stored_payment_instruments"
+      ],
+      "reviewRequired": true,
+      "time": "Longer (security / PCI review)",
+      "impact": "Checkout Content scope triggers a security assessment; apps handling card data need a PCI review with an Attestation of Compliance. New externally built payment integrations are paused for the public Marketplace.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "All scopes",
+      "examples": [
+        "every store_* and account_* scope"
+      ],
+      "reviewRequired": true,
+      "time": "Rejected",
+      "impact": "Apps configured with all scopes won't be approved for public listing.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a sandbox store and Developer Portal account",
+      "owner": "human",
+      "detail": "Use the same email for both, so the store can install your draft apps.",
+      "url": "https://devtools.bigcommerce.com/my/apps",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Choose minimal scopes",
+      "owner": "agent",
+      "detail": "Pick read-only scopes like store_v2_orders_read_only and store_v2_products_read_only first; never select all scopes.",
+      "url": "https://docs.bigcommerce.com/docs/start/authentication/api-accounts",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Register the draft app",
+      "owner": "human",
+      "detail": "Developer Portal → Create an App → Technical: set Auth, Load and Uninstall callback URLs and scopes, then View Client ID to copy client_id and client_secret.",
+      "url": "https://devtools.bigcommerce.com/my/apps",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement callbacks and token exchange",
+      "owner": "agent",
+      "detail": "On GET /auth, POST code, scope, context, grant_type=authorization_code and redirect_uri (identical to the registered auth callback) to https://login.bigcommerce.com/oauth2/token before responding. Store the token against the store hash. Verify signed_payload_jwt on load and uninstall.",
+      "url": "https://docs.bigcommerce.com/docs/integrations/apps/guide/auth",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "JWT verification on load/uninstall is our summary of the separate callbacks article, not read in full."
+      }
+    },
+    {
+      "title": "Install the draft on your sandbox store",
+      "owner": "human",
+      "detail": "Store control panel → Apps → My Apps → My Draft Apps → Install, and confirm the OAuth handshake completes.",
+      "url": null,
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Apply to the partner program",
+      "owner": "human",
+      "detail": "Apply to become a BigCommerce Technology Partner to receive the Partner ID required for submission.",
+      "url": null,
+      "duration": "1–3 weeks (estimate)",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "Partnership requirement is sourced; duration is our estimate."
+      }
+    },
+    {
+      "title": "Draft the listing and meet requirements",
+      "owner": "agent",
+      "detail": "Write listing copy, onboarding instructions and support content; check multi-user support, V3 endpoints, branded install HTML and Scripts API consent categories against the approval checklist.",
+      "url": "https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/approval-requirements",
+      "duration": "1–2 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Pay the fee and submit",
+      "owner": "human",
+      "detail": "From the Apps overview choose Publish app…, add test account details for any third-party services, pay the review and listing fee, and submit.",
+      "url": "https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/publishing-apps",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Marketplace review",
+      "owner": "wait",
+      "detail": "The Marketplace team tests the app. Respond to feedback within 30 days, or the app is rejected for inactivity and a new fee is needed.",
+      "url": null,
+      "duration": "2–5 weeks (estimate)",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "The 30-day response rule is sourced; review length is our estimate."
+      }
+    },
+    {
+      "title": "Go live",
+      "owner": "human",
+      "detail": "Once approved, publish; listing changes can take up to 24 hours to appear.",
+      "url": null,
+      "duration": "Up to 24 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Select minimal scopes",
+    "Write auth/load/uninstall callback handlers",
+    "Build rate-limit-aware API clients using quota headers",
+    "Draft listing copy and onboarding docs",
+    "Check the app against the approval checklist"
+  ],
+  "humanMustDo": [
+    "Create the sandbox store and Developer Portal account",
+    "Apply for partner status",
+    "Pay the review and listing fee",
+    "Answer reviewer feedback within 30 days"
+  ],
+  "blockers": [
+    {
+      "symptom": "A customer's store doesn't see your app under My Draft Apps",
+      "cause": "Draft apps only install on stores registered to the same email as your Developer Portal account.",
+      "fix": "Get Marketplace approval, or have the merchant create a store-level API account and give you the token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Install fails or token exchange returns an error",
+      "cause": "redirect_uri in the token request isn't identical to the auth callback in the app profile, or the callback isn't public HTTPS.",
+      "fix": "Send the exact registered auth callback URL; update callbacks when your tunnel URL changes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Stored access token stops working after a while",
+      "cause": "Tokens are invalidated when the app's scopes change or the store owner's email changes; the merchant then re-accepts and you get a new auth callback.",
+      "fix": "Handle repeat auth callbacks and overwrite the stored token for that store hash.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "429 Too Many Requests",
+      "cause": "All apps share a per-store quota (e.g. 150 requests per 30 s on Growth/Core); a 429 without rate-limit headers means high store load.",
+      "fix": "Read X-Rate-Limit-Requests-Left and X-Rate-Limit-Time-Reset-Ms and back off.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Submission rejected for scope over-request",
+      "cause": "Apps configured with all scopes aren't approved for public listing.",
+      "fix": "Request only the scopes your features use.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "A store staff user can't install the app",
+      "cause": "Reportedly only the store owner role can install apps.",
+      "fix": "Ask the store owner to install.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "From a third-party integration guide, not BigCommerce docs."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "App access tokens don't have a stated expiry (docs call them permanent or semi-permanent); there is no refresh token. They're replaced when scopes or the owner email change.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits are per store and shared across all apps: 60k/hour on Scale, 20k/hour on Growth and Core, with quotas refreshing every 30 seconds.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Merchants approve all requested scopes as a set; they can't choose a subset.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Marketplace apps must be multi-user enabled, and user tokens should be stored against the store hash, not the user's email.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Store-level API accounts (a static token a merchant creates in the control panel) are a no-review alternative for single-store integrations, but they're copy-paste credentials rather than OAuth.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The auth response includes account_uuid, the merchant's BigCommerce account that owns the store.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "BigCommerce: Implementing OAuth",
+      "url": "https://docs.bigcommerce.com/docs/integrations/apps/guide/auth"
+    },
+    {
+      "id": "s2",
+      "title": "BigCommerce: Publishing an App",
+      "url": "https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/publishing-apps"
+    },
+    {
+      "id": "s3",
+      "title": "BigCommerce: App Store Approval Requirements",
+      "url": "https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/approval-requirements"
+    },
+    {
+      "id": "s4",
+      "title": "BigCommerce: Beginning App Development",
+      "url": "https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/beginning-development"
+    },
+    {
+      "id": "s5",
+      "title": "BigCommerce: API Accounts and OAuth Scopes",
+      "url": "https://docs.bigcommerce.com/docs/start/authentication/api-accounts"
+    },
+    {
+      "id": "s6",
+      "title": "BigCommerce: API Rate Limits",
+      "url": "https://docs.bigcommerce.com/docs/start/best-practices/api-rate-limits"
+    },
+    {
+      "id": "s7",
+      "title": "Ordergroove: Legacy BigCommerce Integration Guide",
+      "url": "https://help.ordergroove.com/hc/en-us/articles/4408205122195"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://devtools.bigcommerce.com/my/apps returned HTTP 301 (redirect to login; not followed)",
+      "https://login.bigcommerce.com/.well-known/openid-configuration returned 404 — no OIDC discovery document",
+      "developer.bigcommerce.com docs URLs 301-redirect to docs.bigcommerce.com"
+    ],
+    "openQuestions": [
+      "The amount of the Marketplace review and listing fee",
+      "Typical partner approval and Marketplace review durations",
+      "Whether BigCommerce supports approved-but-unlisted apps installable by link",
+      "Whether non-owner store users with admin permissions can install apps"
+    ]
+  }
+}

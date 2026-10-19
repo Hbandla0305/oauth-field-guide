@@ -1,0 +1,461 @@
+{
+  "app": {
+    "name": "Mailchimp",
+    "slug": "mailchimp",
+    "website": "https://mailchimp.com",
+    "developerPortal": "https://mailchimp.com/developer/",
+    "category": "Email marketing"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2 concepts",
+      "url": "https://mailchimp.com/developer/marketing/api-concepts/authentication/oauth-2/"
+    },
+    {
+      "kind": "oauth",
+      "label": "Set up an OAuth app",
+      "url": "https://mailchimp.com/developer/marketing/build/start-developing/set-up-an-oauth-app/"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits and timeouts",
+      "url": "https://mailchimp.com/developer/marketing/api-concepts/rate-limits-and-timeouts/"
+    },
+    {
+      "kind": "review",
+      "label": "Integration Partner Program (optional listing)",
+      "url": "https://mailchimp.com/developer/integration-partner-program/"
+    },
+    {
+      "kind": "console",
+      "label": "Registered apps",
+      "url": "https://us1.admin.mailchimp.com/account/oauth2/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Register an app in any Mailchimp account and any Mailchimp user can authorize it the same day, with no review and no scopes to justify. The catches are all-or-nothing access (no granular scopes), tokens that never expire, a per-user data center you must look up, and a hard cap of 10 simultaneous connections per user.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Register an app, copy the client ID/secret, run the code flow against http://127.0.0.1. No verification step is documented."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
+      "assumes": "An unlisted OAuth integration that reads and writes audiences and campaigns; a Marketplace listing via the Integration Partner Program is optional and needs 25+ active users first.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s4"
+        ],
+        "note": "Neither OAuth page mentions any review, approval or user cap for registered apps."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Mailchimp account (free is fine) to register the app",
+      "why": "Apps are registered on the Registered Apps page inside a Mailchimp account.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A server-side backend that can hold the client secret",
+      "why": "The code-for-token exchange uses the client_secret; Mailchimp's docs only describe the confidential server flow, not PKCE.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "PKCE support isn't mentioned in the pages we read."
+      }
+    },
+    {
+      "item": "A redirect URI reachable from the user's browser",
+      "why": "Mailchimp redirects there with the code. HTTPS is strongly recommended but not enforced; http://127.0.0.1:3000/... is fine for local dev.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Full account access (the only option)",
+      "examples": [
+        "(no scope parameter; the token grants full Marketing API access to the user's account)"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "One token reads and writes audiences, contacts, campaigns, reports and automations for the authorizing user. There's no way to request read-only access, so tell users plainly what your agent will touch.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Mailchimp's OAuth pages never mention scopes; an integration platform's docs say Mailchimp doesn't support granular scopes."
+      }
+    },
+    {
+      "tier": "Marketplace listing (optional)",
+      "examples": [
+        "Integration Partner Program application"
+      ],
+      "reviewRequired": true,
+      "time": "After 25+ active users",
+      "impact": "Gets you into the Mailchimp Marketplace and partner support. Requirements: current Marketing API, OAuth 2, and 25+ active users in the past 90 days. Not needed for users to connect.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Review duration isn't published."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to a Mailchimp account",
+      "owner": "human",
+      "detail": "Use or create a Mailchimp account that will own the app registration (a company account rather than a personal one).",
+      "url": "https://login.mailchimp.com/",
+      "duration": "5 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Register the app",
+      "owner": "human",
+      "detail": "Go to Registered Apps, click Register An App, fill in name, description, company, app website and redirect URI, then Create. Copy the client_id and client_secret from the bottom of the page; the secret is shown only once.",
+      "url": "https://us1.admin.mailchimp.com/account/oauth2/",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The console URL redirected us to login.mailchimp.com (HTTP 302) on 2026-10-20."
+      }
+    },
+    {
+      "title": "Implement the authorize redirect",
+      "owner": "agent",
+      "detail": "Send users to https://login.mailchimp.com/oauth2/authorize?response_type=code&client_id=...&redirect_uri=... and add a state parameter for CSRF protection.",
+      "url": "https://mailchimp.com/developer/marketing/build/start-developing/set-up-an-oauth-app/",
+      "duration": "20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "state isn't shown in Mailchimp's samples; adding it is our recommendation."
+      }
+    },
+    {
+      "title": "Exchange the code for a token",
+      "owner": "agent",
+      "detail": "POST to https://login.mailchimp.com/oauth2/token with grant_type=authorization_code, client_id, client_secret, redirect_uri and code. Store the access token encrypted; there's no refresh token.",
+      "url": "https://mailchimp.com/developer/marketing/build/start-developing/set-up-an-oauth-app/",
+      "duration": "20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Look up the user's data center",
+      "owner": "agent",
+      "detail": "Call the OAuth Metadata endpoint (https://login.mailchimp.com/oauth2/metadata) with the token to get the dc / api_endpoint, then call https://<dc>.api.mailchimp.com/3.0/. Store the dc with the token.",
+      "url": null,
+      "duration": "15 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [],
+        "note": "The endpoint exists: GET https://login.mailchimp.com/oauth2/metadata without a token returned HTTP 200 with {\"error\":\"invalid_token\"}. The current docs pages we read don't describe it (search snippets of Mailchimp docs say the token's data center comes from the OAuth Metadata endpoint), so the response fields dc / api_endpoint are from community usage."
+      }
+    },
+    {
+      "title": "Build throttling and caching",
+      "owner": "agent",
+      "detail": "Keep at most 10 concurrent requests per Mailchimp user, back off on 429 (and 403 without a body at high volume), cache slow-changing values, and use the Batch endpoint for anything that may exceed the 120-second timeout.",
+      "url": "https://mailchimp.com/developer/marketing/api-concepts/rate-limits-and-timeouts/",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle disconnects and revocation",
+      "owner": "agent",
+      "detail": "On a 401 from a stored token, treat it as revoked and send the user back through authorization. On uninstall, delete the token and any sync configuration.",
+      "url": "https://mailchimp.com/developer/marketing/api-concepts/authentication/oauth-2/",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Switch the redirect URI to production HTTPS",
+      "owner": "human",
+      "detail": "Edit the registered app to use your production HTTPS redirect URI and test a connection from a second Mailchimp account.",
+      "url": "https://us1.admin.mailchimp.com/account/oauth2/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Whether one app can hold several redirect URIs isn't documented in the pages we read."
+      }
+    },
+    {
+      "title": "Optionally apply to the Integration Partner Program",
+      "owner": "human",
+      "detail": "After 25+ active users in 90 days, apply for a Marketplace listing and partner support. Optional; users can connect without it.",
+      "url": "https://mailchimppp.smapply.io/prog/integration_partner_program_application/",
+      "duration": "1 hour + review",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the authorization code flow and token exchange",
+    "Resolve and store each user's data center via the metadata endpoint",
+    "Build a 10-connection-per-user request limiter with 429 backoff",
+    "Move long-running work to the Batch endpoint",
+    "Draft the app description and Partner Program application"
+  ],
+  "humanMustDo": [
+    "Sign in to Mailchimp and register the app",
+    "Copy and store the client secret (shown once)",
+    "Rotate the client secret if it's exposed",
+    "Apply to the Integration Partner Program if you want a listing"
+  ],
+  "blockers": [
+    {
+      "symptom": "API calls return 404 or fail against https://api.mailchimp.com/3.0/ with a valid OAuth token",
+      "cause": "Marketing API calls go to a per-account data center subdomain (<dc>.api.mailchimp.com).",
+      "fix": "Call the OAuth Metadata endpoint after the token exchange and use the returned dc / api_endpoint.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Prismatic's docs use a ${dc} placeholder in the base URL and say the data-center suffix is needed for routing; Mailchimp's current Fundamentals page only shows https://api.mailchimp.com/3.0/. The exact error on the wrong host wasn't verified."
+      }
+    },
+    {
+      "symptom": "HTTP 429 Too Many Requests, or a 403/429 with no JSON body under heavy load",
+      "cause": "More than 10 simultaneous connections for the same Mailchimp user (the limit is per user, not per key or client).",
+      "fix": "Serialize requests per user, cache slow-changing data, and use the Batch endpoint. Mailchimp says the limit can't be raised per customer.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "A stored token suddenly returns 401",
+      "cause": "Tokens don't expire, so a 401 means the user revoked access or was removed from the account.",
+      "fix": "Don't retry; mark the connection broken and ask the user to re-authorize.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "All requests fail with 401 right after rotating the client secret",
+      "cause": "Requests signed with the old secret fail once it's rotated.",
+      "fix": "Deploy the new secret immediately after rotating in the app's Edit page.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Calls time out on large reports or list exports",
+      "cause": "The Marketing API has a 120-second timeout on calls.",
+      "fix": "Use pagination with fields/exclude_fields, or submit the work to the Batch endpoint (max 500 pending batch webhook events per user).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens have no expiry and there are no refresh tokens. A token is valid until the user revokes it or is removed from the account, so encrypt tokens at rest.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "There are no granular scopes: a token can do anything the authorizing user can do in the Marketing API, including sending campaigns. Build your own guardrails before letting an agent send email.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Exceeding the limits can get your API access disabled, and there's no option to raise the 10-connection limit per customer.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Mailchimp isn't an OpenID Connect provider (no discovery document); identify the user from the metadata endpoint's account login details.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [],
+        "note": "https://login.mailchimp.com/.well-known/openid-configuration returned HTTP 404 on 2026-10-20."
+      }
+    },
+    {
+      "text": "Mailchimp's free plan drops to 250 contacts and 500 sends a month in 2026, so many users' accounts will be small; that's an account limit, not an API restriction.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "Third-party report; it doesn't mention API access, and we found no Mailchimp doc saying API access is restricted on free plans."
+      }
+    },
+    {
+      "text": "Mailchimp Transactional (formerly Mandrill) uses separate API keys, not this OAuth flow.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Mailchimp Marketing API: OAuth 2",
+      "url": "https://mailchimp.com/developer/marketing/api-concepts/authentication/oauth-2/"
+    },
+    {
+      "id": "s2",
+      "title": "Mailchimp: Set up an OAuth app",
+      "url": "https://mailchimp.com/developer/marketing/build/start-developing/set-up-an-oauth-app/"
+    },
+    {
+      "id": "s3",
+      "title": "Mailchimp Marketing API: Rate limits and timeouts",
+      "url": "https://mailchimp.com/developer/marketing/api-concepts/rate-limits-and-timeouts/"
+    },
+    {
+      "id": "s4",
+      "title": "Mailchimp Integration Partner Program",
+      "url": "https://mailchimp.com/developer/integration-partner-program/"
+    },
+    {
+      "id": "s5",
+      "title": "Mailchimp developer documentation index",
+      "url": "https://mailchimp.com/developer/llms.txt"
+    },
+    {
+      "id": "s7",
+      "title": "Prismatic: Mailchimp component (third-party)",
+      "url": "https://prismatic.io/docs/components/mailchimp/"
+    },
+    {
+      "id": "s8",
+      "title": "beehiiv: Mailchimp's 2026 free plan changes (third-party)",
+      "url": "https://www.beehiiv.com/blog/navigating-mailchimp-s-new-free-limits-essential-updates-for-newsletter-owners"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://login.mailchimp.com/oauth2/metadata (no token): HTTP 200, {\"error\":\"invalid_token\",\"error_description\":\"Unable to load login and user\"}",
+      "GET https://login.mailchimp.com/.well-known/openid-configuration: HTTP 404",
+      "GET https://us1.admin.mailchimp.com/account/oauth2/: 302 to login.mailchimp.com",
+      "GET https://login.mailchimp.com/oauth2/authorize with a fake client_id: HTTP 404 (no friendly error page)"
+    ],
+    "openQuestions": [
+      "Whether Mailchimp supports PKCE or a state parameter round-trip officially",
+      "Whether one registered app can hold multiple redirect URIs (dev and prod)",
+      "Typical Integration Partner Program review time",
+      "Whether Mailchimp has any data-use policy specific to AI agents"
+    ]
+  }
+}

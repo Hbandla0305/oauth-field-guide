@@ -1,0 +1,520 @@
+{
+  "app": {
+    "name": "eBay",
+    "slug": "ebay",
+    "website": "https://www.ebay.com",
+    "developerPortal": "https://developer.ebay.com/my/keys",
+    "category": "E-commerce"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Getting user access tokens (KB)",
+      "url": "https://developer.ebay.com/support/knowledge-base/5075"
+    },
+    {
+      "kind": "review",
+      "label": "Get started with eBay APIs (keysets, growth check)",
+      "url": "https://developer.ebay.com/develop/guides/get-started-with-ebay-apis"
+    },
+    {
+      "kind": "review",
+      "label": "Marketplace account deletion requirement",
+      "url": "https://developer.ebay.com/develop/guides/marketplace-user-account-deletion.md"
+    },
+    {
+      "kind": "review",
+      "label": "Buy API production requirements",
+      "url": "https://www.developer.ebay.com/api-docs/buy/buy-requirements.html"
+    },
+    {
+      "kind": "console",
+      "label": "Application keys",
+      "url": "https://developer.ebay.com/my/keys"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "For Sell APIs (orders, inventory, listings) it's self-serve: a developer account approved in about a business day, a production keyset activated once you subscribe to or opt out of account-deletion notifications, and any seller can then grant consent. The catches are default daily call limits (5,000/day in eBay's example) until you pass the free Application Growth Check, and Buy APIs, which are limited to eBay partners.",
+    "timeToDev": {
+      "range": "1–2 days",
+      "hours": {
+        "min": 24,
+        "max": 48
+      },
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "eBay says account approval takes approximately 1 business day; sandbox keysets and RuName setup follow in under an hour."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 days",
+      "hours": {
+        "min": 24,
+        "max": 72
+      },
+      "assumes": "An agent that reads and writes a seller's orders and listings through Sell APIs at modest volume; higher call limits or restricted APIs need an Application Growth Check, and Buy APIs need eBay Partner Network approval.",
+      "waitingOn": "Developer account approval (~1 business day) and the account-deletion notification endpoint challenge (or opt-out) that activates the production keyset.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "Neither step involves a manual app review for unrestricted Sell APIs, per our reading of eBay's get-started guide."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "An eBay Developers Program account",
+      "why": "Keysets are created after the account is approved (about 1 business day).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An HTTPS endpoint for marketplace account deletion/closure notifications, or a truthful opt-out",
+      "why": "Production keysets are disabled until you subscribe or opt out; opting out is only for apps that don't persist eBay data.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An OAuth-enabled RuName with an Auth Accepted URL",
+      "why": "eBay uses the RuName (not a raw URL) as redirect_uri in both the authorize and token requests.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Sandbox test users",
+      "why": "Sandbox and production need separate keysets; testing consent flows needs sandbox eBay accounts.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Separate keysets per environment is sourced; sandbox test users is our reading."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Sell APIs (default keyset scopes)",
+      "examples": [
+        "https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
+        "https://api.ebay.com/oauth/api_scope/sell.inventory",
+        "https://api.ebay.com/oauth/api_scope/sell.account.readonly",
+        "https://api.ebay.com/oauth/api_scope/commerce.identity.readonly"
+      ],
+      "reviewRequired": false,
+      "time": "1–3 days",
+      "impact": "Available once the production keyset is active; any seller can consent.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "eBay says each keyset is assigned a set of scopes. The scope strings are from our knowledge of eBay's scope format; we couldn't open the scopes page (HTTP 403)."
+      }
+    },
+    {
+      "tier": "Higher call volume",
+      "examples": [
+        "same Sell scopes above ~5,000 calls/day"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks (estimate)",
+      "impact": "Default limits suit individuals and smaller businesses; higher limits need the free Application Growth Check.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": "KB 1362 gives 5,000/day as a default example; review duration is our estimate."
+      }
+    },
+    {
+      "tier": "Restricted APIs",
+      "examples": [
+        "restricted methods limited to specific users or marketplaces"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks (estimate)",
+      "impact": "You must request an Application Growth Check to use restricted APIs in production.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Buy APIs (partner-only)",
+      "examples": [
+        "https://api.ebay.com/oauth/api_scope/buy.order",
+        "https://api.ebay.com/oauth/api_scope/buy.guest.order"
+      ],
+      "reviewRequired": true,
+      "time": "2–6 weeks, not guaranteed",
+      "impact": "Production use is for eBay partners only: apply via eBay Partner Network (response within 10 business days), then compliance review and contract signing.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Scope strings are illustrative from eBay's scope naming; overall time is our estimate."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Register for the eBay Developers Program",
+      "owner": "human",
+      "detail": "Submit the registration form and wait for account approval.",
+      "url": "https://developer.ebay.com/develop/guides/get-started-with-ebay-apis",
+      "duration": "~1 business day",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create sandbox and production keysets",
+      "owner": "human",
+      "detail": "Application Keys → Create a keyset under Sandbox and under Production; each gives an App ID (client_id) and Cert ID (client_secret).",
+      "url": "https://developer.ebay.com/my/keys",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the account-deletion notification endpoint",
+      "owner": "agent",
+      "detail": "Handle eBay's GET challenge by returning 200 with challengeResponse = SHA-256(challengeCode + verificationToken + endpoint) as JSON, and acknowledge POSTed deletion notifications with 2xx.",
+      "url": "https://developer.ebay.com/develop/guides/marketplace-user-account-deletion.md",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Subscribe to (or opt out of) deletion notifications",
+      "owner": "human",
+      "detail": "In Alerts & Notifications set the HTTPS endpoint and a 32–80 character verification token and Save, or opt out only if you don't persist eBay data. This activates the production keyset.",
+      "url": "https://developer.ebay.com/my/keys",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Set up the RuName",
+      "owner": "human",
+      "detail": "On the User Tokens page (/my/auth) create an OAuth-enabled RuName and set the Auth Accepted and Declined URLs to your HTTPS callback.",
+      "url": "https://developer.ebay.com/my/auth",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://auth.ebay.com/oauth2/authorize with client_id, redirect_uri=<RuName>, response_type=code and space-separated scopes; exchange the code at https://api.ebay.com/identity/v1/oauth2/token with Basic auth and redirect_uri=<RuName>.",
+      "url": "https://developer.ebay.com/support/knowledge-base/5075",
+      "duration": "2–3 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test with sandbox users",
+      "owner": "human",
+      "detail": "Consent with a sandbox eBay account and confirm the agent can read orders.",
+      "url": null,
+      "duration": "1 hour",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Monitor call usage",
+      "owner": "agent",
+      "detail": "Track daily usage (App Settings & Insight in the developer portal) and design for the default daily call limit.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "KB 1362 links usage insight from the portal; exact tooling is our reading."
+      }
+    },
+    {
+      "title": "Apply for the Application Growth Check if needed",
+      "owner": "human",
+      "detail": "Activate developer support and submit the App Growth Check form in My Account for higher limits or restricted APIs.",
+      "url": "https://developer.ebay.com/develop/guides/get-started-with-ebay-apis",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Growth Check review",
+      "owner": "wait",
+      "detail": "eBay checks API License Agreement compliance and efficient API use.",
+      "url": null,
+      "duration": "Weeks (estimate)",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "No published timeline."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Write the deletion-notification challenge handler",
+    "Implement the RuName-based OAuth flow and refresh",
+    "Choose minimal Sell API scopes",
+    "Optimize call volume and track daily usage",
+    "Draft the Growth Check application"
+  ],
+  "humanMustDo": [
+    "Register and wait for developer account approval",
+    "Create keysets and the RuName in the portal",
+    "Save the notification endpoint or opt-out",
+    "Submit the Growth Check or EPN application if needed"
+  ],
+  "blockers": [
+    {
+      "symptom": "Production keyset shown as disabled / Non Compliant",
+      "cause": "The marketplace account deletion/closure notification requirement isn't completed.",
+      "fix": "Subscribe a working HTTPS endpoint or opt out; completing either activates the keyset.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Endpoint fails eBay's validation when saving",
+      "cause": "challengeResponse is wrong, often because a hand-built string adds a byte order mark.",
+      "fix": "Build the JSON with a library and hash challengeCode + verificationToken + exact endpoint URL.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_grant or redirect mismatch on token exchange",
+      "cause": "redirect_uri was a URL instead of the RuName, or the code expired.",
+      "fix": "Pass the RuName in both requests and exchange the code immediately.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Codes reportedly last about 5 minutes (community source)."
+      }
+    },
+    {
+      "symptom": "Calls fail after hitting the daily usage limit",
+      "cause": "Default daily call limits (5,000/day in eBay's KB example) apply to your keyset.",
+      "fix": "Reduce calls and apply for the Application Growth Check.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "KB 1362 states 5,000 calls/day for the Shopping API; we assume similar defaults for Sell APIs and that limits are per keyset rather than per user."
+      }
+    },
+    {
+      "symptom": "Buy API calls rejected in production",
+      "cause": "Buy APIs are a limited release for eBay partners only.",
+      "fix": "Apply through eBay Partner Network, then complete compliance review and contract.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Seller must reconnect after about 18 months",
+      "cause": "Refresh tokens expire (sample refresh_token_expires_in 47304000 s) and refreshing doesn't issue a new one.",
+      "fix": "Track refresh-token expiry and prompt re-consent before it lapses.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "User access tokens last about 2 hours (expires_in 7200); refresh tokens about 18 months, and refresh responses return refresh_token 'N/A' rather than rotating it.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Values come from eBay's sample responses."
+      }
+    },
+    {
+      "text": "Failure to handle deletion notifications can lead to termination of Developer Tools access or reduced API access; a false opt-out can get the account disabled.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Sandbox and production use separate keysets, endpoints and RuNames.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The Application Growth Check is free and checks API License Agreement adherence and efficient API use.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Buy API Offer access requires presenting your end-to-end flow in Sandbox, and Production access follows an Application Growth Check.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "eBay Developers KB 5075: getting and refreshing user access tokens",
+      "url": "https://developer.ebay.com/support/knowledge-base/5075"
+    },
+    {
+      "id": "s2",
+      "title": "eBay Developers Program: Get started with eBay APIs",
+      "url": "https://developer.ebay.com/develop/guides/get-started-with-ebay-apis"
+    },
+    {
+      "id": "s3",
+      "title": "eBay: Marketplace User Account Deletion guide",
+      "url": "https://developer.ebay.com/develop/guides/marketplace-user-account-deletion.md"
+    },
+    {
+      "id": "s4",
+      "title": "eBay Buy APIs: Buy requirements",
+      "url": "https://www.developer.ebay.com/api-docs/buy/buy-requirements.html"
+    },
+    {
+      "id": "s5",
+      "title": "eBay: Get started on a buying application",
+      "url": "https://developer.ebay.com/develop/get-started/get-started-on-a-buying-application"
+    },
+    {
+      "id": "s6",
+      "title": "eBay Developers KB 1362: API call limits and Application Growth Check",
+      "url": "https://developer.ebay.com/support/knowledge-base/1362"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://auth.ebay.com/oauth2/authorize returned HTTP 302 without parameters",
+      "https://api.ebay.com/identity/v1/oauth2/token returned HTTP 405 to GET (endpoint exists, expects POST)",
+      "developer.ebay.com/api-docs/static/* OAuth pages returned HTTP 403 to automated fetches; the .md guide variant was readable"
+    ],
+    "openQuestions": [
+      "Exact default call limits per Sell API in 2026 (call-limits page blocked automated fetches)",
+      "Typical Application Growth Check turnaround",
+      "Which Sell API methods currently count as restricted",
+      "Whether eBay applies any AI-specific data-use restrictions in its API License Agreement"
+    ]
+  }
+}

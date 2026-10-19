@@ -1,0 +1,523 @@
+{
+  "app": {
+    "name": "PayPal",
+    "slug": "paypal",
+    "website": "https://www.paypal.com",
+    "developerPortal": "https://developer.paypal.com/dashboard/applications",
+    "category": "Payments"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Integrate Log in with PayPal",
+      "url": "https://developer.paypal.com/docs/log-in-with-paypal/integrate/"
+    },
+    {
+      "kind": "review",
+      "label": "Multiparty platforms (partner application)",
+      "url": "https://developer.paypal.com/docs/multiparty/"
+    },
+    {
+      "kind": "api",
+      "label": "Partner Referrals API v2",
+      "url": "https://developer.paypal.com/api/partner-referrals/v2"
+    },
+    {
+      "kind": "scopes",
+      "label": "OpenID configuration (scopes)",
+      "url": "https://www.paypal.com/.well-known/openid-configuration"
+    },
+    {
+      "kind": "console",
+      "label": "Apps & Credentials dashboard",
+      "url": "https://developer.paypal.com/dashboard/applications"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "PayPal has two OAuth-style paths: Log in with PayPal, which only shares identity attributes and still needs a live review that PayPal says 'typically takes a few weeks', and seller onboarding through the Partner Referrals API, which grants permissions such as ADVANCED_TRANSACTIONS_SEARCH or INVOICE_READ_WRITE on a merchant's account but is 'available to approved partners only'. An agent that reads or acts on a user's PayPal transactions needs the partner path, so it depends on PayPal accepting your platform.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "Sandbox apps are enabled as soon as you click Save, and PayPal says you can test multiparty flows in the sandbox before partner approval."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 months",
+      "hours": {
+        "min": 720,
+        "max": 2160
+      },
+      "assumes": "Partner approval to onboard users' merchant accounts with third-party permissions, which an agent reading transactions or invoices needs. Identity-only Log in with PayPal is faster: a few weeks of review.",
+      "waitingOn": "A PayPal representative evaluating your platform after the 'Tell us about your platform' form, then live credentials and account-manager configuration (such as the return URL).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s4",
+          "s5"
+        ],
+        "note": "PayPal publishes no partner approval timeline. The range is our estimate."
+      }
+    },
+    "cost": "No fee to apply is stated. Normal PayPal transaction fees apply to payments."
+  },
+  "prerequisites": [
+    {
+      "item": "A PayPal account and developer dashboard access (sandbox accounts are created automatically)",
+      "why": "Apps and credentials are created under Apps & Credentials, with separate sandbox and live apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A live privacy policy URL and user agreement URL",
+      "why": "PayPal's privacy and security team reviews both before Log in with PayPal is activated for live.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Approved partner status (for acting on merchants' accounts)",
+      "why": "The Partner Referrals endpoint 'is available to approved partners only'. You apply with the 'Tell us about your platform' form.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s3",
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Users with PayPal business accounts in countries that can receive payments",
+      "why": "Some onboarding paths need a business account, and sellers in send-only countries can't receive payments.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity (Log in with PayPal)",
+      "examples": [
+        "openid",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ],
+      "reviewRequired": true,
+      "time": "A few weeks",
+      "impact": "Gives name, email, address and verification status. No transaction data. Every scope needs approval before live; sandbox works on Save.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Scope strings from the live OpenID configuration."
+      }
+    },
+    {
+      "tier": "Legacy payment scopes in OIDC config",
+      "examples": [
+        "https://uri.paypal.com/services/payments/futurepayments",
+        "https://uri.paypal.com/services/expresscheckout",
+        "https://uri.paypal.com/services/wallet/sendmoney"
+      ],
+      "reviewRequired": true,
+      "time": "Unclear",
+      "impact": "Listed in scopes_supported but not documented on the current Log in with PayPal pages. Don't plan on them without confirming with PayPal.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Seen in the live discovery document; no current docs describe how to get them."
+      }
+    },
+    {
+      "tier": "Partner third-party permissions (read)",
+      "examples": [
+        "ACCESS_MERCHANT_INFORMATION",
+        "ADVANCED_TRANSACTIONS_SEARCH",
+        "READ_SELLER_DISPUTE",
+        "PAYPAL_BALANCE"
+      ],
+      "reviewRequired": true,
+      "time": "1–3 months",
+      "impact": "Requested in the Partner Referrals call and granted by the seller during onboarding. Only approved partners can call the endpoint in live.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Enum values from the Partner Referrals v2 schema (rest_endpoint_features_enum). Whether each one needs separate approval isn't documented."
+      }
+    },
+    {
+      "tier": "Partner third-party permissions (write / money movement)",
+      "examples": [
+        "PAYMENT",
+        "REFUND",
+        "INVOICE_READ_WRITE",
+        "UPDATE_SELLER_DISPUTE",
+        "PAYOUTS",
+        "VAULT"
+      ],
+      "reviewRequired": true,
+      "time": "1–3 months",
+      "impact": "Same partner gate. Features like PARTNER_FEE and DELAY_FUNDS_DISBURSEMENT aren't included in the build-into-software integration.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Pick the path",
+      "owner": "agent",
+      "detail": "Identity only → Log in with PayPal. Reading transactions, invoices or disputes, or acting on a merchant's account → partner seller onboarding via Partner Referrals.",
+      "url": "https://developer.paypal.com/docs/multiparty/",
+      "duration": "15 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create a sandbox app",
+      "owner": "human",
+      "detail": "Log in to the developer dashboard, open Apps & Credentials, create an app and copy the sandbox client ID and secret.",
+      "url": "https://developer.paypal.com/dashboard/applications",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Dashboard URL returned HTTP 200 on 2026-10-20. We did not log in."
+      }
+    },
+    {
+      "title": "Apply to become a partner",
+      "owner": "human",
+      "detail": "Submit the 'Tell us about your platform' form (company, website, solution description, company type, annual client volume).",
+      "url": "https://developer.paypal.com/docs/multiparty/",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the platform description and data-use justification",
+      "owner": "agent",
+      "detail": "Write the solution description for the form, the list of third-party features you need and why, and privacy policy text covering AI processing of PayPal data.",
+      "url": null,
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build seller onboarding in sandbox",
+      "owner": "agent",
+      "detail": "Call POST /v2/customer/partner-referrals with operations API_INTEGRATION and third-party features, redirect the seller to the action_url, and subscribe to MERCHANT.ONBOARDING.COMPLETED and MERCHANT.PARTNER-CONSENT.REVOKED webhooks.",
+      "url": "https://developer.paypal.com/api/partner-referrals/v2",
+      "duration": "1–2 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s8"
+        ],
+        "note": "'You must be an approved partner to use this integration' (s8). The operations value is from the schema."
+      }
+    },
+    {
+      "title": "Wait for partner approval",
+      "owner": "wait",
+      "detail": "A PayPal representative contacts you after evaluating your business needs.",
+      "url": null,
+      "duration": "Unknown (weeks)",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": "No timeline published."
+      }
+    },
+    {
+      "title": "Configure live settings with your account manager",
+      "owner": "human",
+      "detail": "Get live credentials and work with your account manager to set the return URL for onboarding.",
+      "url": null,
+      "duration": "Days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Enable Log in with PayPal on the live app (optional)",
+      "owner": "human",
+      "detail": "Apps & Credentials > your live app > Other features > Log in with PayPal > Advanced Settings: return URL, attributes, privacy policy and user agreement URLs, then Save (this submits for review).",
+      "url": "https://developer.paypal.com/docs/log-in-with-paypal/integrate/",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for Log in with PayPal review",
+      "owner": "wait",
+      "detail": "PayPal's privacy and security team reviews; 'The review process typically takes a few weeks'.",
+      "url": null,
+      "duration": "A few weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Choose between Log in with PayPal and partner onboarding",
+    "Draft the partner application text and feature justifications",
+    "Build Partner Referrals calls and onboarding webhooks in sandbox",
+    "Implement the OIDC code flow, token refresh and userinfo calls",
+    "Check the OpenID configuration and sandbox endpoints"
+  ],
+  "humanMustDo": [
+    "Log in to the developer dashboard and create apps",
+    "Submit the partner form and take calls with PayPal",
+    "Publish real privacy policy and user agreement pages",
+    "Work with the account manager on live credentials and return URL"
+  ],
+  "blockers": [
+    {
+      "symptom": "Partner Referrals call fails in live with a permission or authorization error",
+      "cause": "The endpoint is available to approved partners only.",
+      "fix": "Apply via the 'Tell us about your platform' form and wait for approval; keep building in sandbox.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "The exact live error string is not documented."
+      }
+    },
+    {
+      "symptom": "Log in with PayPal works in sandbox but not live",
+      "cause": "Live apps are submitted for review on Save and aren't active until approved.",
+      "fix": "Wait for review (a few weeks), with real privacy policy and user agreement URLs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Live review rejected or stalled",
+      "cause": "Example URLs like https://example.com left in the privacy policy or user agreement fields.",
+      "fix": "Replace them with live pages before saving the live app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_client / Client Authentication failed at the token endpoint",
+      "cause": "Wrong client ID/secret, or sandbox credentials used against live (or vice versa).",
+      "fix": "Use api-m.sandbox.paypal.com with sandbox credentials and api-m.paypal.com with live ones.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Seen on 2026-10-20 when calling the sandbox token endpoint with no credentials."
+      }
+    },
+    {
+      "symptom": "Onboarded seller can't receive payments",
+      "cause": "The seller is in a send-only country, or hasn't confirmed their email.",
+      "fix": "Check country support before onboarding and prompt sellers to confirm their email.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Log in with PayPal access tokens default to 28800 seconds (8 hours). The refresh token lifetime isn't stated.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Log in with PayPal uses pairwise subject identifiers, so the user ID differs per app.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "subject_types_supported: [\"pairwise\"] in the live discovery document."
+      }
+    },
+    {
+      "text": "Access to user attributes doesn't let you email users; you need a separate opt-in or opt-out for non-purchase communications.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Sellers can revoke partner consent at any time; MERCHANT.PARTNER-CONSENT.REVOKED tells you when.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The build-into-software onboarding option only includes cart capabilities, not Platform Fee, Delayed Disbursement, Partner Reporting or the Disputes API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "PayPal docs: Integrate Log in with PayPal",
+      "url": "https://developer.paypal.com/docs/log-in-with-paypal/integrate/"
+    },
+    {
+      "id": "s2",
+      "title": "PayPal OpenID Connect discovery document (live)",
+      "url": "https://www.paypal.com/.well-known/openid-configuration"
+    },
+    {
+      "id": "s3",
+      "title": "PayPal docs: Multiparty (platforms and marketplaces)",
+      "url": "https://developer.paypal.com/docs/multiparty/"
+    },
+    {
+      "id": "s4",
+      "title": "PayPal API: Partner Referrals v2 (schema)",
+      "url": "https://developer.paypal.com/api/partner-referrals/v2/schema.json"
+    },
+    {
+      "id": "s5",
+      "title": "PayPal docs: Seller onboarding",
+      "url": "https://developer.paypal.com/docs/multiparty/seller-onboarding/"
+    },
+    {
+      "id": "s6",
+      "title": "PayPal docs: Build onboarding into your software",
+      "url": "https://developer.paypal.com/docs/multiparty/seller-onboarding/build-onboarding"
+    },
+    {
+      "id": "s7",
+      "title": "PayPal sandbox token endpoint (live probe)",
+      "url": "https://api-m.sandbox.paypal.com/v1/oauth2/token"
+    },
+    {
+      "id": "s8",
+      "title": "PayPal docs: Onboard sellers before payment",
+      "url": "https://developer.paypal.com/docs/multiparty/seller-onboarding/before-payment/"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://www.paypal.com/.well-known/openid-configuration: authorize https://www.paypal.com/signin/authorize, token https://api.paypal.com/v1/oauth2/token, pairwise subjects, scopes openid/profile/email/address/phone plus three legacy uri.paypal.com scopes",
+      "GET https://www.paypal.com/signin/authorize with a dummy client: HTTP 200",
+      "POST https://api-m.sandbox.paypal.com/v1/oauth2/token without credentials: {\"error\":\"invalid_client\",\"error_description\":\"Client Authentication failed\"}",
+      "GET https://developer.paypal.com/dashboard/applications: HTTP 200",
+      "Partner Referrals v2 schema.json contains 'This endpoint is available to approved partners only' and rest_endpoint_features_enum"
+    ],
+    "openQuestions": [
+      "How long partner approval takes and what volume or business criteria PayPal applies",
+      "Whether an AI agent that only reads transactions (no payment processing) qualifies as a partner",
+      "Whether the legacy uri.paypal.com scopes are still grantable to new apps",
+      "Refresh token lifetime for Log in with PayPal and partner tokens"
+    ]
+  }
+}

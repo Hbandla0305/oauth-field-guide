@@ -1,0 +1,499 @@
+{
+  "app": {
+    "name": "Etsy",
+    "slug": "etsy",
+    "website": "https://www.etsy.com",
+    "developerPortal": "https://www.etsy.com/developers",
+    "category": "E-commerce"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authentication (OAuth 2.0 + PKCE)",
+      "url": "https://developers.etsy.com/documentation/essentials/authentication"
+    },
+    {
+      "kind": "review",
+      "label": "App types and Commercial Access",
+      "url": "https://developers.etsy.com/documentation/"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developers.etsy.com/documentation/essentials/rate-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Portal (Your apps)",
+      "url": "https://www.etsy.com/developers"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Etsy now has three tiers: a Seller App (own shop only, auto-approved in minutes), a Personal App (manual review, limited scale), and Commercial Access (separate manual review) which is what lets any seller connect via OAuth. Review times aren't published, and at least one developer reports Etsy refusing access for generative-AI/LLM use of its data.",
+    "timeToDev": {
+      "range": "Same day–2 weeks",
+      "hours": {
+        "min": 1,
+        "max": 336
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "A seller with an active shop gets a Seller App in minutes. A developer without a shop needs a Personal App, which has a deeper manual review; one 2025 report shows OAuth disabled while the app was 'Pending Approval'."
+      }
+    },
+    "timeToProd": {
+      "range": "4–12 weeks",
+      "hours": {
+        "min": 672,
+        "max": 2016
+      },
+      "assumes": "A multi-seller agent reading shops, listings and orders, which needs an approved Personal App and then Commercial Access; a tool for only your own shop can use a Seller App the same day.",
+      "waitingOn": "Personal App review, then manual Commercial Access review (time 'may vary depending on your proposed use case').",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "Etsy publishes no review timeline. The range is our estimate for two sequential manual reviews."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "An Etsy account registered as a developer (and an active shop in good standing for a Seller App)",
+      "why": "Apps are created in the Developer Portal; Seller Apps are only for sellers with an active shop and no other active app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "HTTPS callback URL registered exactly in Your Apps",
+      "why": "redirect_uri must exactly match a registered callback, case-sensitive, https only; trailing slash or missing www fails.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A public home page with Etsy's required trademark disclaimer and a name that follows the Trademark Policy",
+      "why": "Commercial Access requires a prominent statement that the app is not Etsy, including 'is a trademark of Etsy, Inc.'",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "PKCE support in your OAuth client",
+      "why": "Etsy requires PKCE (S256) on every authorization request.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Own shop via Seller App",
+      "examples": [
+        "shops_r",
+        "listings_r",
+        "listings_w",
+        "transactions_r"
+      ],
+      "reviewRequired": false,
+      "time": "Minutes",
+      "impact": "Automated approval for eligible sellers; only your own shop can authorize and commercial use isn't permitted.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Limited-scale access via Personal App",
+      "examples": [
+        "shops_r",
+        "listings_r",
+        "profile_r",
+        "email_r"
+      ],
+      "reviewRequired": true,
+      "time": "Days to weeks",
+      "impact": "Lets you build beyond your own shop at limited scale based on the approved use case. Required before you can request Commercial Access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Time is our estimate; Etsy gives none."
+      }
+    },
+    {
+      "tier": "Any seller via Commercial Access",
+      "examples": [
+        "shops_r",
+        "shops_w",
+        "listings_r",
+        "listings_w",
+        "listings_d",
+        "transactions_r",
+        "transactions_w"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks (estimate)",
+      "impact": "Any seller who grants OAuth consent can connect; commercial use permitted after manual review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Buyer email on transactions",
+      "examples": [
+        "transactions_r + buyer_email field"
+      ],
+      "reviewRequired": true,
+      "time": "Separate request",
+      "impact": "Apps using the transactions read scope must request access to buyer_email separately.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Etsy's page names the scope 'transaction_r'; the auth docs list 'transactions_r'."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Decide the app type",
+      "owner": "agent",
+      "detail": "Seller App if the agent only touches your own shop; otherwise Personal App now and Commercial Access later.",
+      "url": "https://developers.etsy.com/documentation/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the use-case description",
+      "owner": "agent",
+      "detail": "Write a precise description of what data the app reads and writes, caching behavior per the API Terms, and how AI is (or isn't) applied to Etsy data.",
+      "url": "https://www.etsy.com/legal/api",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "Caching rules are in Section 1 of the API Terms; the AI point reflects one developer's refusal."
+      }
+    },
+    {
+      "title": "Register the app",
+      "owner": "human",
+      "detail": "In the Developer Portal choose 'Create a seller app' or 'Create a personal app', add HTTPS callback URLs, and copy the keystring and shared secret.",
+      "url": "https://www.etsy.com/developers/register",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for app approval",
+      "owner": "wait",
+      "detail": "Seller Apps are approved within minutes; Personal Apps go through a deeper manual review.",
+      "url": null,
+      "duration": "Minutes to weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Personal App duration isn't published."
+      }
+    },
+    {
+      "title": "Implement OAuth with PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://www.etsy.com/oauth/connect with response_type=code, client_id, redirect_uri, scope, state, code_challenge and code_challenge_method=S256; exchange at https://api.etsy.com/v3/public/oauth/token. Send x-api-key: keystring:shared_secret on every request.",
+      "url": "https://developers.etsy.com/documentation/essentials/authentication",
+      "duration": "2–3 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test against your own shop",
+      "owner": "human",
+      "detail": "Authorize with your Etsy account and follow Etsy's API testing policy when creating test listings.",
+      "url": "https://www.etsy.com/legal/policy/api-testing-policy/169130941112",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Prepare the home page and disclaimer",
+      "owner": "agent",
+      "detail": "Draft the public home page with the required 'not Etsy' trademark disclaimer and check the app name and artwork against the Trademark Policy.",
+      "url": "https://www.etsy.com/help/article/481",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Request Commercial Access",
+      "owner": "human",
+      "detail": "Developer Portal → Apps You've Made → Request Commercial Access next to the approved Personal App.",
+      "url": "https://www.etsy.com/developers",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Commercial Access review",
+      "owner": "wait",
+      "detail": "Manual review; time varies by use case.",
+      "url": null,
+      "duration": "Weeks (estimate)",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Request higher rate limits if needed",
+      "owner": "human",
+      "detail": "Email developer@etsy.com with an app description and estimated QPS/QPD.",
+      "url": "https://developers.etsy.com/documentation/essentials/rate-limits",
+      "duration": "Days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Duration is our estimate."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the PKCE flow and token refresh",
+    "Pick the minimal scope set",
+    "Draft the use-case and Commercial Access justification",
+    "Write the home page with Etsy's trademark disclaimer",
+    "Build QPS/QPD-aware request throttling"
+  ],
+  "humanMustDo": [
+    "Register the app in the Developer Portal",
+    "Authorize test shops with a real Etsy login",
+    "Click Request Commercial Access",
+    "Email Etsy for rate-limit increases"
+  ],
+  "blockers": [
+    {
+      "symptom": "{\"error\":\"Invalid API key: should be in the format 'keystring:shared_secret'.\"}",
+      "cause": "The x-api-key header is missing or contains only the keystring.",
+      "fix": "Send x-api-key: <keystring>:<shared_secret> on every request, including the token endpoint.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed from an unauthenticated POST to https://api.etsy.com/v3/public/oauth/token on 2026-10-20 (HTTP 403)."
+      }
+    },
+    {
+      "symptom": "User sees an error on Etsy and is never redirected back",
+      "cause": "redirect_uri doesn't exactly match a registered callback (http, trailing slash, case, missing www).",
+      "fix": "Register and send the identical https URL.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "App shows 'Pending Approval' with OAuth disabled and 5 QPS / 5,000 QPD",
+      "cause": "The app hasn't passed review yet.",
+      "fix": "Wait for approval or email Etsy; build against public endpoints meanwhile.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Reported by a developer in March 2025, before Etsy's current Seller/Personal/Commercial tiers were documented."
+      }
+    },
+    {
+      "symptom": "Etsy replies that it is 'not allowing these types of usage of our data'",
+      "cause": "Reported refusal for an app relying on generative AI, LLM or ML tools.",
+      "fix": "Describe the AI use narrowly (e.g. acting only on the authorizing seller's data) and confirm with Etsy before building.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "Single developer's account on GitHub Discussions; we couldn't read the current API Terms (HTTP 403) to confirm a written AI clause."
+      }
+    },
+    {
+      "symptom": "Other sellers can't authorize your app",
+      "cause": "Seller Apps only authorize your own shop; Personal Apps are limited-scale.",
+      "fix": "Get a Personal App approved, then request Commercial Access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 1 hour (expires_in 3600); refresh tokens last 90 days. Refreshing keeps the original scopes, and scope changes require a new authorization.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The docs' refresh example uses grant_type=refresh_code but the parameter table says refresh_token; use refresh_token."
+      }
+    },
+    {
+      "text": "Rate limits are per API key (not per token), with QPS and a rolling 24-hour QPD; current limits show in the Developer Portal.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Screen-scraping is prohibited and private member data requires OAuth; caching must follow Section 1 of the API Terms.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Legacy OAuth 1.0 tokens can be exchanged for v3 tokens with grant_type=token_exchange; v2 tokens don't work on v3.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Etsy offers a Dev MCP server for AI coding assistants with endpoint and scope details; it needs no API key but doesn't grant data access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Etsy Open API v3: Authentication",
+      "url": "https://developers.etsy.com/documentation/essentials/authentication"
+    },
+    {
+      "id": "s2",
+      "title": "Etsy Open API v3: Documentation overview (app types, Commercial Access)",
+      "url": "https://developers.etsy.com/documentation/"
+    },
+    {
+      "id": "s3",
+      "title": "Etsy Open API v3: Rate Limits",
+      "url": "https://developers.etsy.com/documentation/essentials/rate-limits"
+    },
+    {
+      "id": "s4",
+      "title": "GitHub etsy/open-api Discussion #1387 (approval and AI usage)",
+      "url": "https://github.com/etsy/open-api/discussions/1387"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://www.etsy.com/oauth/connect returned HTTP 302 without parameters",
+      "POST https://api.etsy.com/v3/public/oauth/token without a key returned HTTP 403 with 'Invalid API key: should be in the format keystring:shared_secret'",
+      "https://www.etsy.com/legal/api returned HTTP 403 to automated fetches"
+    ],
+    "openQuestions": [
+      "Typical Personal App and Commercial Access review times",
+      "Whether the current API Terms contain an explicit AI/LLM restriction",
+      "Exact limits (shops, users, QPS) on an approved Personal App",
+      "Whether OAuth works at all while a Personal App is pending"
+    ]
+  }
+}

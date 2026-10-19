@@ -1,0 +1,335 @@
+{
+  "app": {
+    "name": "Sign in with Apple",
+    "slug": "apple",
+    "website": "https://www.apple.com",
+    "developerPortal": "https://developer.apple.com/account/resources/identifiers/list/serviceId",
+    "category": "Identity"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Configuring your environment for Sign in with Apple",
+      "url": "https://developer.apple.com/documentation/signinwithapple/configuring-your-environment-for-sign-in-with-apple"
+    },
+    {
+      "kind": "api",
+      "label": "Sign in with Apple REST API",
+      "url": "https://developer.apple.com/documentation/signinwithapplerestapi"
+    },
+    {
+      "kind": "console",
+      "label": "Certificates, Identifiers & Profiles (Services IDs)",
+      "url": "https://developer.apple.com/account/resources/identifiers/list/serviceId"
+    },
+    {
+      "kind": "oauth",
+      "label": "Configure Sign in with Apple for the web",
+      "url": "https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web"
+    },
+    {
+      "kind": "review",
+      "label": "App Review Guidelines (4.8 Login Services)",
+      "url": "https://developer.apple.com/app-store/review/guidelines/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Sign in with Apple is identity only: the only scopes are name and email (plus openid), and Apple offers no OAuth API for reading or writing user data such as iCloud Mail, Calendar, Contacts, Photos or Drive, so it can authenticate your agent's users but can't give the agent access to their Apple data. Setup is self-serve with no review for web sign-in, but it needs a paid Apple Developer Program membership ($99/year), an App ID plus Services ID, verified HTTPS domains (no localhost), and a JWT client secret you re-sign at least every 6 months.",
+    "timeToDev": {
+      "range": "1–4 h",
+      "hours": { "min": 1, "max": 4 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3", "s4"],
+        "note": "Assumes an existing paid membership. Most of the time goes to the App ID, Services ID, private key and JWT client secret, and to an HTTPS tunnel or staging domain, since localhost return URLs are rejected. A new organization enrollment (D-U-N-S, identity verification) can add days or more."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 4, "max": 24 },
+      "assumes": "Web sign-in for an agent product whose users already have a membership-backed App ID and Services ID. It doesn't cover user-data access, which Apple doesn't offer via OAuth.",
+      "waitingOn": "Nothing — no review for web sign-in. New organizations wait on Apple Developer Program enrollment verification, and iOS apps go through normal App Review.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s9", "s10"],
+        "note": "No Sign in with Apple-specific review is documented for websites. Apple's environment doc says web authentication needs an existing App Store app using Sign in with Apple, which we couldn't confirm is enforced."
+      }
+    },
+    "cost": "Apple Developer Program membership, 99 USD per membership year (prices may vary by region)."
+  },
+  "prerequisites": [
+    {
+      "item": "A paid Apple Developer Program membership (Account Holder or Admin role)",
+      "why": "Identifiers, keys and the Sign in with Apple capability are configured in Certificates, Identifiers & Profiles, which is a program feature. Configuring it needs the Account Holder or Admin role.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s9", "s10", "s11"],
+        "note": "The membership requirement is our reading of the program pages. The help article states the role requirement but not the membership."
+      }
+    },
+    {
+      "item": "For organizations: a D-U-N-S Number, a legal entity (no DBAs), a public website on your domain, and an Account Holder with signing authority",
+      "why": "Apple verifies the organization's identity and legal status before enrollment completes.",
+      "evidence": { "label": "sourced", "sourceIds": ["s10"], "note": "Apple states no processing time." }
+    },
+    {
+      "item": "A primary App ID with Sign in with Apple enabled (Apple's doc says an existing App Store app)",
+      "why": "Services IDs (web client IDs) and private keys are tied to a primary App ID. The doc says web authentication requires an existing App Store app that uses Sign in with Apple.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s1"],
+        "note": "Many web-only integrations appear to use an unpublished primary App ID. We didn't verify whether the App Store requirement is enforced."
+      }
+    },
+    {
+      "item": "Verified HTTPS domains and absolute return URLs (no localhost, no IP addresses)",
+      "why": "redirect_uri must use HTTPS, include a domain name, and can't be an IP address or localhost. All domains and subdomains have to be registered and verified on the Services ID.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "item": "SPF/DKIM-authenticated outbound email domains, if you email users",
+      "why": "Users can hide their email behind the Private Email Relay. Mail to relay addresses is delivered only from registered, authenticated sources.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity (the only tier that exists)",
+      "examples": ["openid", "name", "email"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "You get a stable pairwise user ID (sub), and optionally name and a real or relay email. If you request any scope, response_mode must be form_post. Apple returns no API-usable access to user content.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["s5", "s2"],
+        "note": "The live discovery document lists scopes_supported [openid, email, name] and subject_types [pairwise]."
+      }
+    },
+    {
+      "tier": "User data (mail, calendar, contacts, files): not available via OAuth",
+      "examples": [],
+      "reviewRequired": true,
+      "time": "Not offered",
+      "impact": "There are no public OAuth scopes for iCloud data. Third-party iCloud Mail/Calendar/Contacts access normally uses IMAP/CalDAV/CardDAV with a user-generated app-specific password (2FA required). Apple mentions 'supported' apps that can authorize with an Apple Account instead, but no developer program for that is documented.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s5", "s8"],
+        "note": "Inferred from the discovery document and the app-specific password support page. We found no developer docs for OAuth access to iCloud data."
+      }
+    },
+    {
+      "tier": "Education rosters (Account & Organizational Data Sharing)",
+      "examples": ["edu.users.read", "edu.classes.read"],
+      "reviewRequired": true,
+      "time": "Varies (org-specific)",
+      "impact": "A separate Apple product for education apps that reads Apple School Manager user and class data. It isn't general consumer data. Its use depends on the school or organization sharing data with your app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["s12"],
+        "note": "reviewRequired=true is our inference: organization data sharing depends on the organization's admin, and Apple's onboarding path wasn't reviewed in depth."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Enroll in the Apple Developer Program",
+      "owner": "human",
+      "detail": "Enroll as an individual or organization (organizations need a D-U-N-S Number, a legal entity, a public website on their domain, and an Account Holder with signing authority). Pay 99 USD per year.",
+      "url": "https://developer.apple.com/programs/enroll/",
+      "duration": "1 day to 2+ weeks (org verification)",
+      "evidence": { "label": "sourced", "sourceIds": ["s10"], "note": "The duration is our estimate. Apple states no processing time." }
+    },
+    {
+      "title": "Enable Sign in with Apple on a primary App ID",
+      "owner": "human",
+      "detail": "In Certificates, Identifiers & Profiles > Identifiers, create or edit an App ID, tick Sign in with Apple, and choose 'Enable as a primary App ID'.",
+      "url": "https://developer.apple.com/account/resources/identifiers/list",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s11"], "note": null }
+    },
+    {
+      "title": "Create a Services ID with domains and return URLs",
+      "owner": "human",
+      "detail": "Register a Services ID (this is your web client_id), enable Sign in with Apple, link it to the primary App ID, and add verified domains and absolute HTTPS return URLs. Organizations can register up to 100 website URLs, individuals up to 10.",
+      "url": "https://developer.apple.com/account/resources/identifiers/list/serviceId",
+      "duration": "15 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["s1", "s4"],
+        "note": "The Services ID console URL returned 302 to idmsa.apple.com sign-in on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Create a Sign in with Apple private key",
+      "owner": "human",
+      "detail": "Under Keys, create a key with Sign in with Apple enabled for the primary App ID. Download the .p8 file (it can be downloaded only once) and note the Key ID and Team ID. Each primary app can have at most two keys.",
+      "url": "https://developer.apple.com/account/resources/authkeys/list",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The one-time download is from Apple's key help page, not re-checked here." }
+    },
+    {
+      "title": "Generate the JWT client secret",
+      "owner": "agent",
+      "detail": "Sign an ES256 JWT with header kid=<Key ID> and claims iss=<Team ID>, iat, exp (at most 15777000 seconds, about 6 months, ahead), aud=https://appleid.apple.com, sub=<Services ID>. Schedule automatic re-signing before exp.",
+      "url": "https://developer.apple.com/documentation/accountorganizationaldatasharing/creating-a-client-secret",
+      "duration": "30–60 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Implement the authorization request and token exchange",
+      "owner": "agent",
+      "detail": "Redirect to https://appleid.apple.com/auth/authorize?client_id=<Services ID>&redirect_uri=<https>&response_type=code&response_mode=form_post&scope=name%20email&state=...&nonce=.... Handle the POST callback, then exchange the code (single-use, valid 5 minutes) at POST https://appleid.apple.com/auth/token with client_secret_post.",
+      "url": "https://developer.apple.com/documentation/signinwithapplerestapi/request-an-authorization-to-the-sign-in-with-apple-server.",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s6", "s5"], "note": null }
+    },
+    {
+      "title": "Validate the ID token and persist name/email on first sign-in",
+      "owner": "agent",
+      "detail": "Verify the id_token against https://appleid.apple.com/auth/keys (iss, aud, exp, nonce). Store sub as the user key. Save the user's name from the callback's user JSON on first authorization, because Apple doesn't return it again.",
+      "url": "https://developer.apple.com/documentation/signinwithapple/verifying-a-user",
+      "duration": "1 h",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": ["s2", "s5"],
+        "note": "The JWKS and claims are sourced. 'Name only on first authorization' is widely reported by developers but wasn't confirmed in the pages we read."
+      }
+    },
+    {
+      "title": "Register email sources and server-to-server notifications",
+      "owner": "human",
+      "detail": "Add outbound email domains/addresses for the Private Email Relay (authenticate with SPF and DKIM), and register a TLS 1.2+ endpoint for account-change notifications.",
+      "url": "https://developer.apple.com/help/account/capabilities/configure-private-email-relay-service",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s7"], "note": null }
+    },
+    {
+      "title": "Handle consent-revoked, account-deleted and token revocation",
+      "owner": "agent",
+      "detail": "Verify notification JWS payloads and act on email-disabled, email-enabled, consent-revoked and account-deleted events. When a user deletes their account in your product, call POST https://appleid.apple.com/auth/revoke with their refresh or access token.",
+      "url": "https://developer.apple.com/documentation/signinwithapple/processing-changes-for-sign-in-with-apple-accounts",
+      "duration": "1–2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["s7", "s13"], "note": null }
+    },
+    {
+      "title": "Plan a separate path for Apple user data, if needed",
+      "owner": "agent",
+      "detail": "If the agent needs iCloud mail, calendar or contacts, don't plan on OAuth. The documented route is IMAP/CalDAV/CardDAV with a user-created app-specific password, which has security and UX trade-offs to weigh with the product owner.",
+      "url": "https://support.apple.com/en-us/102654",
+      "duration": "—",
+      "evidence": { "label": "inferred", "sourceIds": ["s8"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Generate and rotate the ES256 client-secret JWT",
+    "Implement authorize, token, ID-token verification and revoke",
+    "Build the server-to-server notification handler",
+    "Probe the discovery document and JWKS"
+  ],
+  "humanMustDo": [
+    "Enroll in and pay for the Apple Developer Program",
+    "Create the App ID, Services ID and private key",
+    "Verify domains and register email relay sources",
+    "Keep the .p8 key safe and choose the key holder"
+  ],
+  "blockers": [
+    {
+      "symptom": "invalid_client from /auth/token",
+      "cause": "The client secret JWT is wrong or expired (bad kid, iss, sub, aud, or exp more than 15777000 s ahead), or client_id doesn't match the Services ID.",
+      "fix": "Re-sign the JWT with the correct Key ID, Team ID and Services ID as sub, and set exp within 6 months.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["s3", "s6"],
+        "note": "POST /auth/token with no params returned {\"error\":\"invalid_client\"} on 2026-10-20. Mapping it to JWT mistakes is inferred."
+      }
+    },
+    {
+      "symptom": "Return URL rejected when testing on http://localhost",
+      "cause": "redirect_uri can't be localhost or an IP address and must be HTTPS with a domain.",
+      "fix": "Use an HTTPS tunnel or a staging domain registered on the Services ID.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s6"], "note": null }
+    },
+    {
+      "symptom": "Authorize fails when requesting name/email with response_mode=query",
+      "cause": "If any scope is requested, response_mode must be form_post.",
+      "fix": "Use response_mode=form_post and accept a POST on the return URL.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "Emails to @privaterelay.appleid.com addresses bounce",
+      "cause": "Your sending domain or address isn't registered as an email source, or lacks SPF/DKIM.",
+      "fix": "Register the email sources in the developer account and authenticate them with SPF and DKIM.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "symptom": "Users report the app can't see their iCloud mail or calendar",
+      "cause": "Sign in with Apple grants identity only. No OAuth scope exists for iCloud data.",
+      "fix": "Set expectations in the product, or offer a separate IMAP/CalDAV connection with app-specific passwords.",
+      "evidence": { "label": "inferred", "sourceIds": ["s5", "s8"], "note": null }
+    },
+    {
+      "symptom": "iOS app rejected under guideline 4.8",
+      "cause": "The app offers a third-party login (such as Google) for the primary account without an equivalent privacy-focused option.",
+      "fix": "Add Sign in with Apple (or another login meeting 4.8's criteria), unless an exemption applies.",
+      "evidence": { "label": "sourced", "sourceIds": ["s14"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Authorization codes are single-use and valid for 5 minutes. The token response has an ID token, an access token and a refresh token. Refreshing returns a new ID token and access token, which verify the session but unlock no data APIs.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6", "s2"], "note": null }
+    },
+    {
+      "text": "The client secret is a JWT you sign yourself with a lifetime of at most 6 months, so an expired secret breaks every sign-in until it's re-signed.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "User IDs are pairwise (team-scoped), and users can hide their email behind a relay address. Don't use email as the primary key.",
+      "evidence": { "label": "tested", "sourceIds": ["s5"], "note": "subject_types_supported [pairwise] and the is_private_email claim are in the live discovery document." }
+    },
+    {
+      "text": "App grouping under a primary App ID means users consent once per group of apps and websites, and their credentials are shared across the group.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "text": "Each primary app can have at most two private keys, which allows rotation. Revoke a compromised key after moving to the new one.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "text": "On iOS, guideline 4.8 can make Sign in with Apple (or an equivalent) mandatory if you also offer Google or other social login for the primary account.",
+      "evidence": { "label": "sourced", "sourceIds": ["s14"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Apple docs: Configuring your environment for Sign in with Apple", "url": "https://developer.apple.com/documentation/signinwithapple/configuring-your-environment-for-sign-in-with-apple" },
+    { "id": "s2", "title": "Apple docs: Request an authorization to the Sign in with Apple server", "url": "https://developer.apple.com/documentation/signinwithapplerestapi/request-an-authorization-to-the-sign-in-with-apple-server." },
+    { "id": "s3", "title": "Apple docs: Creating a client secret", "url": "https://developer.apple.com/documentation/accountorganizationaldatasharing/creating-a-client-secret" },
+    { "id": "s4", "title": "Apple developer account: Services IDs", "url": "https://developer.apple.com/account/resources/identifiers/list/serviceId" },
+    { "id": "s5", "title": "Apple OpenID Connect discovery document", "url": "https://appleid.apple.com/.well-known/openid-configuration" },
+    { "id": "s6", "title": "Apple docs: Generate and validate tokens", "url": "https://developer.apple.com/documentation/signinwithapplerestapi/generate-and-validate-tokens" },
+    { "id": "s7", "title": "Apple docs: Processing changes for Sign in with Apple accounts", "url": "https://developer.apple.com/documentation/signinwithapple/processing-changes-for-sign-in-with-apple-accounts" },
+    { "id": "s8", "title": "Apple Support: Sign in to apps with your Apple Account using app-specific passwords", "url": "https://support.apple.com/en-us/102654" },
+    { "id": "s9", "title": "Apple Developer Program", "url": "https://developer.apple.com/programs/" },
+    { "id": "s10", "title": "Apple Developer Program: Enrollment", "url": "https://developer.apple.com/programs/enroll/" },
+    { "id": "s11", "title": "Apple developer help: About Sign in with Apple", "url": "https://developer.apple.com/help/account/capabilities/about-sign-in-with-apple" },
+    { "id": "s12", "title": "Apple docs: Account & Organizational Data Sharing, request an authorization", "url": "https://developer.apple.com/documentation/accountorganizationaldatasharing/request-an-authorization" },
+    { "id": "s13", "title": "Apple docs: Revoke tokens", "url": "https://developer.apple.com/documentation/signinwithapplerestapi/revoke-tokens" },
+    { "id": "s14", "title": "App Store Review Guidelines", "url": "https://developer.apple.com/app-store/review/guidelines/" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://appleid.apple.com/.well-known/openid-configuration: issuer https://appleid.apple.com, scopes_supported [openid, email, name], response_types [code], response_modes [query, fragment, form_post], subject_types [pairwise], token auth client_secret_post, revocation endpoint present",
+      "POST https://appleid.apple.com/auth/token with no params: {\"error\":\"invalid_client\"}",
+      "GET https://developer.apple.com/account/resources/identifiers/list/serviceId: 302 to idmsa.apple.com sign-in"
+    ],
+    "openQuestions": [
+      "Whether Apple enforces the 'existing app in the App Store' requirement for web-only Sign in with Apple",
+      "Whether 'supported third-party apps' that authorize iCloud Mail/Calendar/Contacts with an Apple Account use a program open to other developers",
+      "Typical organization enrollment verification time in 2026",
+      "Apple's official statement on whether the user's name is returned only on first authorization"
+    ]
+  }
+}

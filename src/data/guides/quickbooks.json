@@ -1,0 +1,521 @@
+{
+  "app": {
+    "name": "QuickBooks Online (Intuit)",
+    "slug": "quickbooks",
+    "website": "https://quickbooks.intuit.com",
+    "developerPortal": "https://developer.intuit.com/app/developer/dashboard",
+    "category": "Accounting"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 guide",
+      "url": "https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://developer.intuit.com/app/developer/qbo/docs/learn/scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Intuit App Partner Program FAQ",
+      "url": "https://developer.intuit.com/app/developer/qbo/docs/get-started/partner-faq"
+    },
+    {
+      "kind": "api",
+      "label": "API call limits and throttles",
+      "url": "https://developer.intuit.com/app/developer/qbo/docs/learn/limits-and-throttles"
+    },
+    {
+      "kind": "console",
+      "label": "Developer dashboard",
+      "url": "https://developer.intuit.com/app/developer/dashboard"
+    },
+    {
+      "kind": "changelog",
+      "label": "Intuit Developer blog",
+      "url": "https://medium.com/intuitdev"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Sandbox (development) keys are instant, but production keys come only after you complete Intuit's app assessment questionnaire on legal, technical and security topics, which applies even to apps never listed on the QuickBooks App Store. Since November 2025 the Intuit App Partner Program meters data-out (read) calls: the free Builder tier gets 500,000 CorePlus credits a month and further calls are blocked, which matters for agents that mostly read.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6",
+          "s9"
+        ],
+        "note": "Create an app, copy the Development client ID/secret, and connect a sandbox company. Intuit's CLI (June 2026) also has a built-in OAuth login for sandbox profiles."
+      }
+    },
+    "timeToProd": {
+      "range": "3 days–3 weeks",
+      "hours": {
+        "min": 72,
+        "max": 504
+      },
+      "assumes": "An unlisted production app that reads and writes accounting data with com.intuit.quickbooks.accounting; listing on the QuickBooks App Store adds marketing and security review that third parties put at weeks to months.",
+      "waitingOn": "Intuit's review of the app assessment questionnaire before production keys are issued.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": "Intuit's own docs pages are client-rendered and couldn't be read. Third-party guides say the questionnaire takes 30–60 minutes to fill and is usually reviewed quickly, sometimes with a follow-up discussion. The range is our estimate."
+      }
+    },
+    "cost": "Builder tier is free (500,000 CorePlus read credits/month, then blocked). Paid tiers are reported at $300/month (Silver), $1,700 (Gold) and $4,500 (Platinum); data-in (Core) calls are free on all tiers."
+  },
+  "prerequisites": [
+    {
+      "item": "An Intuit Developer account and a sandbox company",
+      "why": "Apps, Development/Production keys and sandbox companies are managed in the developer portal.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Host domain, launch URL, disconnect URL, EULA and privacy policy",
+      "why": "These are entered under App details before the production compliance questionnaire can be started.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "From Codat's walkthrough of the Intuit portal, not Intuit's page."
+      }
+    },
+    {
+      "item": "Answers to security questions (breach history, security team, MFA, CAPTCHA, credential storage, data sharing)",
+      "why": "The app assessment questionnaire's security section asks about these.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A production HTTPS redirect URI registered on the Production keys",
+      "why": "Development and Production have separate client IDs, secrets and redirect URIs. Mixing them causes invalid_grant.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": "The HTTPS requirement for production redirects is commonly stated but wasn't confirmed on a page we could read."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Sign-in only (OpenID Connect)",
+      "examples": [
+        "openid",
+        "profile",
+        "email",
+        "phone",
+        "address"
+      ],
+      "reviewRequired": true,
+      "time": "Same as production keys",
+      "impact": "Identity only, with no company data. Production keys still go through the assessment questionnaire.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "scopes_supported in the live discovery document lists openid, email, profile, address, phone."
+      }
+    },
+    {
+      "tier": "Accounting and payments",
+      "examples": [
+        "com.intuit.quickbooks.accounting",
+        "com.intuit.quickbooks.payment"
+      ],
+      "reviewRequired": true,
+      "time": "3 days–3 weeks",
+      "impact": "Read/write access to the connected company (realmId): invoices, customers, reports and more. This is what an accounting agent needs. Reads count against CorePlus credits, and writes are free.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s5"
+        ],
+        "note": "The scope strings are well known and appear in the Intuit refresh-token post as 'accounting or payments scopes'. We couldn't read Intuit's scopes page."
+      }
+    },
+    {
+      "tier": "Restricted, granular and Premium API scopes",
+      "examples": [
+        "com.intuit.quickbooks.payroll",
+        "Projects / Custom Fields / Dimensions (Intuit Enterprise Suite Premium APIs)"
+      ],
+      "reviewRequired": true,
+      "time": "Separate approval; no SLA found",
+      "impact": "Intuit has to approve the app for these scopes. Premium APIs also need a paid partner tier (Silver or above). Per Intuit, refresh tokens issued for restricted and granular scopes hit the 5-year hard expiry first, from February 2027.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6",
+          "s1"
+        ],
+        "note": "The CLI post confirms Premium APIs need scope approval. The payroll scope string and the Feb 2027 date come from secondary coverage of Intuit's 5-year policy post, which returned 403."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create an Intuit Developer account and app",
+      "owner": "human",
+      "detail": "Sign in at developer.intuit.com, create an app for QuickBooks Online, and select the accounting scope. A sandbox company is provisioned for testing.",
+      "url": "https://developer.intuit.com/app/developer/dashboard",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "The dashboard URL returned HTTP 200 on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Implement the OAuth code flow from the discovery document",
+      "owner": "agent",
+      "detail": "Read endpoints from https://developer.api.intuit.com/.well-known/openid_configuration (authorize: appcenter.intuit.com/connect/oauth2, token: oauth.platform.intuit.com/oauth2/v1/tokens/bearer). Capture realmId from the callback, use state for CSRF protection, and send Basic auth on the token call.",
+      "url": "https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9",
+          "s2"
+        ],
+        "note": "Endpoints were read from the live discovery document."
+      }
+    },
+    {
+      "title": "Build safe token refresh",
+      "owner": "agent",
+      "detail": "Access tokens last 3600s. Persist the new refresh_token from every refresh response, serialize refreshes per connection to avoid races, and send x-include-refresh-token-hard-expires-in: true to track the 5-year hard expiry.",
+      "url": "https://medium.com/intuitdev/track-your-refresh-tokens-hard-expiry-with-a-new-response-field-7a95ed3ab67f",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test against the sandbox company",
+      "owner": "human",
+      "detail": "Connect the sandbox company with Development keys and exercise reads and writes. Capture the intuit_tid header in error logs, because the questionnaire asks about it.",
+      "url": "https://developer.intuit.com/app/developer/dashboard",
+      "duration": "30–60 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft EULA, privacy policy and questionnaire answers",
+      "owner": "agent",
+      "detail": "Prepare answers on token refresh/retry behaviour, discovery-document use, error handling (intuit_tid logging), webhooks/CDC use, and security posture. Draft the EULA and privacy policy, including how AI processing uses QuickBooks data.",
+      "url": "https://docs.codat.io/integrations/accounting/quickbooksonline/qbo-app-assessment-questionnaire",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Fill in Production app details and submit the questionnaire",
+      "owner": "human",
+      "detail": "Under Keys and credentials, switch to Production, enter host domain, launch/disconnect URLs, EULA and privacy URLs, then open the Compliance tab and click Start questionnaire.",
+      "url": "https://developer.intuit.com/app/developer/dashboard",
+      "duration": "30–60 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for questionnaire review and production keys",
+      "owner": "wait",
+      "detail": "Intuit reviews the answers and may follow up with questions or a call before releasing Production keys.",
+      "url": null,
+      "duration": "Days to ~3 weeks",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": "No official SLA found."
+      }
+    },
+    {
+      "title": "Choose an App Partner Program tier",
+      "owner": "human",
+      "detail": "Estimate monthly read (CorePlus) calls across all customers. Builder is free up to 500,000 credits and then blocked. Upgrade to Silver or above if the agent polls heavily or needs Premium APIs.",
+      "url": "https://developer.intuit.com/app/developer/qbo/docs/get-started/partner-faq",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Tier figures are from a third-party summary. Intuit's FAQ couldn't be rendered."
+      }
+    },
+    {
+      "title": "Swap in Production keys and go live",
+      "owner": "human",
+      "detail": "Configure Production client ID/secret and the production redirect URI. Any QuickBooks Online customer can now connect through your app. App Store listing is optional.",
+      "url": "https://developer.intuit.com/app/developer/dashboard",
+      "duration": "15 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement OAuth from the OIDC discovery document",
+    "Build race-safe refresh-token rotation with hard-expiry tracking",
+    "Draft EULA, privacy policy and questionnaire answers",
+    "Estimate CorePlus read volume and pick a tier",
+    "Use the Intuit QuickBooks CLI (--json) for sandbox testing"
+  ],
+  "humanMustDo": [
+    "Create the Intuit Developer account and app",
+    "Submit the production compliance questionnaire",
+    "Join a paid partner tier if read volume or Premium APIs need it",
+    "Join any follow-up call with Intuit reviewers"
+  ],
+  "blockers": [
+    {
+      "symptom": "HTTP 400 invalid_grant 'Token has been expired or revoked' on refresh",
+      "cause": "The rotated refresh token wasn't saved, two workers refreshed at once, the user disconnected the app, the token sat unused past the rolling 100-day window, or Development keys were used on a Production token (or the reverse).",
+      "fix": "Store every new refresh_token, lock refreshes per realm, check the keys match the environment, and send the user through reconnect.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Read calls start failing mid-month for all customers",
+      "cause": "The Builder tier's 500,000 CorePlus credits are used up, and Intuit blocks further CorePlus calls until the next month.",
+      "fix": "Cut polling (use webhooks/CDC), cache reads, or move to Silver or above.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "From a third-party summary of Intuit's program. The exact error code wasn't found."
+      }
+    },
+    {
+      "symptom": "HTTP 429 Too Many Requests",
+      "cause": "More than about 500 requests/min per realm, more than 10 concurrent requests per company per app, or more than 40 batch requests/min.",
+      "fix": "Honour Retry-After or the cooldown, use exponential backoff, and cap concurrency per realm.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s8",
+          "s7"
+        ],
+        "note": "The numbers come from a third-party page. Intuit's blog confirms the retry-after-429 guidance."
+      }
+    },
+    {
+      "symptom": "Can't get Production keys / the Production tab only shows a questionnaire",
+      "cause": "Production keys come only after the app details and compliance questionnaire are submitted.",
+      "fix": "Complete App details (host domain, launch/disconnect URLs, EULA, privacy) and submit the questionnaire.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "403 or scope error calling Projects, Custom Fields or Dimensions APIs",
+      "cause": "Premium APIs need scope approval for your app, and a paid partner tier.",
+      "fix": "Request approval for those scopes in the developer portal and subscribe to Silver or above.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s1"
+        ],
+        "note": "The exact error string wasn't documented."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 1 hour (expires_in 3600). Refresh tokens have a rolling 100-day window (x_refresh_token_expires_in 8640000) that resets on each refresh, and a 5-year hard limit that never resets (x_refresh_token_hard_expires_in, returned when you send x-include-refresh-token-hard-expires-in: true).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Usage is metered: Core (data-in, mostly POST) calls are free and unlimited, CorePlus (data-out, mostly GET, including reports) calls are counted per app and billed at the workspace level. Only 2xx responses count. Full fees started on 2025-11-01.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Third-party summary. Intuit's FAQ is client-rendered and wasn't readable."
+      }
+    },
+    {
+      "text": "Each OAuth connection is scoped to one QuickBooks company (realmId). A user with several companies has to authorize each one separately.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The questionnaire applies to any app connecting to production QBO companies, listed or not. Third parties report that App Store apps and apps with over 500 connections are reviewed annually.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Annual review is reported by third parties, not confirmed on an Intuit page we could read."
+      }
+    },
+    {
+      "text": "Treat 4XX as non-retryable except 429. For 401, refresh once and retry once. Retry 5XX with backoff.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Intuit is courting agent builders: the June 2026 QuickBooks CLI offers --json output and silent token refresh, explicitly aimed at local AI agents.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Apideck: QuickBooks API pricing and the Intuit App Partner Program",
+      "url": "https://www.apideck.com/blog/quickbooks-api-pricing-and-the-intuit-app-partner-program"
+    },
+    {
+      "id": "s2",
+      "title": "Nango: QuickBooks OAuth refresh token invalid_grant",
+      "url": "https://www.nango.dev/blog/quickbooks-oauth-refresh-token-invalid-grant"
+    },
+    {
+      "id": "s3",
+      "title": "Satva Solutions: Intuit App Store approval timeline (2026)",
+      "url": "https://satvasolutions.com/blog/intuit-app-store-approval-timeline-developer-guide"
+    },
+    {
+      "id": "s4",
+      "title": "Codat: QuickBooks Online app assessment questionnaire",
+      "url": "https://docs.codat.io/integrations/accounting/quickbooksonline/qbo-app-assessment-questionnaire"
+    },
+    {
+      "id": "s5",
+      "title": "Intuit Developer blog: Track your refresh token's hard expiry with a new response field (2026-06-05)",
+      "url": "https://medium.com/intuitdev/track-your-refresh-tokens-hard-expiry-with-a-new-response-field-7a95ed3ab67f"
+    },
+    {
+      "id": "s6",
+      "title": "Intuit Developer blog: Build faster with the new Intuit QuickBooks CLI (2026-06-08)",
+      "url": "https://medium.com/intuitdev/build-faster-with-the-new-intuit-quickbooks-cli-8449a14948fb"
+    },
+    {
+      "id": "s7",
+      "title": "Intuit Developer blog: Retrying the Right Way: 4XX vs 5XX (2026-09-01)",
+      "url": "https://medium.com/intuitdev/retrying-the-right-way-4xx-vs-5xx-9f4e2a61d5c4"
+    },
+    {
+      "id": "s8",
+      "title": "Coefficient: QuickBooks API rate limits",
+      "url": "https://coefficient.io/quickbooks-api/quickbooks-api-rate-limits"
+    },
+    {
+      "id": "s9",
+      "title": "Intuit OpenID Connect discovery document",
+      "url": "https://developer.api.intuit.com/.well-known/openid_configuration"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://developer.api.intuit.com/.well-known/openid_configuration: issuer https://oauth.platform.intuit.com/op/v1, authorize https://appcenter.intuit.com/connect/oauth2, token https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer, revoke https://developer.api.intuit.com/v2/oauth2/tokens/revoke, scopes openid/email/profile/address/phone, claim realmid",
+      "GET https://developer.intuit.com/app/developer/dashboard: HTTP 200 (client-rendered; did not sign in)",
+      "GET https://appcenter.intuit.com/connect/oauth2: 301 to https://appcenter.intuit.com/app/connect/oauth2",
+      "Intuit docs pages (oauth-2.0, scopes, partner-faq, limits-and-throttles) return HTTP 200 but are client-rendered; content not readable without a browser",
+      "Read Intuit Developer blog posts through the medium.com/feed/intuitdev RSS feed (direct article fetch returned 403)"
+    ],
+    "openQuestions": [
+      "Official turnaround for the app assessment questionnaire and production keys",
+      "Official App Partner Program tier credits and fees (only third-party summaries were readable)",
+      "Exact list of restricted/granular scopes and their approval path",
+      "Whether HTTP localhost redirect URIs are accepted for Development keys",
+      "Exact error returned when Builder-tier CorePlus credits are exhausted"
+    ]
+  }
+}

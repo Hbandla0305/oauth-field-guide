@@ -1,0 +1,543 @@
+{
+  "app": {
+    "name": "Xero",
+    "slug": "xero",
+    "website": "https://www.xero.com",
+    "developerPortal": "https://developer.xero.com/app/manage",
+    "category": "Accounting"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 overview",
+      "url": "https://developer.xero.com/documentation/guides/oauth2/overview"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://developer.xero.com/documentation/guides/oauth2/scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Pricing and policy FAQ (tiers, certification)",
+      "url": "https://developer.xero.com/faq/pricing-and-policy-updates"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits FAQ",
+      "url": "https://developer.xero.com/faq/limits"
+    },
+    {
+      "kind": "console",
+      "label": "My Apps",
+      "url": "https://developer.xero.com/app/manage"
+    },
+    {
+      "kind": "changelog",
+      "label": "Xero Developer blog",
+      "url": "https://devblog.xero.com"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Creating an app and connecting your own organisation is self-serve and free, but the free Starter tier stops at 5 connections. Going beyond that needs a paid tier (from AUD 35/month), which Xero lists as requiring App Certification. Apps created since 2026-03-02 also only get granular scopes, and third parties report that Profit & Loss, Balance Sheet and Journals reads are restricted to approved partners or higher tiers, which bites finance agents.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s9"
+        ],
+        "note": "Create a web app (or PKCE app) in My Apps, set a redirect URI, and connect your own or the Demo Company organisation. Starter is free for up to 5 connections."
+      }
+    },
+    "timeToProd": {
+      "range": "2–6 weeks",
+      "hours": {
+        "min": 336,
+        "max": 1008
+      },
+      "assumes": "An app that connects more than 5 customer organisations (Core tier or above) and reads/writes invoices and contacts, so it needs App Certification; up to 5 connections works the same day on Starter.",
+      "waitingOn": "Xero App Certification review for Core and above, plus a security assessment and use-case approval if you need Journals (Advanced tier).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Xero's FAQ ties certification to Core and above but gives no certification timeline. The range is our estimate."
+      }
+    },
+    "cost": "Starter free (5 connections). Core AUD 35/month (50 connections, 10 GB egress), Plus AUD 245 (1,000), Advanced AUD 1,445 (10,000), Enterprise on application. Egress overage AUD 2.40/GB. Prices exclude tax."
+  },
+  "prerequisites": [
+    {
+      "item": "A Xero account (a free trial or the Demo Company works for testing)",
+      "why": "Apps are created in the developer portal under your Xero login, and a test organisation is needed to authorize.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A payment method once you pass 5 connections",
+      "why": "Connecting a 6th organisation needs payment details and moves the app to the Core tier.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A plan that meets the certification checkpoints",
+      "why": "Xero's FAQ lists App Certification for the Core, Plus, Advanced and Enterprise tiers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "We couldn't read the certification checkpoints page itself (client-rendered)."
+      }
+    },
+    {
+      "item": "A data-use policy that excludes AI/ML training on Xero data",
+      "why": "Xero's updated terms prohibit using data from its APIs to train or contribute to creating AI/ML models.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity and core accounting (granular)",
+      "examples": [
+        "openid",
+        "profile",
+        "email",
+        "offline_access",
+        "accounting.invoices",
+        "accounting.payments",
+        "accounting.contacts",
+        "accounting.banktransactions.read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (up to 5 connections)",
+      "impact": "Enough for an agent that reads and creates invoices, payments and contacts. New apps can't request the broad accounting.transactions scope. Past 5 connections the tier, rather than the scope, triggers certification.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": "offline_access is the standard Xero scope for refresh tokens, but we couldn't confirm it on a readable Xero page."
+      }
+    },
+    {
+      "tier": "Unrestricted report scopes",
+      "examples": [
+        "accounting.reports.aged.read",
+        "accounting.reports.banksummary.read",
+        "accounting.reports.trialbalance.read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Aged debtors/creditors reports work for all new apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s4"
+        ],
+        "note": "Only the aged reports are explicitly confirmed as open to all new apps. Trial balance and bank summary availability is our reading."
+      }
+    },
+    {
+      "tier": "Restricted reports (App Partner Program)",
+      "examples": [
+        "accounting.reports.profitandloss.read",
+        "accounting.reports.balancesheet.read"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks (partner enrolment)",
+      "impact": "Reported as blocked for standard apps created after 2026-03-02 unless enrolled in Xero's App Partner Program. An FP&A or bookkeeping agent probably needs these.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "From an integration vendor's help article. Another vendor article didn't mention this restriction."
+      }
+    },
+    {
+      "tier": "Premium: Journals, Practice Manager, bulk connections",
+      "examples": [
+        "accounting.journals.read",
+        "practicemanager"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks to months",
+      "impact": "Advanced tier (AUD 1,445/month) or higher, plus an initial and annual security assessment and use-case approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "Scope strings are illustrative. The gating is by endpoint and tier per Xero's FAQ."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the app in My Apps",
+      "owner": "human",
+      "detail": "Sign in at developer.xero.com, open My Apps, and create a Web app (confidential, client secret) or a PKCE app (public clients). Add the HTTPS redirect URI.",
+      "url": "https://developer.xero.com/app/manage",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "https://developer.xero.com/app/manage returned HTTP 200 on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Implement OAuth with granular scopes and offline_access",
+      "owner": "agent",
+      "detail": "Use authorize https://login.xero.com/identity/connect/authorize and token https://identity.xero.com/connect/token (PKCE S256 supported). Request least-privilege granular scopes plus offline_access. After the token exchange, call the connections endpoint to get tenant IDs and send xero-tenant-id on each call.",
+      "url": "https://developer.xero.com/documentation/guides/oauth2/overview",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9",
+          "s4"
+        ],
+        "note": "Endpoints and PKCE support were read from the live discovery document. Connections/tenant handling is standard Xero practice we couldn't re-read on the client-rendered docs."
+      }
+    },
+    {
+      "title": "Build rotation-safe token storage",
+      "owner": "agent",
+      "detail": "Access tokens last 30 minutes. Each refresh returns a new refresh token and invalidates the old one, and unused refresh tokens lapse after about 60 days. Serialize refreshes per connection and run a keep-alive refresh for idle tenants.",
+      "url": null,
+      "duration": "1 hour",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Lifetimes come from a third-party guide. Xero's limits page couldn't be read."
+      }
+    },
+    {
+      "title": "Connect a test organisation and verify",
+      "owner": "human",
+      "detail": "Authorize your own org or the Demo Company. Check the X-MinLimit-Remaining and X-DayLimit-Remaining headers on responses.",
+      "url": "https://developer.xero.com/app/manage",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Model connections and egress to pick a tier",
+      "owner": "agent",
+      "detail": "Estimate customer orgs and monthly GET payload volume (egress excludes the Organisation endpoint). Map them to Starter (5), Core (50), Plus (1,000) or Advanced (10,000).",
+      "url": "https://developer.xero.com/pricing",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Prepare for certification checkpoints",
+      "owner": "agent",
+      "detail": "Review the certification checkpoints (connection flow, scopes, error handling, branding) and draft evidence, screenshots and a privacy policy that states Xero data isn't used for AI/ML training.",
+      "url": "https://developer.xero.com/documentation/xero-app-store/app-partner-guides/certification-checkpoints",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The checkpoint list itself couldn't be read (client-rendered)."
+      }
+    },
+    {
+      "title": "Add payment details and request certification",
+      "owner": "human",
+      "detail": "Add a payment method in the developer portal to move beyond Starter, and submit the app for certification.",
+      "url": "https://developer.xero.com/app/manage",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for certification",
+      "owner": "wait",
+      "detail": "Xero reviews the app against the checkpoints. Use-case approval and security assessment for premium endpoints follow a separate path through support.",
+      "url": null,
+      "duration": "1–4 weeks",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "No timeline was published on the pages we read."
+      }
+    },
+    {
+      "title": "Apply for App Partner Program / premium access if needed",
+      "owner": "human",
+      "detail": "If the agent needs P&L, Balance Sheet or Journals, apply for App Partner enrolment and the Advanced tier, and complete the security assessment.",
+      "url": "https://developer.xero.com/faq/pricing-and-policy-updates",
+      "duration": "Weeks",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5",
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement OAuth/PKCE and tenant (connections) handling",
+    "Choose minimal granular scopes and migrate off accounting.transactions",
+    "Estimate connections and egress to recommend a pricing tier",
+    "Draft certification evidence and an AI-training-free data policy",
+    "Prototype with Xero's hosted Remote MCP or CLI"
+  ],
+  "humanMustDo": [
+    "Create the app in My Apps under a Xero login",
+    "Add payment details once you pass 5 connections",
+    "Submit for certification and any App Partner Program enrolment",
+    "Complete the security assessment for premium endpoints"
+  ],
+  "blockers": [
+    {
+      "symptom": "A 6th customer can't connect, or the portal asks for payment details",
+      "cause": "The Starter tier is capped at 5 connections.",
+      "fix": "Add a payment method to move to Core (AUD 35/month, 50 connections) and complete certification.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 401 insufficient_scope after requesting accounting.transactions",
+      "cause": "Apps created on or after 2026-03-02 can't use the broad accounting.transactions or accounting.reports.read scopes.",
+      "fix": "Request granular scopes (accounting.invoices, accounting.payments, accounting.banktransactions and so on) and have existing users reauthorize.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Profit & Loss or Balance Sheet report calls are refused for a new app",
+      "cause": "Reported restriction of these reports to App Partner Program members for apps created after 2026-03-02.",
+      "fix": "Enrol in the App Partner Program, or derive figures from invoices, bank transactions and the trial balance.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "From a vendor help article. The exact error wasn't given."
+      }
+    },
+    {
+      "symptom": "HTTP 429 with a Retry-After header",
+      "cause": "More than 60 calls/min, 5,000/day or 5 concurrent calls per tenant, or 10,000/min across the app.",
+      "fix": "Honour Retry-After, track the X-*Limit-Remaining headers, and use webhooks or If-Modified-Since rather than polling.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_grant on refresh, connection dead",
+      "cause": "A rotated refresh token was reused (race), or the connection sat idle past the refresh-token lifetime.",
+      "fix": "Lock refreshes per connection, persist each new refresh token, and refresh idle connections periodically. Otherwise send the user to reconnect.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Third-party guide."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Xero's terms prohibit using API data to train or contribute to creating AI/ML models. Inference-time use in an agent isn't the same as training, but keep Xero data out of fine-tuning and eval datasets.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The training-vs-inference distinction is our reading."
+      }
+    },
+    {
+      "text": "Pricing is by connections plus egress (GET payload volume, measured in GiB, excluding the Organisation endpoint). Ingress is unlimited. A chatty read-heavy agent can run up overage at AUD 2.40/GB.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits apply per connection (tenant): 60/min, 5,000/day, 5 concurrent, plus 10,000/min app-wide. One third-party guide claims Starter apps get only 1,000 calls/day.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": "The Starter 1,000/day figure is unverified (third-party, and the same article misstates Advanced pricing)."
+      }
+    },
+    {
+      "text": "Existing tokens don't silently gain granular scopes. Each connected user has to reauthorize, and older apps have until September 2027 to migrate.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Xero's Remote MCP server went GA in October 2026 with 39 tools (invoices, contacts, P&L, balance sheet and more). Setup uses your own PKCE app's client ID, so the same tier and connection rules apply.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7",
+          "s8"
+        ],
+        "note": "Whether MCP report tools bypass the reported P&L restriction for new apps is not stated."
+      }
+    },
+    {
+      "text": "Multi-organisation users authorize several tenants in one consent. Every API call needs the xero-tenant-id header for the target org, and each tenant counts as a connection toward the tier cap.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Xero Developer: Pricing",
+      "url": "https://developer.xero.com/pricing"
+    },
+    {
+      "id": "s2",
+      "title": "Xero Developer FAQ: Pricing and policy updates",
+      "url": "https://developer.xero.com/faq/pricing-and-policy-updates"
+    },
+    {
+      "id": "s3",
+      "title": "Xero Developer FAQ: Limits",
+      "url": "https://developer.xero.com/faq/limits"
+    },
+    {
+      "id": "s4",
+      "title": "Apideck: Xero scopes, what changed",
+      "url": "https://apideck.com/blog/xero-scopes"
+    },
+    {
+      "id": "s5",
+      "title": "Apideck Help: Xero, connecting a new app (created after March 2, 2026)",
+      "url": "https://help.apideck.com/en/articles/8647746"
+    },
+    {
+      "id": "s6",
+      "title": "Truto: How do I integrate with the Xero API",
+      "url": "https://truto.one/blog/how-do-i-integrate-with-the-xero-api-a-guide-for-b2b-saas/"
+    },
+    {
+      "id": "s7",
+      "title": "Xero Developer blog: The Xero Remote MCP is now generally available (2026-10-13)",
+      "url": "https://devblog.xero.com/the-xero-remote-mcp-is-now-generally-available-06008f6ab2a7"
+    },
+    {
+      "id": "s8",
+      "title": "Xero Developer blog: Webinar recap, September 2026 developer update",
+      "url": "https://devblog.xero.com/webinar-recap-september-2026-developer-update-8d17b5408776"
+    },
+    {
+      "id": "s9",
+      "title": "Xero Identity OpenID Connect discovery document",
+      "url": "https://identity.xero.com/.well-known/openid-configuration"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://identity.xero.com/.well-known/openid-configuration: authorize https://login.xero.com/identity/connect/authorize, token https://identity.xero.com/connect/token, revocation and introspection endpoints, grants authorization_code/client_credentials/refresh_token, PKCE S256",
+      "GET https://developer.xero.com/app/manage: HTTP 200 (did not sign in)",
+      "Xero docs pages (scopes, limits, certification checkpoints) are client-rendered and returned no readable content",
+      "Read Xero devblog posts through the devblog.xero.com/feed RSS feed (direct article fetch returned 403)"
+    ],
+    "openQuestions": [
+      "Official certification turnaround time and the exact checkpoint list",
+      "Whether P&L and Balance Sheet scopes are really restricted to App Partner Program members for new apps (vendor-reported only)",
+      "Official access/refresh token lifetimes (30 min / 60 days come from a third party)",
+      "Whether Starter apps get a reduced daily call limit",
+      "Exact egress accounting for paginated GETs"
+    ]
+  }
+}

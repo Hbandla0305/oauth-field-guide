@@ -1,0 +1,370 @@
+{
+  "app": {
+    "name": "Meta (Facebook, Instagram)",
+    "slug": "meta",
+    "website": "https://www.meta.com",
+    "developerPortal": "https://developers.facebook.com/apps/",
+    "category": "Social media"
+  },
+  "officialDocs": [
+    {
+      "kind": "review",
+      "label": "App Review submission guide",
+      "url": "https://developers.facebook.com/docs/resp-plat-initiatives/individual-processes/app-review/submission-guide"
+    },
+    {
+      "kind": "scopes",
+      "label": "Standard vs Advanced access",
+      "url": "https://developers.facebook.com/docs/graph-api/overview/access-levels"
+    },
+    {
+      "kind": "oauth",
+      "label": "Facebook Login for Business",
+      "url": "https://developers.facebook.com/documentation/facebook-login/facebook-login-for-business"
+    },
+    {
+      "kind": "oauth",
+      "label": "Instagram API with Instagram Login",
+      "url": "https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login"
+    },
+    {
+      "kind": "api",
+      "label": "Graph API rate limits",
+      "url": "https://developers.facebook.com/docs/graph-api/overview/rate-limiting"
+    },
+    {
+      "kind": "console",
+      "label": "App Dashboard",
+      "url": "https://developers.facebook.com/apps/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Role holders (admins, developers, testers) get Standard Access to every permission instantly, so dev takes under an hour. Letting any other user or business connect needs Advanced Access, which takes three separate queues: Business Verification, App Review per permission (with a screencast and a successful API call in the last 30 days), and, for Tech Providers handling other businesses' data, Access Verification.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": { "min": 0.5, "max": 1.5 },
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["m1"],
+        "note": "Business, Consumer and Gaming apps are automatically approved for Standard Access to all permissions for their app type, for users with a role on the app. The duration is our estimate."
+      }
+    },
+    "timeToProd": {
+      "range": "2–8 weeks",
+      "hours": { "min": 336, "max": 1344 },
+      "assumes": "A Business-type app serving other people's Pages or Instagram professional accounts with Advanced Access (for example instagram_business_basic, instagram_business_manage_messages, pages_read_engagement). There's no faster path for non-role users.",
+      "waitingOn": "Business Verification (days to 2+ weeks), then App Review (Meta says under a week, often 2–3 days; 2026 reports say up to about 20 days), then Access Verification for Tech Providers (about 5 business days, by Meta's 2022 estimate).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["m3", "m4", "m6", "m13"],
+        "note": "Each stage's official estimate is short, but they run in sequence and rejections restart the queue. The 2026 slowdown figures come from a vendor blog and are unverified."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Meta developer account and an app of type Business (or a use case that supports Facebook Login for Business / Instagram Login)",
+      "why": "Instagram API with Instagram Login and Facebook Login for Business require a Business-type app.",
+      "evidence": { "label": "sourced", "sourceIds": ["m11", "m2"], "note": null }
+    },
+    {
+      "item": "A business portfolio you admin, completed through Business Verification",
+      "why": "Advanced Access has required Business Verification since February 1, 2023. Verification is tied to a business, not to an individual.",
+      "evidence": { "label": "sourced", "sourceIds": ["m1", "m7"], "note": null }
+    },
+    {
+      "item": "A 1024x1024 app icon, privacy policy URL, app category, business email and a reachable test login for reviewers",
+      "why": "These are part of the App Review checklist. If reviewers can't access the app, the whole submission is rejected.",
+      "evidence": { "label": "sourced", "sourceIds": ["m2", "m5"], "note": null }
+    },
+    {
+      "item": "For Instagram: the end user's account has to be an Instagram professional account",
+      "why": "The Instagram API with Instagram Login works with professional accounts.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["m9"],
+        "note": "The docs say 'professional accounts' and don't name Business vs Creator."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Any permission, role holders only (Standard Access)",
+      "examples": ["instagram_business_basic", "pages_show_list", "pages_read_engagement", "business_management"],
+      "reviewRequired": false,
+      "time": "Instant",
+      "impact": "Works only for people with a role on your app (or in the business that claimed it). Good for dev and for single-business internal tools.",
+      "evidence": { "label": "sourced", "sourceIds": ["m1", "m5"], "note": null }
+    },
+    {
+      "tier": "Basic login (consumer apps)",
+      "examples": ["public_profile", "email"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Consumer apps get automatic Advanced Access for email and public_profile, but you have to switch them from Standard manually. With Facebook Login for Business they can't be requested alone.",
+      "evidence": { "label": "sourced", "sourceIds": ["m1", "m11"], "note": null }
+    },
+    {
+      "tier": "Instagram Login (Advanced Access)",
+      "examples": ["instagram_business_basic", "instagram_business_content_publish", "instagram_business_manage_comments", "instagram_business_manage_messages"],
+      "reviewRequired": true,
+      "time": "2–8 weeks",
+      "impact": "Read profile and media, publish, and manage comments and DMs for any professional account. Needs Business Verification and App Review. Tech Providers serving multiple businesses also go through Access Verification.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["m2", "m9", "m6"],
+        "note": "The time is our estimate across the three queues."
+      }
+    },
+    {
+      "tier": "Facebook Login for Business: Pages, Instagram via Facebook, business assets",
+      "examples": ["pages_read_engagement", "pages_manage_posts", "instagram_basic", "instagram_manage_insights", "business_management", "ads_management"],
+      "reviewRequired": true,
+      "time": "2–8 weeks",
+      "impact": "Gives you user tokens, or business-integration system-user tokens that don't expire by default, for client Pages, Instagram accounts, ads and catalogs. If the user declines any permission in the configuration, the app gets none of them.",
+      "evidence": { "label": "sourced", "sourceIds": ["m11", "m2", "m1"], "note": null }
+    },
+    {
+      "tier": "Special features",
+      "examples": ["Instagram Public Content Access", "Human Agent"],
+      "reviewRequired": true,
+      "time": "Weeks, approval uncertain",
+      "impact": "Reviewed as separate features with their own use-case checks. Public Content Access (reading hashtags or other accounts' content) is hard to justify for a generic agent.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["m2"],
+        "note": "Listed as reviewable features. The approval difficulty is our opinion."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the app in the App Dashboard",
+      "owner": "human",
+      "detail": "Sign in at developers.facebook.com/apps (it redirects to a business.facebook.com login) and create an app with a Business type or a use case such as 'Manage messaging & content on Instagram' or Facebook Login for Business.",
+      "url": "https://developers.facebook.com/apps/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["m15"],
+        "note": "GET https://developers.facebook.com/apps/ returned 302 to business.facebook.com/business/loginpage on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Choose Instagram Login or Facebook Login for Business",
+      "owner": "agent",
+      "detail": "Instagram Login (instagram.com/oauth/authorize, instagram_business_* scopes) needs no Facebook Page. Facebook Login for Business uses a config_id instead of scope, reaches Pages, ads and Instagram through Pages, and can issue system-user tokens. An app can use one Instagram path, not both.",
+      "url": "https://developers.facebook.com/documentation/facebook-login/facebook-login-for-business",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["m2", "m9", "m11"], "note": null }
+    },
+    {
+      "title": "Implement the OAuth flow and token handling",
+      "owner": "agent",
+      "detail": "Instagram: redirect to https://www.instagram.com/oauth/authorize, exchange the 1-hour single-use code at https://api.instagram.com/oauth/access_token, swap it server-side for a 60-day token (ig_exchange_token), and refresh it with ig_refresh_token after 24 h and before expiry. Facebook: dialog/oauth with config_id, exchange for a long-lived user token, or a BISU token for unattended work.",
+      "url": "https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login",
+      "duration": "2-4 h",
+      "evidence": { "label": "sourced", "sourceIds": ["m9", "m8", "m11"], "note": null }
+    },
+    {
+      "title": "Test with role holders in Development mode",
+      "owner": "human",
+      "detail": "Add teammates as app roles (and for Instagram, add the test professional accounts) and connect real accounts. Standard Access covers every permission for these users.",
+      "url": "https://developers.facebook.com/apps/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["m1", "m9"], "note": null }
+    },
+    {
+      "title": "Make a successful API call per permission",
+      "owner": "agent",
+      "detail": "Make at least one successful call for each permission you'll request, within 30 days before submitting (from your app or Graph API Explorer). Calls are logged within 2 days, and 'Request advanced access' stays greyed out until then.",
+      "url": "https://developers.facebook.com/docs/resp-plat-initiatives/individual-processes/app-review/submission-guide",
+      "duration": "1 h + up to 2 days logging",
+      "evidence": { "label": "sourced", "sourceIds": ["m4"], "note": null }
+    },
+    {
+      "title": "Complete Business Verification",
+      "owner": "human",
+      "detail": "In the App Dashboard go to Settings > Basic > Verification > Start Verification, connect a business portfolio you admin, and submit legal documents that exactly match the business name.",
+      "url": "https://developers.facebook.com/docs/development/release/business-verification",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["m7", "m13"], "note": "The exact-name-match warning comes from a vendor blog." }
+    },
+    {
+      "title": "Business Verification review",
+      "owner": "wait",
+      "detail": "Meta reviews the documents. Third-party guides report anywhere from minutes to 14 working days.",
+      "url": null,
+      "duration": "1 day-2+ weeks",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": ["m13"],
+        "note": "Meta's page doesn't state a duration."
+      }
+    },
+    {
+      "title": "Draft usage descriptions and record screencasts",
+      "owner": "agent",
+      "detail": "Write a unique usage description for each permission (how your agent uses it, not what it does) and reviewer test instructions with credentials that work without 2FA. Script one screencast per permission showing the end-to-end flow in English.",
+      "url": "https://developers.facebook.com/docs/instagram-platform/app-review",
+      "duration": "1-2 days",
+      "evidence": { "label": "sourced", "sourceIds": ["m2", "m4"], "note": null }
+    },
+    {
+      "title": "Record screencasts and submit for App Review",
+      "owner": "human",
+      "detail": "Record the screencasts, complete app settings (icon, privacy policy, category, contact), answer the data-handling questions, then Submit and accept the Platform Onboarding Terms.",
+      "url": "https://developers.facebook.com/apps/",
+      "duration": "2-4 h",
+      "evidence": { "label": "sourced", "sourceIds": ["m4"], "note": null }
+    },
+    {
+      "title": "App Review",
+      "owner": "wait",
+      "detail": "Meta tests each permission. If they can't reach the app, the whole submission is rejected. Meta says it typically takes under a week, often 2–3 days. A vendor blog reports waits growing to about 20 days in 2026.",
+      "url": null,
+      "duration": "2 days-3 weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["m3", "m5", "m13"],
+        "note": "The 20-day figure is unverified."
+      }
+    },
+    {
+      "title": "Access Verification (Tech Providers)",
+      "owner": "wait",
+      "detail": "If your app accesses data owned by other businesses, admins are prompted to describe the business and how clients use the app. Meta estimated about 5 business days. It can't start before Business Verification and an App Review submission.",
+      "url": "https://developers.facebook.com/blog/post/2022/06/02/access-verification-process-for-tech-provider-apps/",
+      "duration": "~5 business days",
+      "evidence": { "label": "sourced", "sourceIds": ["m6"], "note": "The estimate is from 2022. Forum reports from 2026 mention 14+ business days." }
+    },
+    {
+      "title": "Switch to Live mode",
+      "owner": "human",
+      "detail": "Switch only after approval. In Live mode only approved permissions work, even for role holders, and test data created in Development mode becomes visible to everyone.",
+      "url": "https://developers.facebook.com/apps/",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["m4"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose between Instagram Login and Facebook Login for Business",
+    "Write per-permission usage descriptions and reviewer instructions",
+    "Script the screencasts per permission",
+    "Implement token exchange and the 60-day refresh scheduler",
+    "Make the qualifying API call for each permission"
+  ],
+  "humanMustDo": [
+    "Create the app and business portfolio",
+    "Submit Business Verification documents",
+    "Record screencasts and submit App Review",
+    "Complete Access Verification as business admin",
+    "Switch the app to Live mode"
+  ],
+  "blockers": [
+    {
+      "symptom": "'Request advanced access' button is greyed out",
+      "cause": "No successful API call for that permission has been logged in the last 30 days (logging takes up to 2 days).",
+      "fix": "Call an endpoint that uses the permission (Graph API Explorer works), then wait for it to be logged.",
+      "evidence": { "label": "sourced", "sourceIds": ["m4"], "note": null }
+    },
+    {
+      "symptom": "Non-role users can't grant a permission, or the permission is missing from their token",
+      "cause": "The app only has Standard Access, which works for role holders only.",
+      "fix": "Get Advanced Access through Business Verification and App Review.",
+      "evidence": { "label": "sourced", "sourceIds": ["m1", "m2"], "note": null }
+    },
+    {
+      "symptom": "Entire App Review submission rejected",
+      "cause": "Reviewers couldn't log into or reach the app (2FA, email verification, geo-blocking, dead staging).",
+      "fix": "Provide working test credentials and a stable test environment with sample data.",
+      "evidence": { "label": "sourced", "sourceIds": ["m5", "m13"], "note": null }
+    },
+    {
+      "symptom": "Business Verification sent back",
+      "cause": "Legal documents don't exactly match the business portfolio name.",
+      "fix": "Make the portfolio's legal name match the documents exactly, then resubmit.",
+      "evidence": { "label": "unverified", "sourceIds": ["m13"], "note": "Vendor blog." }
+    },
+    {
+      "symptom": "Permission stops working months after approval",
+      "cause": "An approved permission may expire if the app doesn't use it for 90 days.",
+      "fix": "Keep making calls with each approved permission, or plan to re-request it.",
+      "evidence": { "label": "sourced", "sourceIds": ["m12"], "note": null }
+    },
+    {
+      "symptom": "Error codes 4, 17, 32, 613 or 80002",
+      "cause": "App, user, Pages, custom or Instagram Business Use Case rate limits.",
+      "fix": "Back off, check the X-App-Usage / X-Business-Use-Case-Usage headers, and spread calls out.",
+      "evidence": { "label": "sourced", "sourceIds": ["m10"], "note": "We didn't confirm the header names on the page we opened." }
+    },
+    {
+      "symptom": "API calls gradually failing for a Tech Provider app",
+      "cause": "Access Verification wasn't completed within the 60-day window after Meta's prompt.",
+      "fix": "A business admin completes Access Verification in the App Dashboard.",
+      "evidence": { "label": "sourced", "sourceIds": ["m6"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Facebook long-lived user tokens last about 60 days, and long-lived Page tokens have no set expiry. Instagram Login long-lived tokens last 60 days and can be refreshed once they're at least 24 hours old. A token that isn't refreshed within 60 days can't be revived.",
+      "evidence": { "label": "sourced", "sourceIds": ["m8", "m9"], "note": null }
+    },
+    {
+      "text": "Facebook Login for Business can issue business-integration system-user tokens that don't expire by default, which suits unattended agents better than user tokens. They need the authorization-code flow and web login, and you can optionally give them a 60-day expiry.",
+      "evidence": { "label": "sourced", "sourceIds": ["m11"], "note": null }
+    },
+    {
+      "text": "Rate limits: app-level is 200 × users per rolling hour. Instagram Business Use Case is 4,800 × the account's impressions per 24 h, per app-user pair. Pages with Page tokens are 4,800 × engaged users per 24 h.",
+      "evidence": { "label": "sourced", "sourceIds": ["m10"], "note": null }
+    },
+    {
+      "text": "Apps with Advanced Access have to complete an annual Data Use Checkup.",
+      "evidence": { "label": "sourced", "sourceIds": ["m1"], "note": null }
+    },
+    {
+      "text": "The old Instagram scope names (business_basic and so on) are deprecated in favour of instagram_business_*. Use the new names.",
+      "evidence": { "label": "sourced", "sourceIds": ["m9"], "note": null }
+    },
+    {
+      "text": "Facebook's OIDC discovery document only advertises id_token response types. Use the classic OAuth dialog with code exchange for API access, not OIDC.",
+      "evidence": { "label": "tested", "sourceIds": ["m14"], "note": "response_types_supported was [\"id_token\",\"token id_token\"] on 2026-10-20." }
+    }
+  ],
+  "sources": [
+    { "id": "m1", "title": "Meta docs: Access levels (Standard and Advanced)", "url": "https://developers.facebook.com/docs/graph-api/overview/access-levels" },
+    { "id": "m2", "title": "Meta docs: App Review for Instagram API", "url": "https://developers.facebook.com/docs/instagram-platform/app-review" },
+    { "id": "m3", "title": "Meta docs: App Review introduction", "url": "https://developers.facebook.com/docs/resp-plat-initiatives/app-review/introduction" },
+    { "id": "m4", "title": "Meta docs: App Review submission guide", "url": "https://developers.facebook.com/docs/resp-plat-initiatives/individual-processes/app-review/submission-guide" },
+    { "id": "m5", "title": "Meta docs: App Review (testability)", "url": "https://developers.facebook.com/docs/resp-plat-initiatives/individual-processes/app-review" },
+    { "id": "m6", "title": "Meta developer blog: Access verification process for Tech Provider apps (2022)", "url": "https://developers.facebook.com/blog/post/2022/06/02/access-verification-process-for-tech-provider-apps/" },
+    { "id": "m7", "title": "Meta docs: Business Verification", "url": "https://developers.facebook.com/docs/development/release/business-verification" },
+    { "id": "m8", "title": "Meta docs: Get long-lived tokens", "url": "https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived" },
+    { "id": "m9", "title": "Meta docs: Business Login for Instagram", "url": "https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login" },
+    { "id": "m10", "title": "Meta docs: Graph API rate limiting", "url": "https://developers.facebook.com/docs/graph-api/overview/rate-limiting" },
+    { "id": "m11", "title": "Meta docs: Facebook Login for Business", "url": "https://developers.facebook.com/documentation/facebook-login/facebook-login-for-business" },
+    { "id": "m12", "title": "Meta docs: Permissions with Facebook Login", "url": "https://developers.facebook.com/documentation/facebook-login/guides/permissions" },
+    { "id": "m13", "title": "Vendor blog: bundle.social, Meta App Review 20-day waits (July 2026)", "url": "https://bundle.social/blog/meta-app-review-20-days" },
+    { "id": "m14", "title": "Facebook OpenID Connect discovery document", "url": "https://www.facebook.com/.well-known/openid-configuration/" },
+    { "id": "m15", "title": "Meta App Dashboard", "url": "https://developers.facebook.com/apps/" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://www.facebook.com/.well-known/openid-configuration/: issuer https://www.facebook.com, authorization_endpoint https://facebook.com/dialog/oauth/, response types id_token and 'token id_token' only",
+      "GET https://graph.facebook.com/me without a token: OAuthException code 2500 'An active access token must be used'",
+      "GET https://www.facebook.com/v23.0/dialog/oauth: HTTP 200",
+      "GET https://www.instagram.com/oauth/authorize: HTTP 200",
+      "GET https://developers.facebook.com/apps/: 302 to business.facebook.com/business/loginpage"
+    ],
+    "openQuestions": [
+      "Current official App Review turnaround in late 2026 (Meta says under a week; vendors report about 20 days)",
+      "Whether Meta's Platform Terms restrict using Platform Data to train or prompt AI models (we didn't find the clause)",
+      "Current Access Verification SLA (the only official figure is from 2022)",
+      "Exactly which Instagram Login permissions trigger Access Verification vs only App Review"
+    ]
+  }
+}

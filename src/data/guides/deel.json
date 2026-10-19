@@ -1,0 +1,554 @@
+{
+  "app": {
+    "name": "Deel",
+    "slug": "deel",
+    "website": "https://www.deel.com",
+    "developerPortal": "https://developer.deel.com",
+    "category": "HR / Payroll"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 guide",
+      "url": "https://developer.deel.com/api/oauth"
+    },
+    {
+      "kind": "review",
+      "label": "Publishing to the App Store",
+      "url": "https://developer.deel.com/api/partners/publishing-to-app-store"
+    },
+    {
+      "kind": "scopes",
+      "label": "Authentication and scopes",
+      "url": "https://developer.deel.com/api/authentication"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developer.deel.com/api/rate-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Deel dashboard (Developer Center)",
+      "url": "https://app.deel.com"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Creating an OAuth2 app in Deel's Developer Center is self-serve and works for your own organization within an hour or two. For other Deel customers to connect, you submit the app for App Store review (demo video, legal docs, test account), which Deel says typically takes 1–2 weeks.",
+    "timeToDev": {
+      "range": "1–3 hours",
+      "hours": {
+        "min": 1,
+        "max": 3
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "Sign up or sign in at app.deel.com, create an Organization App under Developer > Apps, copy the one-time client secret, and run the auth-code flow. Assumes you already have a Deel login with a client (admin) role."
+      }
+    },
+    "timeToProd": {
+      "range": "2–4 weeks",
+      "hours": {
+        "min": 336,
+        "max": 672
+      },
+      "assumes": "A public App Store listing so any Deel customer org can authorize your agent; for your own org only, the app works the same day without review.",
+      "waitingOn": "Deel App Store review: completeness check (1–2 business days), technical review (3–5), App Store review (2–3); Deel says typically 1–2 weeks total.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Review stages are Deel's stated estimates ('Timeline may vary'). The extra week or two covers preparing the demo video, help article, screenshots and legal pages, and is our estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Deel account where you have a client (admin) role",
+      "why": "Apps are created from the Developer Center in the Deel dashboard; Deel's older docs say employees and contractors can't use OAuth2 apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s7"
+        ],
+        "note": "The client-role rule comes from a versioned (v2.10.0) page and may be outdated."
+      }
+    },
+    {
+      "item": "HTTPS redirect URI (localhost allowed for development)",
+      "why": "Deel says redirect URIs must use HTTPS except localhost, and must match the registered URI exactly.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Privacy policy, terms of service, data usage disclosure and compliance statements",
+      "why": "Required legal items for App Store submission.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An end-to-end demo video and test account credentials for Deel's reviewers",
+      "why": "Deel calls the demo video 'the most crucial part of the technical review'.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Your own organization (unpublished app)",
+      "examples": [
+        "contracts:read",
+        "people:read",
+        "timesheets:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Any scope works for your own org without review. Good for prototyping and internal agents.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Deel says a submitted app is accessible only to your organization during review; we infer the same for an app that was never submitted."
+      }
+    },
+    {
+      "tier": "Read scopes for other customer orgs",
+      "examples": [
+        "contracts:read",
+        "people:read",
+        "accounting:read",
+        "timesheets:read"
+      ],
+      "reviewRequired": true,
+      "time": "2–4 weeks",
+      "impact": "Needs App Store publication. Review is per app, not per scope; Deel checks OAuth implementation, security and listing quality.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Write scopes (contracts, timesheets, invoices)",
+      "examples": [
+        "contracts:write",
+        "timesheets:write",
+        "invoice-adjustments:write",
+        "people:write"
+      ],
+      "reviewRequired": true,
+      "time": "2–4 weeks",
+      "impact": "Same review path. Writes in production create legally binding contracts and real payments, so test thoroughly in sandbox first.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to Deel (or sign up)",
+      "owner": "human",
+      "detail": "Use an account with a client/admin role in your organization.",
+      "url": "https://app.deel.com",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Contact Deel's partnership team (recommended)",
+      "owner": "human",
+      "detail": "Deel recommends reaching out to its partnership team before you start building. Not a stated requirement.",
+      "url": "https://developer.deel.com/api/partners/introduction",
+      "duration": "Optional",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create an Organization App",
+      "owner": "human",
+      "detail": "Go to More > Developer > Apps > Create new app. Choose Organization App for org-wide data an agent reads; Personal App limits access to what the authorizing user can see. Enter name, description, redirect URI and logo, then store the client secret (shown once).",
+      "url": "https://app.deel.com",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://app.deel.com/oauth2/authorize with client_id, redirect_uri, space-separated scope and state; POST to https://app.deel.com/oauth2/tokens with HTTP Basic client auth; call https://api.letsdeel.com/rest with both Authorization: Bearer and x-client-id headers.",
+      "url": "https://developer.deel.com/api/oauth",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Add single-use refresh token rotation",
+      "owner": "agent",
+      "detail": "Persist the new refresh token on every refresh and refresh proactively (Deel suggests every 25 days). Reusing an old refresh token returns invalid_grant and may revoke the whole grant.",
+      "url": "https://developer.deel.com/api/oauth",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test in the sandbox",
+      "owner": "human",
+      "detail": "Create a separate app in the sandbox environment and run the full OAuth flow against the sandbox API (https://api-staging.letsdeel.com/rest per Deel's docs). Sandbox and production use different credentials.",
+      "url": "https://developer.deel.com/api/sandbox",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s3",
+          "s4",
+          "s9"
+        ],
+        "note": "Sources disagree on sandbox hosts: Deel's getting-started page lists app-sandbox.letsdeel.com/oauth/authorize (TLS handshake failed in our check), while StackOne points to app.demo.deel.com. Confirm in your Developer Center."
+      }
+    },
+    {
+      "title": "Draft listing, help article and legal disclosures",
+      "owner": "agent",
+      "detail": "Write the one-line and long descriptions, features, setup article, data usage disclosure and compliance statements; collect 3+ screenshots and a 512x512 PNG logo.",
+      "url": "https://developer.deel.com/api/partners/publishing-to-app-store",
+      "duration": "Half a day",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Record the demo video",
+      "owner": "human",
+      "detail": "One end-to-end recording: product intro, integration use case, the full OAuth authorization flow, then a practical example of the integration running.",
+      "url": null,
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit for review",
+      "owner": "human",
+      "detail": "In Organization settings > Developer > Apps, select the app, click Submit for Review and complete the form (including test account URL/credentials and an escalation email).",
+      "url": "https://app.deel.com",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for Deel's review",
+      "owner": "wait",
+      "detail": "Completeness check, technical review, then App Store review. Common rejections: incomplete OAuth2 implementation, missing legal docs, security gaps, poor UX or branding.",
+      "url": null,
+      "duration": "1–2 weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Go live",
+      "owner": "human",
+      "detail": "After the approval email, the app appears in the Deel App Store and any customer can install it. Only reviewed and published apps may be promoted as official Deel integrations.",
+      "url": null,
+      "duration": null,
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the auth-code flow with Basic client auth and the x-client-id header",
+    "Build single-use refresh token rotation and encrypted token storage",
+    "Add 429 handling for the org-wide 5 requests/second limit",
+    "Draft listing copy, setup article, data usage disclosure and privacy/terms pages",
+    "Pick least-privilege scopes and the right app type (Organization vs Personal)"
+  ],
+  "humanMustDo": [
+    "Sign in to Deel and create the app in the Developer Center",
+    "Store the client secret when it is shown (once)",
+    "Record the end-to-end demo video",
+    "Provide reviewer test account credentials and submit for review",
+    "Customer side: a Deel admin approves the scopes on the consent screen"
+  ],
+  "blockers": [
+    {
+      "symptom": "401 Unauthorized on API calls with a valid-looking access token",
+      "cause": "Missing x-client-id header; OAuth2 requests need both Authorization and x-client-id.",
+      "fix": "Send Authorization: Bearer <token> and x-client-id: <client_id> on every request.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_grant on refresh, then the user is disconnected",
+      "cause": "Refresh tokens are single-use; reusing one may make Deel revoke all tokens for the grant.",
+      "fix": "Atomically replace the stored refresh token after each refresh; avoid concurrent refreshes; re-authorize on invalid_grant.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "403 Forbidden when reading org-wide data",
+      "cause": "Personal App used for org resources, missing scopes, or the user lacks permission.",
+      "fix": "Use an Organization App and request the scopes listed for each endpoint in the API reference.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Users in other Deel organizations can't use your app",
+      "cause": "Unreviewed apps are limited to your own organization.",
+      "fix": "Submit for App Store review and get published.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s7"
+        ],
+        "note": "The exact error another org sees is not documented."
+      }
+    },
+    {
+      "symptom": "429 Too Many Requests",
+      "cause": "More than 5 requests/second across all tokens in the customer's organization (a rolling 1-second window).",
+      "fix": "Throttle per customer org, queue requests and back off on 429; remember other integrations share the same budget.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Token exchange returns {\"error\":\"access_denied\",\"error_description\":\"Invalid basic authorization credentials\"}",
+      "cause": "Client credentials missing or not sent as HTTP Basic base64(client_id:client_secret).",
+      "fix": "Send the Basic auth header; check you're using sandbox credentials only against the sandbox.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "POST https://app.deel.com/oauth2/tokens without credentials returned this 401 body on 2026-10-20."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 30 days and refresh tokens 90 days; refresh tokens are single-use (RFC 9700 rotation), and Deel suggests refreshing every 25 days.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limit is 5 requests/second per organization, shared across all tokens, so your agent competes with every other integration that customer runs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Organization Apps grant org-wide access based on scopes; Personal Apps are limited to what the authorizing user can access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Scopes are requested in the authorize URL and approved by the connecting admin on the consent screen, rather than configured on the app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s9"
+        ],
+        "note": "The 'not configured in Developer settings' detail comes from StackOne's guide."
+      }
+    },
+    {
+      "text": "Deel runs its own MCP server for AI clients with OAuth and scoped access, which may be an alternative to building your own connector.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Production write calls create legally binding contracts and move real money; the sandbox simulates payments and signatures.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Deel OAuth2 guide",
+      "url": "https://developer.deel.com/api/oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Deel: Publishing to the App Store",
+      "url": "https://developer.deel.com/api/partners/publishing-to-app-store"
+    },
+    {
+      "id": "s3",
+      "title": "Deel API Sandbox",
+      "url": "https://developer.deel.com/api/sandbox"
+    },
+    {
+      "id": "s4",
+      "title": "Deel partners: Getting started",
+      "url": "https://developer.deel.com/api/partners/getting-started"
+    },
+    {
+      "id": "s5",
+      "title": "Deel rate limits",
+      "url": "https://developer.deel.com/api/rate-limits"
+    },
+    {
+      "id": "s6",
+      "title": "Deel authentication and scopes",
+      "url": "https://developer.deel.com/api/authentication"
+    },
+    {
+      "id": "s7",
+      "title": "Deel OAuth2 apps (v2.10.0 docs)",
+      "url": "https://developer.deel.com/v2.10.0/docs/oauth2-apps"
+    },
+    {
+      "id": "s8",
+      "title": "Deel App Store: Introduction",
+      "url": "https://developer.deel.com/api/partners/introduction"
+    },
+    {
+      "id": "s9",
+      "title": "StackOne: Deel OAuth 2.0 connector profile",
+      "url": "https://docs.stackone.com/connectors/deel/guides/connector-profile/oauth-2-0"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://app.deel.com/oauth2/authorize?client_id=x...: 200 (serves the Deel web app shell; no server-side error page)",
+      "POST https://app.deel.com/oauth2/tokens with no credentials: 401 {\"error\":\"access_denied\",\"error_description\":\"Invalid basic authorization credentials\"}",
+      "GET https://api.letsdeel.com/rest/v2/contracts unauthenticated: 401 PAT_REQUIRED",
+      "GET https://app.deel.com/.well-known/openid-configuration: 404 (no OIDC discovery)",
+      "https://app-sandbox.letsdeel.com (documented sandbox auth host): TLS handshake failure"
+    ],
+    "openQuestions": [
+      "The correct sandbox OAuth host (app-sandbox.letsdeel.com vs app.demo.deel.com) and sandbox API base",
+      "Whether an unpublished, never-submitted app can be authorized by other organizations at all, and what error they see",
+      "Whether Deel's review treats AI/agent apps or broad write scopes differently",
+      "Whether there is any listing fee or partner agreement (none mentioned)"
+    ]
+  }
+}

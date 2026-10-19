@@ -13,7 +13,8 @@
     "index-guides": "tsx scripts/index-guides.ts",
     "predev": "npm run index-guides",
     "prebuild": "npm run index-guides",
-    "check-links": "tsx scripts/check-links.ts"
+    "check-links": "tsx scripts/check-links.ts",
+    "inspect": "tsx --env-file=.env.local scripts/inspect-generated.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

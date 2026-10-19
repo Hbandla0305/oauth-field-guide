@@ -128,7 +128,7 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, emi
     for (const d of audit.output_parsed.downgrades) {
       if (applyDowngrade(guide, d.path, d.label, d.reason)) applied++;
     }
-    guide.verification.openQuestions = [...guide.verification.openQuestions, ...audit.output_parsed.openQuestions].slice(0, 10);
+    guide.verification.openQuestions = [...new Set([...guide.verification.openQuestions, ...audit.output_parsed.openQuestions])].slice(0, 8);
   }
   emit({ type: "stage", stage: "audit", status: "done", detail: applied ? `Downgraded ${applied} claim${applied === 1 ? "" : "s"}` : "No claims downgraded" });
 

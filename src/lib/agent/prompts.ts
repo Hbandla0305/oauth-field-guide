@@ -12,6 +12,7 @@ Return:
 - website: the product's canonical https homepage
 - reason: one short sentence a developer would understand
 
+Ambiguous names: if the input could be a software product (e.g. "Harvest", "Front", "Close", "Box"), pick the most likely software product with a developer API and treat it as that product. Only use "not_an_app" when no software product plausibly matches.
 If unsure whether OAuth is supported, prefer "oauth_app"; the research step will verify.`;
 
 export const RESEARCH_INSTRUCTIONS = `You write OAuth app setup and approval guides for developers building AI agents.

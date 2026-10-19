@@ -1,4 +1,4 @@
-import { Guide, type Difficulty } from "./guide-schema";
+import { StoredGuide, type Guide, type Difficulty } from "./guide-schema";
 import { getGeneratedGuide, listGeneratedGuides } from "./db";
 import { RAW_GUIDES } from "@/data/guides/index";
 import { popularity } from "./popular";
@@ -8,7 +8,7 @@ const TIER_ORDER = ["human-verified", "agent-researched", "agent-generated"] as 
 
 // Invalid files are skipped rather than breaking the site; `npm run validate` reports them.
 export const LIBRARY: Guide[] = RAW_GUIDES.flatMap((raw) => {
-  const parsed = Guide.safeParse(raw);
+  const parsed = StoredGuide.safeParse(raw);
   if (!parsed.success) console.warn(`Skipping invalid guide: ${(raw as { app?: { slug?: string } })?.app?.slug}`);
   return parsed.success ? [parsed.data] : [];
 }).sort(

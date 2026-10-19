@@ -1,5 +1,6 @@
 // Plain-text views of a guide for tools (MCP, Slack): one section at a time keeps answers short.
 import type { Evidence, Guide } from "./guide-schema";
+import { researchTrail } from "./research-trail";
 
 export const SECTIONS = ["summary", "steps", "permissions", "good_to_know", "troubleshoot", "resources", "all"] as const;
 export type Section = (typeof SECTIONS)[number];
@@ -39,6 +40,8 @@ export function guideSection(g: Guide, section: Section, url: string): string {
     good_to_know: ["Good to know:", ...g.nuances.map((n) => `- ${n.text}${ev(n.evidence)}`)],
     troubleshoot: ["Known problems:", ...g.blockers.map((b) => `- ${b.symptom}\n  Why: ${b.cause}\n  Fix: ${b.fix}${ev(b.evidence)}`)],
     resources: [
+      "How this guide was made:",
+      ...researchTrail(g).map((e) => `- ${e.title}${e.details.length ? `: ${e.details.slice(0, 3).join(" | ")}` : ""}`),
       "Official docs:",
       ...g.officialDocs.map((d) => `- ${d.label}: ${d.url}`),
       `Still uncertain: ${g.verification.openQuestions.join("; ") || "nothing outstanding"}`,

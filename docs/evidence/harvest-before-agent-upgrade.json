@@ -1,0 +1,352 @@
+{
+  "app": {
+    "name": "Harvest (Harvest Time Tracking)",
+    "slug": "harvest",
+    "website": "https://www.getharvest.com/",
+    "category": "time tracking",
+    "developerPortal": "https://id.getharvest.com/developers"
+  },
+  "steps": [
+    {
+      "url": "https://id.getharvest.com/developers",
+      "owner": "human",
+      "title": "Create or sign in to your Harvest account and open Developers (Harvest ID)",
+      "detail": "Log into Harvest and go to the Developers section at id.getharvest.com/developers to create an OAuth2 Application or generate Personal Access Tokens.",
+      "duration": "5–15 min",
+      "evidence": {
+        "note": "Docs reference the Developers section for creating apps and personal tokens.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "url": "https://id.getharvest.com/developers",
+      "owner": "human",
+      "title": "Register a new OAuth2 Application",
+      "detail": "Provide Name, Redirect URL, whether you support multiple accounts, and select Products (Harvest, Forecast or both). Copy the returned Client ID and Client Secret.",
+      "duration": "5–15 min",
+      "evidence": {
+        "note": "Registration fields and process described in the OAuth docs and demonstrated in the walkthrough video.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#oauth2-authorization-flow",
+      "owner": "agent",
+      "title": "Implement Authorization Code flow (build connect button and redirect)",
+      "detail": "Generate an authorization URL using https://id.getharvest.com/oauth2/authorize with client_id and response_type=code, include state and redirect_uri, and implement the redirect handler to receive the code.",
+      "duration": "15–60 min",
+      "evidence": {
+        "note": "Authorization endpoint, parameters and redirect behavior described in the docs.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#oauth2-authorization-flow",
+      "owner": "human",
+      "title": "Exchange authorization code for tokens server-side",
+      "detail": "POST to https://id.getharvest.com/api/v2/oauth2/token with code, client_id, client_secret and grant_type=authorization_code; store access_token and refresh_token securely.",
+      "duration": "10–30 min",
+      "evidence": {
+        "note": "Token exchange endpoint and example requests/responses are documented.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#oauth2-authorization-flow",
+      "owner": "agent",
+      "title": "Implement refresh token flow and API calls",
+      "detail": "Use the documented refresh token POST to the same token endpoint to obtain new access tokens before expiry; call Harvest API endpoints with Authorization: Bearer <access_token> and Harvest-Account-Id header where required.",
+      "duration": "15–60 min",
+      "evidence": {
+        "note": "Docs include refresh token example and header usage for API requests.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "owner": "human",
+      "title": "Test end-to-end in dev and deploy redirect endpoint",
+      "detail": "Authorize with a test Harvest account, exchange the code, verify token lifetimes and API access, then deploy the redirect callback to your production URL and update the app registration if needed.",
+      "duration": "30–120 min",
+      "evidence": {
+        "note": "Video and docs show end-to-end flow and practical testing steps.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ]
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens have long expiry in Harvest examples: example response shows expires_in = 1209600 (14 days).",
+      "evidence": {
+        "note": "The API example response includes expires_in with value 1209600 seconds.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "text": "Personal Access Tokens exist and are useful for single-user scripts; they have 'all' scope by default and are simpler for development.",
+      "evidence": {
+        "note": "Docs list Personal Access Tokens as a quickest way to start using the API and note they have the all scope.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "text": "Some partner or partner-documentation pages (Greenhouse integration docs) mention very short authorization code lifetimes and different endpoint paths; partner integrations may have additional constraints not documented in public Harvest docs.",
+      "evidence": {
+        "note": "Partner docs reference short code TTLs; this appears specific to partner integrations and is not explicitly described in Harvest public API docs, so verify with Harvest if you plan a deep partner integration.",
+        "label": "unverified",
+        "sourceIds": [
+          "s3"
+        ]
+      }
+    },
+    {
+      "text": "Many developer tools expect OIDC discovery; because Harvest lacks .well-known discovery endpoints (probe), you may need to enter endpoints manually in OAuth tooling.",
+      "evidence": {
+        "note": "Docs provide explicit endpoints but probe shows no discovery metadata, so manual config is necessary for tools that cannot be configured with raw endpoints.",
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "title": "Authentication – Harvest API V2 Documentation"
+    },
+    {
+      "id": "s2",
+      "url": "https://www.getharvest.com/software-development-time-tracking",
+      "title": "Time Tracking Software for Developers"
+    },
+    {
+      "id": "s3",
+      "url": "https://harvestdocs.greenhouse.io/docs/harvest-partner-oauth",
+      "title": "Integrating as a Greenhouse Harvest Partner (OAuth 2.0 Auth ..."
+    },
+    {
+      "id": "s4",
+      "url": "https://www.youtube.com/watch?v=YMFblL_EjIU&xstg=CAMSBhUDze3xHw%3D%3D",
+      "title": "How To Integrate Harvest Using OAuth2"
+    },
+    {
+      "id": "s5",
+      "url": "https://github.com/harvesthq/api",
+      "title": "This documentation is out of date. Please see our new API ..."
+    },
+    {
+      "id": "s6",
+      "url": "https://clockify.me/reviews/harvest-review",
+      "title": "Harvest: An Honest Review by a Competitor (2026)"
+    },
+    {
+      "id": "s7",
+      "url": "https://www.capterra.com/p/75598/Harvest/reviews/",
+      "title": "Harvest Reviews 2026. Verified Reviews, Pros & Cons"
+    }
+  ],
+  "verdict": {
+    "cost": "null",
+    "summary": "Harvest exposes a self-serve OAuth2 flow you can register and use today; no app review is described in the docs. Expect a working dev app in under an hour and production availability immediately after you register and configure redirect URIs.",
+    "timeToDev": {
+      "hours": {
+        "max": 1,
+        "min": 0.25
+      },
+      "range": "15–60 min",
+      "evidence": {
+        "note": "Docs show a self-serve Developers console and step-by-step OAuth flow; a community video demonstrates creating an app in the console.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ]
+      }
+    },
+    "difficulty": "trivial",
+    "timeToProd": {
+      "hours": {
+        "max": 8,
+        "min": 1
+      },
+      "range": "Same day",
+      "assumes": "You register a client in Harvest ID, implement the Authorization Code flow, and deploy your redirect endpoint (no external review needed).",
+      "evidence": {
+        "note": "Documentation describes creating OAuth2 Applications from the Developers section and shows the full code/token exchange; no review step is documented.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ]
+      },
+      "waitingOn": "No review needed"
+    }
+  },
+  "blockers": [
+    {
+      "fix": "Hardcode the documented endpoints from Harvest docs (authorize and token URLs) and implement flows using those URLs; fall back to manual configuration in tools that expect discovery.",
+      "cause": "Harvest does not publish OpenID/OAuth discovery endpoints at common .well-known locations.",
+      "symptom": "No OAuth discovery document (.well-known) available for Harvest",
+      "evidence": {
+        "note": "Live probe found no discovery metadata at common .well-known locations.",
+        "label": "inferred",
+        "sourceIds": []
+      }
+    },
+    {
+      "fix": "Exchange the authorization code immediately server-side; if you encounter 'code expired' retry the authorization flow.",
+      "cause": "Implementation delays or very short code lifetime (must exchange quickly).",
+      "symptom": "Authorization code expired before exchange (errors during token exchange)",
+      "evidence": {
+        "note": "Harvest docs show the Authorization Code flow and token exchange; community partner docs (Greenhouse/partner) stress short code TTLs for some partner flows which may indicate some implementations have short lifetimes. Confirm code TTL with Harvest if you see very short expirations.",
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ]
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Draft OAuth redirect URI values and sample authorization URLs",
+    "Generate code snippets for Authorization Code and token exchange",
+    "Produce privacy policy text and scopes justification language",
+    "Create test scripts to exercise token exchange and refresh flows",
+    "Extract required fields for app registration and prepare image/logo assets"
+  ],
+  "scopeTiers": [
+    {
+      "tier": "harvest:all / harvest:{ACCOUNT_ID} (product-level access)",
+      "time": "Same day",
+      "impact": "Grants API access to Harvest product data for the selected accounts; choose minimal scope required.",
+      "evidence": {
+        "note": "The docs list harvest scope variants and advise selecting minimal product access.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      },
+      "examples": [
+        "harvest:all",
+        "harvest:{ACCOUNT_ID}"
+      ],
+      "reviewRequired": false
+    },
+    {
+      "tier": "forecast:all / forecast:{ACCOUNT_ID} (Forecast product)",
+      "time": "Same day",
+      "impact": "If your integration needs Forecast data, include Forecast scopes when registering the app.",
+      "evidence": {
+        "note": "Docs describe selecting products (Harvest, Forecast or both) during app registration.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      },
+      "examples": [
+        "forecast:all",
+        "forecast:{ACCOUNT_ID}"
+      ],
+      "reviewRequired": false
+    }
+  ],
+  "humanMustDo": [
+    "Log into Harvest ID and click through the Developers console to register the OAuth app",
+    "Provide and verify a redirect URI and upload app logo if required",
+    "Store client_secret and tokens securely in your environment (requires access to infra)",
+    "Deploy a server endpoint to handle the callback and perform token exchange"
+  ],
+  "officialDocs": [
+    {
+      "url": "https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/",
+      "kind": "oauth",
+      "label": "OAuth2 guide (Harvest API v2)"
+    },
+    {
+      "url": "https://github.com/harvesthq/api",
+      "kind": "api",
+      "label": "Archived API repo (historical)"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=YMFblL_EjIU&xstg=CAMSBhUDze3xHw%3D%3D",
+      "kind": "api",
+      "label": "Tutorial: How To Integrate Harvest Using OAuth2 (video walkthrough)"
+    }
+  ],
+  "verification": {
+    "status": "agent-generated",
+    "tested": [
+      "Looked for OAuth discovery metadata at 10 standard URLs; none found"
+    ],
+    "lastChecked": "2026-10-19",
+    "openQuestions": [
+      "Does Harvest ever publish an OpenID or OAuth discovery document at a nonstandard location? (not found at common .well-known URLs in the probe)",
+      "Are there any undocumented app review or rate-limit policies for third-party apps beyond the public docs that would require approval for distribution to other customers?",
+      "Does Harvest ever publish an OpenID or OAuth discovery document at a nonstandard location? (not found at common .well-known URLs in the probe)",
+      "Are there any undocumented app review or rate-limit policies for third-party apps beyond the public docs that would require approval for distribution to other customers?"
+    ]
+  },
+  "prerequisites": [
+    {
+      "why": "You must log in to Harvest ID to create an OAuth2 Application or Personal Access Token.",
+      "item": "Harvest account (to access id.getharvest.com Developers section)",
+      "evidence": {
+        "note": "Docs point to the Developers section on Harvest ID for app creation.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "why": "OAuth Authorization Code flow requires a redirect URL registered with the client.",
+      "item": "A callback/redirect URI hosted by your app",
+      "evidence": {
+        "note": "Redirect URL is required when registering an OAuth2 application.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "why": "Harvest uses Authorization Code flow and returns refresh tokens; code exchange must be done server-side.",
+      "item": "Server to perform code exchange and securely store client_secret and refresh tokens",
+      "evidence": {
+        "note": "Token exchange examples show client_id and client_secret posted server-to-server; refresh token flow documented.",
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ]
+      }
+    }
+  ]
+}

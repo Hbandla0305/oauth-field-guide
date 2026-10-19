@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { createHash } from "node:crypto";
-import { Guide } from "./guide-schema";
+import { StoredGuide, type Guide } from "./guide-schema";
 import { LIMITS } from "./agent/config";
 
 function sql() {
@@ -43,7 +43,7 @@ export async function getGeneratedGuide(slug: string): Promise<Guide | null> {
   if (!process.env.DATABASE_URL) return null;
   const rows = await sql()`select guide from guides where slug = ${slug}`;
   if (!rows.length) return null;
-  const parsed = Guide.safeParse(rows[0].guide);
+  const parsed = StoredGuide.safeParse(rows[0].guide);
   return parsed.success ? parsed.data : null;
 }
 
@@ -51,7 +51,7 @@ export async function listGeneratedGuides(limit = 12): Promise<Guide[]> {
   if (!process.env.DATABASE_URL) return [];
   const rows = await sql()`select guide from guides order by created_at desc limit ${limit}`;
   return rows.flatMap((r) => {
-    const parsed = Guide.safeParse(r.guide);
+    const parsed = StoredGuide.safeParse(r.guide);
     return parsed.success ? [parsed.data] : [];
   });
 }

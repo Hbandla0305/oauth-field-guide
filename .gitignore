@@ -42,3 +42,5 @@ next-env.d.ts
 !.env.example
 src/data/guides/index.ts
 .env*.local
+.claude/
+.env.runtime-role.local

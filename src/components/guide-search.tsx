@@ -8,6 +8,7 @@ import type { GuideSummary } from "@/lib/guides";
 import { DIFFICULTY, DifficultyBadge } from "./difficulty";
 import { InfoTip } from "./info-tip";
 import { POPULAR_NOTE } from "@/lib/popular";
+import { markStart } from "@/lib/start-intent";
 
 const FILTERS: (Difficulty | "all")[] = ["all", "trivial", "moderate", "hard", "gated"];
 const PAGE = 25;
@@ -65,7 +66,10 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
     const exact = results.find((g) => normalise(g.name) === q || g.slug === q.replace(/ /g, "-"));
     if (exact) router.push(`/guides/${exact.slug}`);
     else if (results.length === 1) router.push(`/guides/${results[0].slug}`);
-    else router.push(`/generate?app=${encodeURIComponent(query.trim())}`);
+    else {
+      markStart(query);
+      router.push(`/generate?app=${encodeURIComponent(query.trim())}`);
+    }
   }
 
   return (
@@ -175,7 +179,7 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
             {q && (
               <span>
                 Not the one?{" "}
-                <Link href={`/generate?app=${encodeURIComponent(query.trim())}`} className="font-medium text-ink underline underline-offset-2">
+                <Link href={`/generate?app=${encodeURIComponent(query.trim())}`} onClick={() => markStart(query)} className="font-medium text-ink underline underline-offset-2">
                   Research “{query.trim()}” with the agent
                 </Link>
               </span>

@@ -1,6 +1,6 @@
 import type { Guide } from "@/lib/guide-schema";
 import { guideSection, type Section } from "@/lib/guide-text";
-import { guideCard, slackText } from "@/lib/slack";
+import { guideCard, slackText, esc } from "@/lib/slack";
 
 export const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "https://oauth-field-guide.vercel.app";
 
@@ -34,7 +34,7 @@ export function splitSection(text: string): { app: string; section: Section | nu
 export function guideMessage(g: Guide, section: Section | null) {
   const url = guideUrl(g.app.slug);
   if (section) return { text: slackText(guideSection(g, section, url)) };
-  return { text: `${g.app.name}: ${g.verdict.difficulty}. Dev ${g.verdict.timeToDev.range}, any user ${g.verdict.timeToProd.range}. ${url}`, blocks: guideCard(g, url) };
+  return { text: esc(`${g.app.name}: ${g.verdict.difficulty}. Dev ${g.verdict.timeToDev.range}, any user ${g.verdict.timeToProd.range}. ${url}`), blocks: guideCard(g, url) };
 }
 
 export const HELP = [

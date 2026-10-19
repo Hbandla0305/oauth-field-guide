@@ -11,7 +11,9 @@ const INPUT_PATTERN = /^[\p{L}\p{N} .,&'()+\-/:]+$/u;
 
 const REFUSALS = {
   budget: "Live generation has used its demo budget. The existing guides still work.",
+  daily_budget: "Live generation has used today's budget. It resets within 24 hours; the existing guides still work.",
   ip_rate: `You can generate ${LIMITS.runsPerIpPerHour} new guides per hour. Try again later, or open an existing guide.`,
+  ip_daily: `You can generate ${LIMITS.runsPerIpPerDay} new guides a day. Try again tomorrow, or open an existing guide.`,
   daily_rate: "Today's live generation limit has been reached. Try again tomorrow, or open an existing guide.",
 } as const;
 
@@ -81,8 +83,11 @@ export async function startGeneration(rawInput: unknown, ip: string): Promise<St
         }
         const message = err instanceof Error ? err.message : String(err);
         console.error("generate failed", { runId, message });
-        // An interrupted call may have spent tokens we never saw; keep the full reservation.
-        await settleRun(runId, Math.max(cost.usd, LIMITS.reservePerRunUsd), "failed", slug, message.slice(0, 500), Math.max(cost.firecrawlCredits, LIMITS.firecrawl.reservePerRun)).catch(() => {});
+        // Charge what we know was spent (every completed call is in `cost`). Only a timeout can
+        // cut a call off mid-flight with unseen spend, so only then keep the full reservation.
+        const charged = signal.aborted ? Math.max(cost.usd, LIMITS.reservePerRunUsd) : Math.max(cost.usd, LIMITS.failureMinimumUsd);
+        const credits = signal.aborted ? Math.max(cost.firecrawlCredits, LIMITS.firecrawl.reservePerRun) : cost.firecrawlCredits;
+        await settleRun(runId, charged, "failed", slug, message.slice(0, 500), credits).catch(() => {});
         emit({
           type: "error",
           message: signal.aborted

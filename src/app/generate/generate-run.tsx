@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AgentEvent, StageId } from "@/lib/agent/pipeline";
 import { DotLoader } from "@/components/dot-loader";
 import { TIPS } from "@/lib/tips";
+import { hasStart, clearStart } from "@/lib/start-intent";
 
 const STAGES: { id: StageId; label: string }[] = [
   { id: "screen", label: "Identify the app" },
@@ -32,9 +33,18 @@ export function GenerateRun() {
   const [finished, setFinished] = useState(false);
   const [cachedHit, setCachedHit] = useState(false);
 
+  // Only start automatically when the visit came from our own pages. A link from another site
+  // asks for a click first, so other sites can't trigger paid research on visitors' behalf.
+  const [confirmed, setConfirmed] = useState(false);
+  const [sameSite, setSameSite] = useState<boolean | null>(null);
   useEffect(() => {
-    if (!app || started.current) return;
+    setSameSite(hasStart(app));
+  }, [app]);
+
+  useEffect(() => {
+    if (!app || started.current || sameSite === null || (!sameSite && !confirmed)) return;
     started.current = true;
+    clearStart();
     const t0 = Date.now();
     const timer = setInterval(() => setElapsed(Math.round((Date.now() - t0) / 1000)), 1000);
 
@@ -83,12 +93,24 @@ export function GenerateRun() {
       }
     })();
     return () => clearInterval(timer);
-  }, [app, router]);
+  }, [app, router, sameSite, confirmed]);
 
   // Searches and reads show under whichever reading step is current.
   const stageForReading: StageId = stages.gaps ? "gaps" : "research";
   // The live run has started only once the server streams its first stage.
   const researching = Object.keys(stages).length > 0;
+
+  if (app && sameSite === false && !confirmed) {
+    return (
+      <div>
+        <h1 className="mt-6 font-display text-4xl font-semibold tracking-tight">Research {app}?</h1>
+        <p className="mt-3 text-muted">An agent will read {app}&rsquo;s developer docs, try the first setup steps logged out, and write a guide. It takes about two minutes.</p>
+        <button type="button" onClick={() => setConfirmed(true)} className="mt-6 rounded-lg bg-ink px-5 py-3 font-medium text-surface hover:bg-ink/90">
+          Start research
+        </button>
+      </div>
+    );
+  }
 
   if (!app) {
     return (

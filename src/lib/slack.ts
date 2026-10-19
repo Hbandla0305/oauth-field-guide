@@ -12,7 +12,8 @@ export function slackConfigured(): boolean {
 export function verifySlack(rawBody: string, timestamp: string | null, signature: string | null): boolean {
   const secret = process.env.SLACK_SIGNING_SECRET;
   if (!secret || !timestamp || !signature) return false;
-  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+  const ts = Number(timestamp);
+  if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > 300) return false;
   const expected = `v0=${createHmac("sha256", secret).update(`v0:${timestamp}:${rawBody}`).digest("hex")}`;
   const a = Buffer.from(expected);
   const b = Buffer.from(signature);
@@ -23,6 +24,10 @@ const DIFF = { trivial: "🟢 Trivial", moderate: "🟡 Moderate", hard: "🔴 H
 
 const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
+// Guide text is agent-written from web pages. Escaping stops it from pinging a channel
+// (<!channel>), mentioning people, or posting disguised links (https://api.slack.com/reference/surfaces/formatting#escaping).
+export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 function headline(summary: string): string {
   return summary.match(/^(.+?[.!?])\s+(?=[A-Z])/)?.[1] ?? summary;
 }
@@ -31,15 +36,15 @@ export function guideCard(g: Guide, url: string) {
   const v = g.verdict;
   const status = g.verification.status === "human-verified" ? "Checked by a person" : g.verification.status === "agent-generated" ? "Written live by an agent" : "Agent-researched";
   return [
-    { type: "header", text: { type: "plain_text", text: clip(`${g.app.name}`, 150) } },
-    { type: "section", text: { type: "mrkdwn", text: `*${DIFF[v.difficulty]}*  ${clip(headline(v.summary), 2500)}` } },
+    { type: "header", text: { type: "plain_text", text: clip(g.app.name, 150) } },
+    { type: "section", text: { type: "mrkdwn", text: `*${DIFF[v.difficulty]}*  ${esc(clip(headline(v.summary), 2500))}` } },
     {
       type: "section",
       fields: [
-        { type: "mrkdwn", text: `*Working in dev*\n${clip(v.timeToDev.range, 200)}` },
-        { type: "mrkdwn", text: `*Any user can connect*\n${clip(v.timeToProd.range, 200)}` },
-        { type: "mrkdwn", text: `*Waiting on*\n${clip(v.timeToProd.waitingOn, 600)}` },
-        { type: "mrkdwn", text: `*Cost*\n${clip(v.cost ?? "None", 600)}` },
+        { type: "mrkdwn", text: `*Working in dev*\n${esc(clip(v.timeToDev.range, 200))}` },
+        { type: "mrkdwn", text: `*Any user can connect*\n${esc(clip(v.timeToProd.range, 200))}` },
+        { type: "mrkdwn", text: `*Waiting on*\n${esc(clip(v.timeToProd.waitingOn, 600))}` },
+        { type: "mrkdwn", text: `*Cost*\n${esc(clip(v.cost ?? "None", 600))}` },
       ],
     },
     {
@@ -64,7 +69,7 @@ export function guideCard(g: Guide, url: string) {
 
 // Plain text that Slack renders well: guideSection output with Slack's bold syntax for labels.
 export function slackText(text: string): string {
-  return clip(text.replace(/\*\*/g, "*"), 2900);
+  return clip(esc(text).replace(/\*\*/g, "*"), 2900);
 }
 
 export async function postMessage(channel: string, body: { text: string; blocks?: unknown[]; thread_ts?: string }) {
@@ -78,6 +83,8 @@ export async function postMessage(channel: string, body: { text: string; blocks?
 }
 
 export async function respond(responseUrl: string, body: Record<string, unknown>) {
+  // Only ever post back to Slack's own response URLs.
+  if (!/^https:\/\/hooks\.slack\.com\//.test(responseUrl)) return;
   await fetch(responseUrl, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).catch((e) =>
     console.error("slack response_url failed", e),
   );

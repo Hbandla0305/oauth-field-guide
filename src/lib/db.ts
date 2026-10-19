@@ -36,7 +36,9 @@ export const SCHEMA = [
 ];
 
 export function hashIp(ip: string): string {
-  return createHash("sha256").update(`${process.env.IP_HASH_SALT ?? "dev"}:${ip}`).digest("hex").slice(0, 32);
+  const salt = process.env.IP_HASH_SALT;
+  if (!salt && process.env.VERCEL_ENV === "production") throw new Error("IP_HASH_SALT must be set in production");
+  return createHash("sha256").update(`${salt ?? "dev"}:${ip}`).digest("hex").slice(0, 32);
 }
 
 export async function getGeneratedGuide(slug: string): Promise<Guide | null> {
@@ -64,13 +66,13 @@ export async function saveGuide(guide: Guide, input: string, costUsd: number) {
 
 export type Reservation =
   | { ok: true; runId: string }
-  | { ok: false; reason: "budget" | "ip_rate" | "daily_rate" };
+  | { ok: false; reason: "budget" | "daily_budget" | "ip_rate" | "ip_daily" | "daily_rate" };
 
 type Kind = "generate" | "chat";
 
-const KIND_LIMITS: Record<Kind, { reserve: number; perIpPerHour: number; perDay: number }> = {
-  generate: { reserve: LIMITS.reservePerRunUsd, perIpPerHour: LIMITS.runsPerIpPerHour, perDay: LIMITS.runsPerDay },
-  chat: { reserve: LIMITS.chat.reservePerMessageUsd, perIpPerHour: LIMITS.chat.perIpPerHour, perDay: LIMITS.chat.perDay },
+const KIND_LIMITS: Record<Kind, { reserve: number; perIpPerHour: number; perIpPerDay: number; perDay: number }> = {
+  generate: { reserve: LIMITS.reservePerRunUsd, perIpPerHour: LIMITS.runsPerIpPerHour, perIpPerDay: LIMITS.runsPerIpPerDay, perDay: LIMITS.runsPerDay },
+  chat: { reserve: LIMITS.chat.reservePerMessageUsd, perIpPerHour: LIMITS.chat.perIpPerHour, perIpPerDay: LIMITS.chat.perIpPerDay, perDay: LIMITS.chat.perDay },
 };
 
 export function reserveRun(ipHash: string, input: string) {
@@ -85,15 +87,21 @@ export function reserveChat(ipHash: string, input: string) {
 // reservations so two requests can't both squeeze under the cap. Rate limits are per
 // kind; the dollar cap is shared.
 async function reserve(kind: Kind, ipHash: string, input: string): Promise<Reservation> {
-  const { reserve: amount, perIpPerHour, perDay } = KIND_LIMITS[kind];
+  const { reserve: amount, perIpPerHour, perIpPerDay, perDay } = KIND_LIMITS[kind];
   const db = sql();
   const [, result] = await db.transaction([
     db`select pg_advisory_xact_lock(7203)`,
     db`
       with spend as (
-        select coalesce(sum(coalesce(actual_usd, reserved_usd)), 0) as total from runs
+        select
+          coalesce(sum(coalesce(actual_usd, reserved_usd)), 0) as total,
+          coalesce(sum(coalesce(actual_usd, reserved_usd)) filter (where created_at > now() - interval '1 day'), 0) as today
+        from runs
       ), ip as (
-        select count(*) as n from runs where kind = ${kind} and ip_hash = ${ipHash} and created_at > now() - interval '1 hour'
+        select
+          count(*) filter (where created_at > now() - interval '1 hour') as hour_n,
+          count(*) as day_n
+        from runs where kind = ${kind} and ip_hash = ${ipHash} and created_at > now() - interval '1 day'
       ), day as (
         select count(*) as n from runs where kind = ${kind} and created_at > now() - interval '1 day'
       ), ins as (
@@ -101,16 +109,20 @@ async function reserve(kind: Kind, ipHash: string, input: string): Promise<Reser
         select ${ipHash}, ${input}, ${amount}, ${kind}
         from spend, ip, day
         where spend.total + ${amount} <= ${LIMITS.totalBudgetUsd}
-          and ip.n < ${perIpPerHour}
+          and spend.today + ${amount} <= ${LIMITS.dailyBudgetUsd}
+          and ip.hour_n < ${perIpPerHour}
+          and ip.day_n < ${perIpPerDay}
           and day.n < ${perDay}
         returning id
       )
-      select (select id from ins) as id, spend.total, ip.n as ip_n, day.n as day_n from spend, ip, day`,
+      select (select id from ins) as id, spend.total, spend.today, ip.hour_n, ip.day_n as ip_day_n, day.n as day_n from spend, ip, day`,
   ]);
   const row = result[0];
   if (row.id) return { ok: true, runId: row.id };
   if (Number(row.total) + amount > LIMITS.totalBudgetUsd) return { ok: false, reason: "budget" };
-  if (Number(row.ip_n) >= perIpPerHour) return { ok: false, reason: "ip_rate" };
+  if (Number(row.today) + amount > LIMITS.dailyBudgetUsd) return { ok: false, reason: "daily_budget" };
+  if (Number(row.hour_n) >= perIpPerHour) return { ok: false, reason: "ip_rate" };
+  if (Number(row.ip_day_n) >= perIpPerDay) return { ok: false, reason: "ip_daily" };
   return { ok: false, reason: "daily_rate" };
 }
 

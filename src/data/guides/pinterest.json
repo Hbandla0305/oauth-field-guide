@@ -1,0 +1,291 @@
+{
+  "app": {
+    "name": "Pinterest",
+    "slug": "pinterest",
+    "website": "https://www.pinterest.com",
+    "developerPortal": "https://developers.pinterest.com/apps/",
+    "category": "Social media"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Set up authentication and authorization",
+      "url": "https://developers.pinterest.com/docs/getting-started/set-up-authentication-and-authorization/"
+    },
+    {
+      "kind": "review",
+      "label": "Access tiers (Trial and Standard)",
+      "url": "https://developers.pinterest.com/docs/key-concepts/access-tiers/"
+    },
+    {
+      "kind": "console",
+      "label": "Connect an app",
+      "url": "https://developers.pinterest.com/docs/getting-started/connect-app/"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developers.pinterest.com/docs/reference/rate-limits/"
+    },
+    {
+      "kind": "review",
+      "label": "Developer guidelines",
+      "url": "https://policy.pinterest.com/developer-guidelines/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Two manual reviews stand between you and real users: Trial access (needed even to get an app ID; anything you create stays creator-only, with 1,000 calls/day) and the Standard upgrade (a demo video of a live OAuth flow). Apps registered on or after September 14, 2026 may also get 403 PINNER_DATA_ACCESS_DENIED reading boards or Pins of non-business users without separate Pinterest authorization, and the developer guidelines bar storing API data or training AI on it.",
+    "timeToDev": {
+      "range": "1–5 days",
+      "hours": { "min": 24, "max": 120 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["p1", "p3"],
+        "note": "There are no credentials until Pinterest approves the Trial request by email, and no timeframe is published. Coding takes 1–3 hours once approved."
+      }
+    },
+    "timeToProd": {
+      "range": "1–4 weeks",
+      "hours": { "min": 168, "max": 672 },
+      "assumes": "Standard access for an app that reads and writes connected users' boards and Pins. Reading non-business users' data on a newly registered app may need extra authorization, which we couldn't time.",
+      "waitingOn": "Trial review, then Standard upgrade review ('reviewed regularly', no stated SLA; Pinterest says to allow a few days before following up).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["p1", "p3"],
+        "note": "Pinterest publishes no review durations, so the range is our estimate across both sequential reviews."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Pinterest business account with a verified email",
+      "why": "It's the account that administers the app.",
+      "evidence": { "label": "sourced", "sourceIds": ["p1"], "note": null }
+    },
+    {
+      "item": "A privacy policy on a domain clearly tied to your company or app, plus a complete app description",
+      "why": "Inaccurate, inaccessible or off-domain privacy policies and vague descriptions are the listed Trial denial reasons.",
+      "evidence": { "label": "sourced", "sourceIds": ["p3", "p6"], "note": null }
+    },
+    {
+      "item": "A working OAuth integration to record for the Standard upgrade",
+      "why": "The demo has to show a live Pinterest integration and the OAuth flow. Wireframes aren't accepted.",
+      "evidence": { "label": "sourced", "sourceIds": ["p3"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Trial access (all scopes, creator-only)",
+      "examples": ["user_accounts:read", "boards:read", "pins:read", "boards:write", "pins:write"],
+      "reviewRequired": true,
+      "time": "Days (Trial review)",
+      "impact": "Pins and boards you create are sandbox entities visible only to their creator. 1,000 requests/day per app. Good for building and recording the demo.",
+      "evidence": { "label": "sourced", "sourceIds": ["p3", "p5", "p4"], "note": null }
+    },
+    {
+      "tier": "Standard: business and user data",
+      "examples": ["user_accounts:read", "boards:read", "pins:read", "boards:write", "pins:write", "boards:read_secret", "pins:read_secret"],
+      "reviewRequired": true,
+      "time": "1–4 weeks total",
+      "impact": "Production access for any user who connects, with limits per minute, per user, per app (100 req/s universal). For apps registered on or after Sep 14, 2026, reading non-business users' boards and Pins may return PINNER_DATA_ACCESS_DENIED without extra authorization.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["p2", "p3", "p5"],
+        "note": "How to get the non-business authorization isn't explained on the access tiers page."
+      }
+    },
+    {
+      "tier": "Ads, catalogs and business access",
+      "examples": ["ads:read", "ads:write", "catalogs:read", "catalogs:write", "biz_access:read", "billing:read"],
+      "reviewRequired": true,
+      "time": "1–4 weeks total",
+      "impact": "Same Standard upgrade. Ads and catalog categories have their own rate limits (for example ads_conversions at 120,000/min per ad account).",
+      "evidence": { "label": "sourced", "sourceIds": ["p2", "p5"], "note": null }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create or convert to a business account",
+      "owner": "human",
+      "detail": "Log in with a Pinterest business account and verify its email address.",
+      "url": "https://help.pinterest.com/business/article/create-an-advertiser-account",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["p1"], "note": null }
+    },
+    {
+      "title": "Draft the app description and check the privacy policy",
+      "owner": "agent",
+      "detail": "Write a specific use-case description and confirm the privacy policy loads on your own domain and covers Pinterest data (no storage beyond what the guidelines allow, no AI training).",
+      "url": "https://policy.pinterest.com/developer-guidelines/",
+      "duration": "1 h",
+      "evidence": { "label": "sourced", "sourceIds": ["p3", "p6"], "note": null }
+    },
+    {
+      "title": "Request Trial access",
+      "owner": "human",
+      "detail": "Go to My apps, accept the Developer Terms, click Connect app and complete the form. The name needs 3+ Latin letters or digits and can't contain 'Pinterest'.",
+      "url": "https://developers.pinterest.com/apps/",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["p1"], "note": null }
+    },
+    {
+      "title": "Trial review",
+      "owner": "wait",
+      "detail": "Pinterest emails approval or denial. Once approved, the app ID and secret appear on My apps.",
+      "url": null,
+      "duration": "Days (no stated SLA)",
+      "evidence": { "label": "sourced", "sourceIds": ["p1"], "note": "The duration isn't published." }
+    },
+    {
+      "title": "Implement OAuth with continuous refresh",
+      "owner": "agent",
+      "detail": "Redirect to https://www.pinterest.com/oauth/ with client_id, redirect_uri, response_type=code, scope (comma or space separated) and state. Exchange the code at POST https://api.pinterest.com/v5/oauth/token with HTTP Basic auth. Access tokens last 30 days. Refresh before the 60-day continuous refresh token expires. Apps created before Sep 25, 2025 must send continuous_refresh=true.",
+      "url": "https://developers.pinterest.com/docs/getting-started/set-up-authentication-and-authorization/",
+      "duration": "2-3 h",
+      "evidence": { "label": "sourced", "sourceIds": ["p2"], "note": null }
+    },
+    {
+      "title": "Test against Sandbox",
+      "owner": "agent",
+      "detail": "Use api-sandbox.pinterest.com with sandbox tokens (production tokens don't work there). Keep paging boards/list through empty pages, and don't create sandbox Pins on group boards.",
+      "url": "https://developers.pinterest.com/docs/developer-tools/sandbox/",
+      "duration": "1-2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["p4"], "note": null }
+    },
+    {
+      "title": "Design for no-storage and per-action consent",
+      "owner": "agent",
+      "detail": "Fetch data from the API when needed instead of caching it (campaign analytics excepted). Don't let the agent create Pins, follow or comment without the user's specific knowledge and consent for each action.",
+      "url": "https://policy.pinterest.com/developer-guidelines/",
+      "duration": "varies",
+      "evidence": { "label": "sourced", "sourceIds": ["p6"], "note": null }
+    },
+    {
+      "title": "Record the Standard upgrade demo",
+      "owner": "human",
+      "detail": "Record the OAuth user flow, the app completing a real API action, and that no sensitive data is stored. Terminal or Postman recordings are accepted if you're the only user.",
+      "url": "https://developers.pinterest.com/docs/key-concepts/access-tiers/",
+      "duration": "1-2 h",
+      "evidence": { "label": "sourced", "sourceIds": ["p3"], "note": null }
+    },
+    {
+      "title": "Submit the Upgrade request",
+      "owner": "human",
+      "detail": "On My apps, click Upgrade on the app card (shown only when eligible), confirm the use case and privacy policy, upload the video and submit.",
+      "url": "https://developers.pinterest.com/apps/",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["p3"], "note": null }
+    },
+    {
+      "title": "Standard review",
+      "owner": "wait",
+      "detail": "Requests are 'reviewed regularly'. Pinterest says to allow a few days before following up. Appeals go through the Help Center.",
+      "url": "https://help.pinterest.com/contact/",
+      "duration": "Days to weeks",
+      "evidence": { "label": "sourced", "sourceIds": ["p3"], "note": "No SLA stated." }
+    }
+  ],
+  "agentCanDo": [
+    "Draft the app description and privacy policy check",
+    "Implement OAuth with the 60-day continuous refresh",
+    "Test integration against the Sandbox",
+    "Design no-storage, consent-per-action agent flows",
+    "Script the upgrade demo video"
+  ],
+  "humanMustDo": [
+    "Set up and verify a business account",
+    "Request Trial access and accept Developer Terms",
+    "Record the OAuth demo video",
+    "Submit the Standard upgrade"
+  ],
+  "blockers": [
+    {
+      "symptom": "Created Pins and boards are invisible to everyone else",
+      "cause": "The app is on Trial access, where content is creator-only.",
+      "fix": "Upgrade to Standard access.",
+      "evidence": { "label": "sourced", "sourceIds": ["p3"], "note": null }
+    },
+    {
+      "symptom": "HTTP 403 PINNER_DATA_ACCESS_DENIED on board or Pin requests",
+      "cause": "The app was registered on or after Sep 14, 2026 and is reading non-business users' data without Pinterest's authorization.",
+      "fix": "Target business accounts, or contact Pinterest for authorization. The process isn't documented on the pages we could read.",
+      "evidence": { "label": "sourced", "sourceIds": ["p3"], "note": null }
+    },
+    {
+      "symptom": "Trial request denied",
+      "cause": "The privacy policy is inaccurate, inaccessible or not on your domain, or the app description is vague.",
+      "fix": "Fix the policy and description, then reapply or appeal via the Help Center.",
+      "evidence": { "label": "sourced", "sourceIds": ["p3"], "note": null }
+    },
+    {
+      "symptom": "Standard upgrade denied",
+      "cause": "The demo doesn't show the OAuth flow or a live integration, or it uses a non-approved auth method (collecting credentials or cookies).",
+      "fix": "Re-record with a real OAuth flow and a live API action.",
+      "evidence": { "label": "sourced", "sourceIds": ["p3"], "note": null }
+    },
+    {
+      "symptom": "Users forced to reconnect after about 2 months",
+      "cause": "The 60-day continuous refresh token lapsed without a refresh (the legacy 365-day tokens are no longer supported).",
+      "fix": "Refresh every user's tokens well within 60 days, even for idle users.",
+      "evidence": { "label": "sourced", "sourceIds": ["p2"], "note": null }
+    },
+    {
+      "symptom": "Requests throttled during testing",
+      "cause": "Trial is capped at 1,000 requests per day per app (300 for org_write and ads_write).",
+      "fix": "Batch test calls, or upgrade to Standard.",
+      "evidence": { "label": "sourced", "sourceIds": ["p5"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "The developer guidelines prohibit using Pinterest Materials to train, fine-tune or improve AI/ML models unless Pinterest expressly permits it.",
+      "evidence": { "label": "sourced", "sourceIds": ["p6"], "note": null }
+    },
+    {
+      "text": "You may not store information obtained through the API (except campaign analytics). Call the API each time instead, which conflicts with agent memory and RAG-style caching.",
+      "evidence": { "label": "sourced", "sourceIds": ["p6"], "note": "The conflict with agent memory is our interpretation." }
+    },
+    {
+      "text": "Actions for end users (creating Pins, following, messaging, commenting) need their specific knowledge and consent, and features that trigger actions automatically without considering each one aren't allowed. That's a hard limit for autonomous agents.",
+      "evidence": { "label": "sourced", "sourceIds": ["p6"], "note": null }
+    },
+    {
+      "text": "Access tokens last 30 days, and continuous refresh tokens 60 days. Apps created on or after Sep 25, 2025 get continuous refresh automatically.",
+      "evidence": { "label": "sourced", "sourceIds": ["p2"], "note": null }
+    },
+    {
+      "text": "Standard limits are per minute, per user, per app (for example org_read 1,000/min, org_write 100/min, universal 100 req/s). Trial limits are per day.",
+      "evidence": { "label": "sourced", "sourceIds": ["p5"], "note": null }
+    },
+    {
+      "text": "Secret boards and Pins need separate *_read_secret / *_write_secret scopes.",
+      "evidence": { "label": "sourced", "sourceIds": ["p2"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "p1", "title": "Pinterest docs: Connect an app", "url": "https://developers.pinterest.com/docs/getting-started/connect-app/" },
+    { "id": "p2", "title": "Pinterest docs: Set up authentication and authorization", "url": "https://developers.pinterest.com/docs/getting-started/set-up-authentication-and-authorization/" },
+    { "id": "p3", "title": "Pinterest docs: Access tiers", "url": "https://developers.pinterest.com/docs/key-concepts/access-tiers/" },
+    { "id": "p4", "title": "Pinterest docs: Sandbox", "url": "https://developers.pinterest.com/docs/developer-tools/sandbox/" },
+    { "id": "p5", "title": "Pinterest docs: Rate limits", "url": "https://developers.pinterest.com/docs/reference/rate-limits/" },
+    { "id": "p6", "title": "Pinterest Developer Guidelines", "url": "https://policy.pinterest.com/developer-guidelines/" },
+    { "id": "p7", "title": "Pinterest OAuth token endpoint", "url": "https://api.pinterest.com/v5/oauth/token" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "POST https://api.pinterest.com/v5/oauth/token with no credentials: {\"code\":2,\"message\":\"Authentication failed.\"}",
+      "GET https://api.pinterest.com/v5/user_account without a token: code 2 'Authentication failed.'",
+      "GET https://www.pinterest.com/oauth/ and https://developers.pinterest.com/apps/: HTTP 200"
+    ],
+    "openQuestions": [
+      "How to obtain Pinterest's authorization for non-business user data (the changelog entry for PINNER_DATA_ACCESS_DENIED couldn't be loaded)",
+      "Typical Trial and Standard review durations (no SLA published)",
+      "Whether PKCE is supported or required",
+      "Whether Pinterest grants any exemption to the no-storage rule for agent memory or caching"
+    ]
+  }
+}

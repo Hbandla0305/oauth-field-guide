@@ -1,0 +1,557 @@
+{
+  "app": {
+    "name": "Amazon Selling Partner API",
+    "slug": "amazon-sp-api",
+    "website": "https://sellercentral.amazon.com",
+    "developerPortal": "https://solutionproviderportal.amazon.com",
+    "category": "E-commerce"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Website authorization workflow",
+      "url": "https://developer-docs.amazon/sp-api/docs/website-authorization-workflow"
+    },
+    {
+      "kind": "scopes",
+      "label": "Roles in the Selling Partner API",
+      "url": "https://developer-docs.amazon/sp-api/docs/roles-in-the-selling-partner-api"
+    },
+    {
+      "kind": "review",
+      "label": "Create a developer profile (review process)",
+      "url": "https://developer-docs.amazon/sp-api/docs/onboarding-step-3-create-a-developer-profile"
+    },
+    {
+      "kind": "review",
+      "label": "Application authorization limits",
+      "url": "https://developer-docs.amazon/sp-api/docs/application-authorization-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Solution Provider Portal",
+      "url": "https://solutionproviderportal.amazon.com"
+    },
+    {
+      "kind": "changelog",
+      "label": "May 2026 SP-API release notes",
+      "url": "https://developer-docs.amazon/sp-api/changelog/may-2026-sp-api-release"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "You can't create an app until Amazon reviews your developer profile (typically one to two weeks; longer, three-stage review for PII roles), and a public app stays capped at 25 seller authorizations until it's listed on the Selling Partner Appstore. Sellers must also reauthorize annually.",
+    "timeToDev": {
+      "range": "1–2 weeks",
+      "hours": {
+        "min": 168,
+        "max": 336
+      },
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": "Developer profile review 'typically takes one to two weeks'; only after approval can you register an app and self-authorize or use version=beta for draft testing."
+      }
+    },
+    "timeToProd": {
+      "range": "2–6 weeks",
+      "hours": {
+        "min": 336,
+        "max": 1008
+      },
+      "assumes": "A public seller app with non-PII roles (e.g. inventory, pricing, product listing) listed on the Appstore so any seller can connect; an unlisted app reaches up to 25 sellers right after profile approval, and PII roles add a multi-stage review.",
+      "waitingOn": "Developer profile review (1–2 weeks), then Selling Partner Appstore listing for unlimited seller authorizations.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s4",
+          "s1"
+        ],
+        "note": "Profile review time is sourced; Appstore listing review time isn't published, so the upper bound is our estimate."
+      }
+    },
+    "cost": "None currently. Amazon announced a $1,400/year developer fee plus GET-call usage fees for 2026, then postponed and reportedly cancelled them on May 12, 2026 (not confirmed on an Amazon page we could open)."
+  },
+  "prerequisites": [
+    {
+      "item": "A Solution Provider Portal account (or Seller Central professional account for private seller apps), registered by the primary account user",
+      "why": "Developer registration happens there and must be done by the primary account user; individual selling accounts aren't eligible for private seller apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Security control answers written by your security/technical team",
+      "why": "The profile application asks security control questions that must reflect how you implement the Acceptable Use Policy, Data Protection Policy and Solution Provider Portal Agreement; keep it under 500 words of original text.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A public website meeting Amazon's website guidelines",
+      "why": "Public developers and service providers must meet the website guidelines.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Registered HTTPS login and redirect URIs",
+      "why": "Amazon only sends authorization responses to registered redirect URIs, and the token exchange's redirect_uri must match.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "HTTPS is our assumption from Amazon's security policies; the page says registered URIs."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Non-restricted roles",
+      "examples": [
+        "Product Listing",
+        "Inventory and Order Tracking",
+        "Pricing",
+        "Selling Partner Insights",
+        "Amazon Fulfillment"
+      ],
+      "reviewRequired": true,
+      "time": "1–2 weeks",
+      "impact": "Granted via developer profile review. Covers most catalog, inventory, pricing and non-PII order data an agent needs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": "Role names are from Amazon's roles page; SP-API uses roles instead of OAuth scope strings."
+      }
+    },
+    {
+      "tier": "Restricted roles (PII)",
+      "examples": [
+        "Direct-to-Consumer Shipping (Restricted)",
+        "Tax Invoicing (Restricted)",
+        "Tax Remittance (Restricted)"
+      ],
+      "reviewRequired": true,
+      "time": "Several weeks (estimate)",
+      "impact": "Three-stage review: business review, security review, and a technical review meeting with an Amazon solution architect. Calls also need a Restricted Data Token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5",
+          "s6"
+        ],
+        "note": "Stages are sourced; Amazon gives no durations, so the time is our estimate."
+      }
+    },
+    {
+      "tier": "Unlisted public app (authorization cap)",
+      "examples": [
+        "any approved roles"
+      ],
+      "reviewRequired": false,
+      "time": "Immediately after profile approval",
+      "impact": "Up to 25 seller OAuth authorizations (vendors unlimited) plus 10 self-authorizations for testing.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Listed on Selling Partner Appstore",
+      "examples": [
+        "any approved roles"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks (estimate)",
+      "impact": "Removes the 25-seller cap: unlimited OAuth authorizations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": "Listing review time is not published."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a Solution Provider Portal account",
+      "owner": "human",
+      "detail": "Sign in as the primary account user and start developer registration.",
+      "url": "https://solutionproviderportal.amazon.com",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Choose roles",
+      "owner": "agent",
+      "detail": "Map the agent's operations to roles and avoid restricted PII roles unless essential, since they trigger a longer three-stage review.",
+      "url": "https://developer-docs.amazon/sp-api/docs/roles-in-the-selling-partner-api",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the developer profile and security answers",
+      "owner": "agent",
+      "detail": "Write an original use-case description under 500 words and draft security-control answers for your team to verify against the Data Protection Policy.",
+      "url": "https://developer-docs.amazon/sp-api/docs/registering-as-a-developer",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit the developer profile",
+      "owner": "human",
+      "detail": "Have the technical team confirm the security answers, then submit.",
+      "url": "https://solutionproviderportal.amazon.com",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Developer profile review",
+      "owner": "wait",
+      "detail": "Amazon reviews business requirements and security measures; PII roles add business, security and technical (solution architect) reviews.",
+      "url": null,
+      "duration": "1–2 weeks (longer for PII)",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Register the app",
+      "owner": "human",
+      "detail": "Create a public app with the approved roles, OAuth login URI and redirect URI; copy the LWA client ID and secret.",
+      "url": "https://solutionproviderportal.amazon.com",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement website authorization",
+      "owner": "agent",
+      "detail": "Send sellers to {Seller Central URL}/apps/authorize/consent?application_id=...&state=... (add version=beta for a draft app). Validate state on the redirect page (Referrer-Policy: no-referrer) and exchange spapi_oauth_code within 5 minutes at https://api.amazon.com/auth/o2/token.",
+      "url": "https://developer-docs.amazon/sp-api/docs/website-authorization-workflow",
+      "duration": "3–6 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test with your own seller account",
+      "owner": "human",
+      "detail": "Authorize the draft app with version=beta using one of your 10 self-authorizations.",
+      "url": "https://sellercentral.amazon.com",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Onboard up to 25 sellers unlisted",
+      "owner": "human",
+      "detail": "Publish the app unlisted and onboard early sellers within the 25-authorization cap.",
+      "url": null,
+      "duration": "Same day",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "List on the Selling Partner Appstore",
+      "owner": "human",
+      "detail": "Submit an Appstore listing to remove the authorization cap.",
+      "url": "https://solutionproviderportal.amazon.com",
+      "duration": "1–4 weeks (estimate)",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": "Listing duration isn't published."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Map operations to the minimum SP-API roles",
+    "Draft the developer profile and security answers",
+    "Implement the consent URL, state check and LWA token exchange",
+    "Build Restricted Data Token handling if PII is needed",
+    "Track token age and prompt annual reauthorization"
+  ],
+  "humanMustDo": [
+    "Register as the primary account user",
+    "Have the security team verify control answers",
+    "Attend the solution architect meeting for PII roles",
+    "Self-authorize test accounts in Seller Central"
+  ],
+  "blockers": [
+    {
+      "symptom": "Can't create an app in the portal",
+      "cause": "Developer profile hasn't been approved yet.",
+      "fix": "Wait for the 1–2 week review, or fix the stated denial reason and resubmit.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "26th seller can't authorize your app",
+      "cause": "Unlisted public seller apps are capped at 25 OAuth authorizations.",
+      "fix": "List the app on the Selling Partner Appstore.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Consent screen authorizes the published version, not your new draft",
+      "cause": "version=beta was omitted from the consent URL.",
+      "fix": "Add version=beta when testing a Draft app.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_grant on token exchange",
+      "cause": "spapi_oauth_code expired (5 minutes), redirect_uri mismatch, or the full flow exceeded 10 minutes.",
+      "fix": "Exchange the code immediately with the registered redirect_uri; restart the flow from your site if needed.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Order buyer/shipping fields missing or 403 on PII operations",
+      "cause": "No restricted role, or the call wasn't made with a Restricted Data Token.",
+      "fix": "Get the restricted role approved, add it to the app, re-authorize sellers, and use an RDT.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Calls start failing a year after a seller connected",
+      "cause": "Reauthorization is required annually.",
+      "fix": "Track authorization age and prompt sellers to reauthorize before it lapses.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "LWA access tokens typically last 1 hour (expires_in 3600); refresh tokens are long-lived but sellers must reauthorize annually.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Adding a new role after launch requires relisting and getting new authorizations from each seller to mint a new refresh token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Private apps are self-authorized only and capped at 10 self-authorizations — fine for your own seller account, not for customers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Amazon's 2026 fee plan ($1,400/year plus $0.40 per 1,000 GET calls over quota) was postponed in March 2026 and reportedly cancelled 'at this time' on May 12, 2026.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Reported by Nova Analytics, a vendor; Amazon's announcement page returned 404 to us."
+      }
+    },
+    {
+      "text": "SP-API docs moved from developer-docs.amazon.com to developer-docs.amazon (301 redirect).",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed on 2026-10-20."
+      }
+    },
+    {
+      "text": "Some operations are grantless and don't need seller authorization; vendor apps authorize a group of vendor codes at once.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "SP-API: Register as a Developer",
+      "url": "https://developer-docs.amazon/sp-api/docs/registering-as-a-developer"
+    },
+    {
+      "id": "s2",
+      "title": "SP-API: Website Authorization Workflow",
+      "url": "https://developer-docs.amazon/sp-api/docs/website-authorization-workflow"
+    },
+    {
+      "id": "s3",
+      "title": "SP-API Onboarding Step 3: Create a Developer Profile",
+      "url": "https://developer-docs.amazon/sp-api/docs/onboarding-step-3-create-a-developer-profile"
+    },
+    {
+      "id": "s4",
+      "title": "SP-API: Application Authorization Limits",
+      "url": "https://developer-docs.amazon/sp-api/docs/application-authorization-limits"
+    },
+    {
+      "id": "s5",
+      "title": "SP-API: Roles in the Selling Partner API",
+      "url": "https://developer-docs.amazon/sp-api/docs/roles-in-the-selling-partner-api"
+    },
+    {
+      "id": "s6",
+      "title": "SP-API: Authorizing Selling Partner API Applications",
+      "url": "https://developer-docs.amazon/sp-api/docs/authorizing-selling-partner-api-applications"
+    },
+    {
+      "id": "s7",
+      "title": "Nova Analytics: Amazon cancels SP-API fees (May 2026)",
+      "url": "https://novadata.io/resources/news/amazon-cancels-sp-api-fees-may-2026"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://developer-docs.amazon.com/sp-api/docs/* returned 301 to https://developer-docs.amazon/sp-api/docs/*",
+      "https://sellercentral.amazon.com/apps/authorize/consent returned 302 to Seller Central sign-in",
+      "https://solutionproviderportal.amazon.com returned 302 to sign-in (not followed)",
+      "https://developer.amazonservices.com/spp-announcement (fee announcement) returned 404"
+    ],
+    "openQuestions": [
+      "Typical Selling Partner Appstore listing review time",
+      "Duration of the three-stage restricted-role review",
+      "Whether Amazon has officially confirmed the May 2026 fee cancellation on its own site",
+      "Refresh token expiry, if any, beyond the annual reauthorization requirement"
+    ]
+  }
+}

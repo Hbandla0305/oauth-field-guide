@@ -1,0 +1,531 @@
+{
+  "app": {
+    "name": "Strava",
+    "slug": "strava",
+    "website": "https://www.strava.com",
+    "developerPortal": "https://developers.strava.com",
+    "category": "Fitness"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authentication guide",
+      "url": "https://developers.strava.com/docs/authentication/"
+    },
+    {
+      "kind": "review",
+      "label": "API Policy (2026)",
+      "url": "https://www.strava.com/legal/api_policy"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits and athlete capacity",
+      "url": "https://developers.strava.com/docs/rate-limits/"
+    },
+    {
+      "kind": "console",
+      "label": "My API Application settings",
+      "url": "https://www.strava.com/settings/api"
+    },
+    {
+      "kind": "review",
+      "label": "Getting started (Developer Program)",
+      "url": "https://developers.strava.com/docs/getting-started/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "Strava's API Policy effective June 1, 2026 bans using Strava data 'in connection with the development, training, evaluation, or operation of any AI Application', explicitly including ingestion into a context window, RAG and grounding, so a third-party AI agent can't legitimately read Strava data via OAuth; Strava points users to its own Strava MCP instead. For non-AI apps, setup is self-serve but needs a Strava subscription, starts at 1 athlete (10 after a self-serve upgrade), and needs a discretionary Developer Program review with no SLA beyond that.",
+    "timeToDev": {
+      "range": "15–30 min",
+      "hours": {
+        "min": 0.25,
+        "max": 0.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "Create the app at strava.com/settings/api (needs a Strava subscription), set the callback domain to localhost, and authorize your own account. Single Player Mode only lets you access your own data."
+      }
+    },
+    "timeToProd": {
+      "range": "Prohibited for AI agents",
+      "hours": {
+        "min": 336,
+        "max": 2160
+      },
+      "assumes": "An AI agent reading users' activities, which the 2026 API Policy prohibits; the hours shown are our estimate for a non-AI app going through Developer Program review to exceed 10 athletes.",
+      "waitingOn": "For AI use: nothing will unlock it under current terms. For non-AI apps: Developer Program admission, which Strava says is discretionary with 'no fixed review-time service-level agreement'.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "The AI prohibition and lack of SLA are sourced; the non-AI timing is our estimate."
+      }
+    },
+    "cost": "A Strava subscription is required to create an app; Standard Tier apps may also require the developer or specified end users to keep an active subscription."
+  },
+  "prerequisites": [
+    {
+      "item": "A Strava account with an active subscription",
+      "why": "Strava says 'A Strava subscription is a prerequisite for creating an app', and Standard Tier apps are subject to subscription requirements.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A use case that doesn't involve any AI Application",
+      "why": "Section 5.3 of the API Policy prohibits training, grounding, embeddings, RAG and ingestion into a context window or working memory with Strava data.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Compliance with brand guidelines and a 'Connect with Strava' button",
+      "why": "Developer Program submissions need screenshots of every place Strava data appears and of the connect button.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A callback domain for your redirect URIs",
+      "why": "redirect_uri must be within the registered callback domain; localhost and 127.0.0.1 are allowed.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Single Player / Standard (up to 10 athletes)",
+      "examples": [
+        "read",
+        "activity:read",
+        "profile:read_all"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "New apps start at athlete capacity 1 (your own data); a self-serve upgrade in API settings raises it to 10 with 200 read / 400 overall requests per 15 min.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Private data and writes",
+      "examples": [
+        "activity:read_all",
+        "read_all",
+        "activity:write",
+        "profile:write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (10 athletes)",
+      "impact": "Same capacity limits. activity:read_all adds Only You activities and privacy zone data; scopes don't change the review path, the athlete count does.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s3"
+        ],
+        "note": "'Scopes don't change the review path' is our reading."
+      }
+    },
+    {
+      "tier": "Developer Program (11–9,999 athletes)",
+      "examples": [
+        "activity:read",
+        "activity:read_all"
+      ],
+      "reviewRequired": true,
+      "time": "No SLA",
+      "impact": "Needs a Developer Program form submission; Strava only considers apps approaching their limits and approval isn't guaranteed. Not available for AI use.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Extended Access Tier (10,000+ users)",
+      "examples": [
+        "activity:read_all"
+      ],
+      "reviewRequired": true,
+      "time": "Case by case",
+      "impact": "Admitted case by case and generally not subject to subscription requirements.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Check the use case against the API Policy",
+      "owner": "agent",
+      "detail": "Read Section 5.3 (no AI Applications, including context-window ingestion), 5.4 (no analytics or combining with other data), 5.5 (no persistent indexes or vector stores) and 6.2 (7-day cache). If your product is an AI agent, stop here.",
+      "url": "https://www.strava.com/legal/api_policy",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Get a Strava subscription",
+      "owner": "human",
+      "detail": "Sign up at strava.com and subscribe; a subscription is required to create an app.",
+      "url": "https://www.strava.com/register",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the API application",
+      "owner": "human",
+      "detail": "Go to My API Application, enter name, website and Authorization Callback Domain (localhost while building), and copy the client ID and secret.",
+      "url": "https://www.strava.com/settings/api",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "strava.com/settings/api returned 301 to /login on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Implement the OAuth flow",
+      "owner": "agent",
+      "detail": "Redirect to https://www.strava.com/oauth/authorize (or /oauth/mobile/authorize) with comma-separated scopes; exchange and refresh at https://www.strava.com/oauth/token; always store the newest refresh token.",
+      "url": "https://developers.strava.com/docs/authentication/",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Use webhooks instead of polling",
+      "owner": "agent",
+      "detail": "Subscribe to webhook events and throttle backfills using rate-limit response headers; Strava says apps under 100 users hitting limits usually poll inefficiently.",
+      "url": "https://developers.strava.com/docs/rate-limits/",
+      "duration": "Half a day",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Upgrade to 10 athletes",
+      "owner": "human",
+      "detail": "From the API Settings dashboard, upgrade access: capacity 1 to 10, read limit 200/15 min and 2,000/day, overall 400/15 min and 4,000/day.",
+      "url": "https://www.strava.com/settings/api",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement deletion and revocation",
+      "owner": "agent",
+      "detail": "Delete user data on request or disconnect (with written confirmation), expire caches after 7 days, and use POST /oauth/revoke (the legacy /oauth/deauthorize goes away on June 1, 2027).",
+      "url": "https://developers.strava.com/docs/authentication/",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Prepare Developer Program screenshots",
+      "owner": "human",
+      "detail": "Capture every screen showing Strava data and the 'Connect with Strava' button, following brand guidelines.",
+      "url": "https://developers.strava.com/docs/rate-limits/",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit the Developer Program form",
+      "owner": "human",
+      "detail": "Submit once you're near 10 connected athletes.",
+      "url": "https://share.hsforms.com/1VXSwPUYqSH6IxK0y51FjHwcnkd8",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for Strava's decision",
+      "owner": "wait",
+      "detail": "Admission is discretionary with no fixed review-time SLA; you hear back only if admitted or if Strava needs more information.",
+      "url": null,
+      "duration": "No SLA",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Review the use case against API Policy sections 5.3–5.5 and 6.2",
+    "Implement OAuth with refresh token rotation and /oauth/revoke",
+    "Build webhook ingestion and header-based throttling",
+    "Implement 7-day cache expiry and user data deletion",
+    "Draft brand-compliant connect UI copy"
+  ],
+  "humanMustDo": [
+    "Buy and keep a Strava subscription",
+    "Create the app at strava.com/settings/api",
+    "Click the self-serve upgrade to 10 athletes",
+    "Capture screenshots and submit the Developer Program form",
+    "Get legal sign-off that the product isn't an 'AI Application' under Strava's definition"
+  ],
+  "blockers": [
+    {
+      "symptom": "Your product is an AI agent or LLM app that would read users' activities",
+      "cause": "API Policy 5.3 prohibits using Strava data with any AI Application, including ingestion into a context window or working memory, grounding and RAG.",
+      "fix": "No OAuth fix; Strava directs subscribers to its own Strava MCP for personal AI use, which isn't authorized for commercial or third-party access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "A second athlete can't authorize your app",
+      "cause": "New apps start in Single Player Mode with athlete capacity 1.",
+      "fix": "Use the self-serve upgrade to 10; beyond that, submit for Developer Program review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 after a backfill or polling loop",
+      "cause": "Default limits: 200 overall / 100 read requests per 15 min and 2,000 / 1,000 per day, per application.",
+      "fix": "Use webhooks, throttle on rate-limit headers, and upgrade to the 10-athlete limits.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Token call returns {\"message\":\"Bad Request\",\"errors\":[{\"resource\":\"Application\",\"field\":\"client_id\",\"code\":\"invalid\"}]}",
+      "cause": "Missing or wrong client_id in the token request.",
+      "fix": "Send client_id, client_secret, code and grant_type to /oauth/token.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "POST https://www.strava.com/oauth/token with only grant_type returned this 400 body on 2026-10-20."
+      }
+    },
+    {
+      "symptom": "Refresh fails with an old refresh token",
+      "cause": "When a new refresh token is issued, the old one is invalidated immediately.",
+      "fix": "Persist the newest refresh token from every token response.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Can't create an app in API settings",
+      "cause": "A Strava subscription is a prerequisite for creating an app.",
+      "fix": "Subscribe, then retry.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The exact UI message isn't documented."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 6 hours; refreshing with more than an hour left returns the same token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Strava data from a user may be shown only to that user, never to other users, even if it's public on Strava.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Cached Strava data may be kept for at most 7 days, and storage in vector stores, embedding stores or search indexes is prohibited.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "You may not charge end users for access to Strava API functionality or resell access, and you may not combine Strava data with other customer data for analytics.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The API Agreement says API access is currently free but Strava may introduce pricing, including differentiated pricing for business users.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Strava may restrict or remove endpoints and keeps an allowlist for apps allowed to keep using deprecated ones.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Strava API Policy (effective June 1, 2026)",
+      "url": "https://www.strava.com/legal/api_policy"
+    },
+    {
+      "id": "s2",
+      "title": "Strava developers: Getting started",
+      "url": "https://developers.strava.com/docs/getting-started/"
+    },
+    {
+      "id": "s3",
+      "title": "Strava developers: Rate limits",
+      "url": "https://developers.strava.com/docs/rate-limits/"
+    },
+    {
+      "id": "s4",
+      "title": "Strava API Agreement (effective June 1, 2026)",
+      "url": "https://www.strava.com/legal/api"
+    },
+    {
+      "id": "s5",
+      "title": "Strava developers: Authentication",
+      "url": "https://developers.strava.com/docs/authentication/"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://www.strava.com/oauth/authorize?client_id=1...: 401",
+      "POST https://www.strava.com/oauth/token with only grant_type: 400 {\"message\":\"Bad Request\",\"errors\":[{\"resource\":\"Application\",\"field\":\"client_id\",\"code\":\"invalid\"}]}",
+      "GET https://www.strava.com/settings/api: 301 to /login",
+      "GET https://www.strava.com/.well-known/openid-configuration: 404 (no OIDC discovery)"
+    ],
+    "openQuestions": [
+      "Whether any partner exception to the AI Application ban exists (e.g. via Strava's 'key partner platforms' for MCP)",
+      "Which subscription requirements apply to end users of Standard Tier apps",
+      "Typical Developer Program review times and approval rates",
+      "Whether existing apps were grandfathered from the subscription requirement"
+    ]
+  }
+}

@@ -1,0 +1,538 @@
+{
+  "app": {
+    "name": "Wix",
+    "slug": "wix",
+    "website": "https://www.wix.com",
+    "developerPortal": "https://manage.wix.com/account/custom-apps",
+    "category": "Website builder"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authenticate using OAuth",
+      "url": "https://dev.wix.com/docs/build-apps/develop-your-app/auth/authenticate-using-oauth"
+    },
+    {
+      "kind": "scopes",
+      "label": "About permissions",
+      "url": "https://dev.wix.com/docs/build-apps/develop-your-app/auth/permissions/about-permissions"
+    },
+    {
+      "kind": "review",
+      "label": "About app distribution and review",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/about-app-distribution"
+    },
+    {
+      "kind": "review",
+      "label": "App Market guidelines",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/app-market-guidelines"
+    },
+    {
+      "kind": "console",
+      "label": "Custom Apps (app dashboard)",
+      "url": "https://manage.wix.com/account/custom-apps"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Wix apps are self-serve: configure permissions in the app dashboard, release a version, and share an install link, with no review for unlisted apps. App Market listing is reviewed by an automated AI check that Wix says typically returns results within minutes. The model differs from classic user OAuth: a site owner installs your app on one site, and your backend mints 4-hour tokens with client_credentials plus that site's instanceId, so the agent acts per site, not per user.",
+    "timeToDev": {
+      "range": "30–60 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3",
+          "s5"
+        ],
+        "note": "Create an app, pick permissions, install it on your own site, capture instanceId from the App Instance Installed webhook or the install redirect, then call POST /oauth2/token."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
+      "assumes": "An unlisted app distributed with a share install link or the external install flow that reads site data (stores, CRM, bookings); App Market listing goes through an automated review that usually adds minutes, plus fix-and-resubmit loops.",
+      "waitingOn": "Nothing — no review for unlisted apps. Automated AI review only if you list on the App Market.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": "Wix says unlisted apps skip review, and App Market AI review results are typically available within minutes. Wix may audit apps retroactively."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Wix account with access to the app dashboard (Custom Apps)",
+      "why": "Apps, permissions, the OAuth app ID and secret, and install links are all managed there.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A released app version",
+      "why": "You have to release a version before you can distribute an app or create an install link.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An HTTPS backend that stores instanceId per site",
+      "why": "Tokens are minted with app ID, app secret and instanceId. The external-install callback has to use HTTPS, and App Market apps have to be served over HTTPS.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Privacy policy, Terms of Use and a demo account (App Market only)",
+      "why": "The guidelines ask for a privacy policy and Terms of Use, and an active demo account with login details for review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read site/business data",
+      "examples": [
+        "Read Stores - all read permissions",
+        "Read Orders",
+        "Read Contacts",
+        "Read Bookings"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Permissions are chosen in the app dashboard and granted by the site owner at install. Each API reference lists which permission scopes it accepts. Exact labels vary by API.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "The example labels are illustrative. Wix permission names are shown in the dashboard and API reference, which we didn't enumerate."
+      }
+    },
+    {
+      "tier": "Manage (write) permissions",
+      "examples": [
+        "Manage Stores - All Permissions",
+        "Manage Products",
+        "Manage Orders"
+      ],
+      "reviewRequired": false,
+      "time": "Same day (unlisted)",
+      "impact": "Lets an agent change products, orders or content. For App Market listing, request only what's needed and don't stack redundant scopes, for example Manage Products alongside Manage Stores - All Permissions.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "User-scoped (dashboard pages only)",
+      "examples": [
+        "App permissions ∩ Wix user role permissions"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Tokens on behalf of a Wix user carry the intersection of app and user permissions, and only work from dashboard page extensions, not an external agent backend.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create an app in the Wix app dashboard",
+      "owner": "human",
+      "detail": "Sign in and create a new self-managed app from Custom Apps. Copy the App ID and App secret from the OAuth page.",
+      "url": "https://manage.wix.com/account/custom-apps",
+      "duration": "10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "manage.wix.com/account/custom-apps redirected to the Wix sign-in page on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Choose least-privilege permissions",
+      "owner": "agent",
+      "detail": "Map each API the agent calls to its permission scopes (listed per endpoint in the REST/SDK reference) and pick the smallest set with no redundant scopes.",
+      "url": "https://dev.wix.com/docs/build-apps/develop-your-app/auth/permissions/about-permissions",
+      "duration": "20 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Configure permissions and webhooks in the dashboard",
+      "owner": "human",
+      "detail": "Add the permissions and subscribe to the App Instance Installed webhook (and any data webhooks). Subscribing can auto-add required permissions.",
+      "url": "https://manage.wix.com/account/custom-apps",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement token minting and instanceId storage",
+      "owner": "agent",
+      "detail": "On install, verify signedInstance (or the webhook) and store instanceId. Mint tokens with POST https://www.wixapis.com/oauth2/token {grant_type: client_credentials, client_id, client_secret, instance_id}, cache them for under 4 hours, and send them in the Authorization header. Or use @wix/sdk AppStrategy.",
+      "url": "https://dev.wix.com/docs/build-apps/develop-your-app/auth/authenticate-using-oauth",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Release a version",
+      "owner": "human",
+      "detail": "Release a major version of the app in the dashboard. Distribution and install links need one.",
+      "url": "https://manage.wix.com/account/custom-apps",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Install on a test site and verify API calls",
+      "owner": "human",
+      "detail": "Install the app on a site you manage (direct install or install link), grant permissions, and confirm your backend receives instanceId and can call APIs.",
+      "url": "https://manage.wix.com/account/custom-apps",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the external install flow for your agent product",
+      "owner": "agent",
+      "detail": "Build https://www.wix.com/app-installer?appId=...&shareUrlId=...&postInstallationUrl=<encoded HTTPS callback> with custom state, and handle the redirect (appId, tenantId, instanceId, signedInstance).",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/install-your-app/about-the-external-install-flow",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Share the install link (unlisted go-live)",
+      "owner": "human",
+      "detail": "From Distribute App, choose Share Install Link and put it, or the external install URL, in your product. Any Wix site owner can install it. No review.",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/install-your-app/share-an-app-install-link",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Optional: prepare and submit an App Market listing",
+      "owner": "agent",
+      "detail": "Draft the listing, privacy policy and terms. Prepare a demo account and review notes. Check against the guidelines (Wix Billing for any charges, 400ms startup, no off-platform purchase links, no user-of-user data harvesting).",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/app-market-guidelines",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Optional: automated AI review",
+      "owner": "wait",
+      "detail": "Submit and publish. The automated review returns pass or blockers, typically within minutes. Fix the blockers and resubmit, or appeal through support.",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/about-app-distribution",
+      "duration": "Minutes per round",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Map APIs to minimal Wix permission scopes",
+    "Implement instanceId capture, signedInstance verification and token minting",
+    "Build the external install URL and callback handler",
+    "Draft App Market listing, privacy policy and review notes",
+    "Mint tokens and call Wix APIs once credentials are configured"
+  ],
+  "humanMustDo": [
+    "Create the app and copy the App ID/secret",
+    "Configure permissions and webhooks in the dashboard",
+    "Release a version and create the share install link",
+    "Install on a test site and grant permissions"
+  ],
+  "blockers": [
+    {
+      "symptom": "POST /oauth2/token returns {\"error\":\"invalid_request\"}",
+      "cause": "Missing or wrong client_id, client_secret or instance_id. The app may not be installed on that site.",
+      "fix": "Send all four fields as JSON and use an instanceId captured from a verified install for this app.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Seen with dummy credentials on 2026-10-20. Wix may return more specific errors for real but mismatched credentials."
+      }
+    },
+    {
+      "symptom": "Can't find a refresh-token endpoint, or legacy code calling 'Refresh an Access Token' fails for a new app",
+      "cause": "Custom authentication (code + refresh token) is deprecated for new apps. New apps mint tokens with client_credentials and instanceId.",
+      "fix": "Replace refresh calls with Create Access Token and keep instanceId as the long-lived credential.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "No install link option, or prompted to release a version",
+      "cause": "The app has no released major version yet.",
+      "fix": "Release a version, then create the share install link.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "External install from your site doesn't redirect back for an unlisted app",
+      "cause": "Unlisted apps need shareUrlId in the installer URL, and postInstallationUrl has to be URI-encoded and HTTPS.",
+      "fix": "Add shareUrlId from your share link and encode the callback URL.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "API call denied despite a valid token",
+      "cause": "The app lacks one of the permission scopes listed for that endpoint, or, for user-delegated tokens, the Wix user's role lacks it.",
+      "fix": "Add the scope in the dashboard (existing sites may need to approve the change) or use an app-instance token.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": "How existing installs re-consent to added permissions wasn't confirmed."
+      }
+    },
+    {
+      "symptom": "App Market submission returns blockers",
+      "cause": "The automated AI review found guideline violations (permissions, billing, performance, content).",
+      "fix": "Resolve each blocker in the dashboard and resubmit, or appeal through Wix support.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s7"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens from POST /oauth2/token are valid for 4 hours, with no refresh token. Mint a new one with client_credentials and instanceId, which acts as the permanent per-site credential.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Verify signedInstance before trusting or storing an instanceId from a redirect, because query parameters can be forged.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Installs are per site, not per user. A customer with several Wix sites installs your app on each one, and each gets its own instanceId.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Wix API keys exist but can't be used by third-party Wix apps, so OAuth via app install is the only third-party path.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The App Market guidelines forbid using CRM, Orders or other user-of-user data to build your own contact database or to sell or share with third parties. Keep agent memory scoped to serving that site.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Any app that collects money has to use the Wix Billing System unless Wix grants an exception, and only the initial listing (or a resubmission after a decline) needs review. Later versions are released without approval but may be audited retroactively.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7",
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Wix Developers: Authenticate using OAuth",
+      "url": "https://dev.wix.com/docs/build-apps/develop-your-app/auth/authenticate-using-oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Wix Developers: About permissions for Wix apps",
+      "url": "https://dev.wix.com/docs/build-apps/develop-your-app/auth/permissions/about-permissions"
+    },
+    {
+      "id": "s3",
+      "title": "Wix Developers: About app distribution",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/about-app-distribution"
+    },
+    {
+      "id": "s4",
+      "title": "Wix Developers: About authentication for Wix apps",
+      "url": "https://dev.wix.com/docs/build-apps/develop-your-app/auth/about-authentication"
+    },
+    {
+      "id": "s5",
+      "title": "Wix Developers: About the external install flow",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/install-your-app/about-the-external-install-flow"
+    },
+    {
+      "id": "s6",
+      "title": "Wix Developers: Share an app install link",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/install-your-app/share-an-app-install-link"
+    },
+    {
+      "id": "s7",
+      "title": "Wix Developers: App Market guidelines",
+      "url": "https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/app-market-guidelines"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "POST https://www.wixapis.com/oauth2/token with dummy client_credentials: {\"error\":\"invalid_request\"}",
+      "GET https://manage.wix.com/account/custom-apps: 302 to users.wix.com/signin (needs login)",
+      "GET https://www.wix.com/app-installer: HTTP 200",
+      "Read Wix docs as markdown by appending .md to dev.wix.com/docs URLs"
+    ],
+    "openQuestions": [
+      "Wix API rate limits for app-instance tokens (not checked)",
+      "Whether unlisted apps have any install cap or are restricted for commercial distribution",
+      "How existing installs approve newly added permissions",
+      "Whether the automated App Market review escalates to human review for sensitive permissions"
+    ]
+  }
+}

@@ -1,0 +1,554 @@
+{
+  "app": {
+    "name": "Webflow",
+    "slug": "webflow",
+    "website": "https://webflow.com",
+    "developerPortal": "https://developers.webflow.com",
+    "category": "Website builder"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth app guide",
+      "url": "https://developers.webflow.com/data/reference/oauth-app"
+    },
+    {
+      "kind": "console",
+      "label": "Register an app (Workspace > App Development)",
+      "url": "https://developers.webflow.com/data/docs/register-an-app"
+    },
+    {
+      "kind": "review",
+      "label": "Submitting your app to the Marketplace",
+      "url": "https://developers.webflow.com/data/docs/submitting-your-app"
+    },
+    {
+      "kind": "review",
+      "label": "Marketplace guidelines",
+      "url": "https://developers.webflow.com/data/docs/marketplace-guidelines"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits",
+      "url": "https://developers.webflow.com/data/reference/rate-limits"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "A Data Client app works in your own workspace within an hour, but 'external users can't install your app until it's approved and published in the Webflow Marketplace', so every customer-facing agent has to pass Marketplace review (Webflow aims for a decision within 10 business days). Before review you can only add up to 5 external test users, and you need a Team or Enterprise workspace plan, 2FA and admin rights just to see App Development.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Assumes a Team or Enterprise workspace already exists. Create the app, pick the Data Client block and scopes, add an HTTPS redirect URI, and run the code flow against a site in your own workspace."
+      }
+    },
+    "timeToProd": {
+      "range": "2–5 weeks",
+      "hours": {
+        "min": 336,
+        "max": 840
+      },
+      "assumes": "A Data Client app that reads or writes customers' sites, CMS or forms. That needs a published Marketplace listing, because there's no unlisted public distribution.",
+      "waitingOn": "Marketplace review (aim: decision within 10 business days), plus time to build the demo video, test site and Preflight receipt, and any resubmission",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": "The 10-business-day figure is Webflow's stated aim. The range adds prep and one possible resubmission and is our estimate."
+      }
+    },
+    "cost": "App development needs a Webflow workspace on a Team or Enterprise plan. No Marketplace submission fee is mentioned."
+  },
+  "prerequisites": [
+    {
+      "item": "A Webflow workspace on a Team or Enterprise plan, where you're an Admin",
+      "why": "App Development only appears for plans that support app development. Only workspace admins can create apps, view client secrets and change settings.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A verified email and 2FA on the developer account (2FA also for a workspace admin at submission)",
+      "why": "Both are listed as requirements for the App Development section, and 2FA is on the submission checklist.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A production HTTPS redirect URI and an always-up backend",
+      "why": "Marketplace Data Clients need 'a single, fully-qualified HTTPS URL on a production domain', and reviewers probe your live endpoints.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Server-side, encrypted token storage with deletion on uninstall/revocation",
+      "why": "Data Client apps submit three written attestations covering these points instead of a code audit.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read-only site data",
+      "examples": [
+        "sites:read",
+        "pages:read",
+        "cms:read",
+        "forms:read",
+        "assets:read",
+        "authorized_user:read"
+      ],
+      "reviewRequired": true,
+      "time": "2–5 weeks",
+      "impact": "Enough for an agent that audits sites, summarizes CMS content or reads form submissions. Works in your own workspace right away, but external users need a published app regardless of scope.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Review applies per app, not per scope. Any external install needs Marketplace approval."
+      }
+    },
+    {
+      "tier": "Write / publish",
+      "examples": [
+        "cms:write",
+        "pages:write",
+        "sites:write",
+        "assets:write",
+        "forms:write"
+      ],
+      "reviewRequired": true,
+      "time": "2–5 weeks",
+      "impact": "Lets an agent edit CMS items and publish. The guidelines say derived data (such as AI suggestions) must stay visually distinct and never silently overwrite Webflow data. Don't request :read and :write together unless both are used.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Custom code on published sites",
+      "examples": [
+        "custom_code:read",
+        "custom_code:write"
+      ],
+      "reviewRequired": true,
+      "time": "2–5 weeks",
+      "impact": "Code delivered to customer sites has to go through the Custom Code API, be disclosed in the listing, and be removed on uninstall.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Get a Team/Enterprise workspace with 2FA",
+      "owner": "human",
+      "detail": "Use (ideally) a dedicated development workspace on a plan that supports app development. Verify your email and turn on 2FA.",
+      "url": "https://webflow.com/dashboard",
+      "duration": "10–30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the app with the Data Client building block",
+      "owner": "human",
+      "detail": "Go to Workspace Settings > Apps & Integrations > App Development > Create an App. Enter name, description (140 chars), icon and HTTPS homepage. Optionally restrict installs to one site. Choose Data Client (or Hybrid), add an HTTPS redirect URI, and tick scopes.",
+      "url": "https://developers.webflow.com/data/docs/register-an-app",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Choose least-privilege scopes",
+      "owner": "agent",
+      "detail": "Map features to scope:action strings. Every scope has to be justified by the app's declared functionality, and scopes are locked after publication (adding one needs re-approval).",
+      "url": "https://developers.webflow.com/data/docs/marketplace-guidelines",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the OAuth code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://webflow.com/oauth/authorize?response_type=code&client_id=...&scope=<url-encoded, space-separated>&redirect_uri=...&state=.... Exchange the code (single-use, 15 minutes) at POST https://api.webflow.com/oauth/access_token with client_id, client_secret, code, grant_type=authorization_code and the same redirect_uri. Users pick specific sites or a whole workspace on the consent screen.",
+      "url": "https://developers.webflow.com/data/reference/oauth-app",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s8"
+        ],
+        "note": "grant_type is inferred from our live probe returning unsupported_grant_type without it."
+      }
+    },
+    {
+      "title": "Store tokens server-side and handle revocation",
+      "owner": "agent",
+      "detail": "Encrypt tokens at rest in a database or secrets manager (never browser storage). Stop using and delete a token on uninstall or revocation, and implement POST https://webflow.com/oauth/revoke_authorization for disconnects.",
+      "url": "https://developers.webflow.com/data/docs/marketplace-guidelines",
+      "duration": "1–2 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Add backoff for per-plan rate limits",
+      "owner": "agent",
+      "detail": "Limits are 60 req/min (Starter/Basic sites) or 120 req/min (CMS/eCommerce/Business), with custom limits for Enterprise. Site publish is limited to once per minute. Use exponential backoff with a retry cap.",
+      "url": "https://developers.webflow.com/data/reference/rate-limits",
+      "duration": "1 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Invite up to 5 external test users",
+      "owner": "human",
+      "detail": "Request testing access for up to 5 users at support.webflow.com with their Webflow emails, then share the install URL with them.",
+      "url": "https://developers.webflow.com/apps/docs/marketplace/overview",
+      "duration": "days (request handling)",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Some older doc versions say to email developers@webflow.com instead."
+      }
+    },
+    {
+      "title": "Prepare submission materials",
+      "owner": "agent",
+      "detail": "Draft the listing, scope justifications, data-use disclosure, support docs, the three token attestations, and the demo-video script. The 2–5 minute English video has to show install-to-use and both approving and denying OAuth.",
+      "url": "https://developers.webflow.com/data/docs/submitting-your-app",
+      "duration": "1–2 days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Record the demo, set up the test site, run Preflight",
+      "owner": "human",
+      "detail": "Record the video (Loom/YouTube unlisted/Drive). Publish a .webflow.io test site with the app installed, give reviewers full credentials, and attach a Preflight receipt.",
+      "url": "https://developers.webflow.com/data/docs/submitting-your-app",
+      "duration": "3–6 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit for Marketplace review",
+      "owner": "human",
+      "detail": "Submit from the app's settings. Webflow emails a receipt to the account address.",
+      "url": "https://developers.webflow.com/data/docs/submitting-your-app",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Marketplace review",
+      "owner": "wait",
+      "detail": "Webflow aims to send a decision within 10 business days. Reviewers probe your live backend, so keep it up.",
+      "url": null,
+      "duration": "~10 business days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Pick scopes and write per-scope justifications",
+    "Implement the code flow, token storage and revoke",
+    "Add rate-limit backoff",
+    "Draft listing copy, attestations and video script"
+  ],
+  "humanMustDo": [
+    "Get a Team/Enterprise workspace with admin and 2FA",
+    "Create the app and copy the client secret",
+    "Invite test users and record the demo video",
+    "Submit to the Marketplace"
+  ],
+  "blockers": [
+    {
+      "symptom": "No 'App Development' section in Workspace settings",
+      "cause": "The plan doesn't support app development, the email isn't verified, 2FA is off, you aren't an Admin, or you're in Site settings.",
+      "fix": "Use a Team/Enterprise workspace where you're Admin, verify email and enable 2FA, and open Workspace Settings > Apps & Integrations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "External users can't install the app",
+      "cause": "New apps are only available to users in the app's workspace until Marketplace approval.",
+      "fix": "Add up to 5 test users for pre-review testing, then publish via Marketplace review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Authorization fails right after redirect",
+      "cause": "The install URL requests scopes beyond those configured in app settings.",
+      "fix": "Make the install URL's scopes a subset of the configured scopes, and request every scope the app uses.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Redirect mismatch errors (for example, a trailing slash or a changed ngrok URL)",
+      "cause": "Redirect URIs have to match exactly, including trailing slash and port.",
+      "fix": "Register the exact URI and update it whenever your tunnel URL changes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "{\"error\":\"unsupported_grant_type\"} from the token endpoint",
+      "cause": "grant_type was missing from the token request.",
+      "fix": "Send grant_type=authorization_code with client_id, client_secret, code and redirect_uri.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "Empty POST to https://api.webflow.com/oauth/access_token returned this on 2026-10-20."
+      }
+    },
+    {
+      "symptom": "HTTP 429 during bulk CMS work",
+      "cause": "The per-key limit (60 or 120 req/min depending on site plan) was exceeded.",
+      "fix": "Back off exponentially with a retry cap, and batch CMS operations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Users authorize specific sites or an entire workspace. 'Restrict app installation to a specific site' limits each authorization to one site.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Access-token lifetime isn't documented, and no refresh-token grant is described. Webflow's auth guidance still says to handle expired tokens, so treat a 401 as 'reconnect'.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s1",
+          "s9"
+        ],
+        "note": "Forum users report no refresh token in the token response."
+      }
+    },
+    {
+      "text": "Scopes are locked after publication. Adding scopes needs a new approval, and you should update your OAuth URL only after it's approved.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "AI output has to be visually and contextually distinct from live Webflow data and must never silently overwrite it.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits depend on the customer's site plan (60–120 req/min per key), so the same agent behaves differently across customers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Developers are limited to one developer account for active Marketplace listings.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Webflow docs: OAuth app",
+      "url": "https://developers.webflow.com/data/reference/oauth-app"
+    },
+    {
+      "id": "s2",
+      "title": "Webflow docs: Register an app",
+      "url": "https://developers.webflow.com/data/docs/register-an-app"
+    },
+    {
+      "id": "s3",
+      "title": "Webflow docs: Submitting your app to the Marketplace",
+      "url": "https://developers.webflow.com/data/docs/submitting-your-app"
+    },
+    {
+      "id": "s4",
+      "title": "Webflow docs: Marketplace guidelines",
+      "url": "https://developers.webflow.com/data/docs/marketplace-guidelines"
+    },
+    {
+      "id": "s5",
+      "title": "Webflow docs: Rate limits",
+      "url": "https://developers.webflow.com/data/reference/rate-limits"
+    },
+    {
+      "id": "s6",
+      "title": "Webflow docs: Marketplace overview (user testing)",
+      "url": "https://developers.webflow.com/apps/docs/marketplace/overview"
+    },
+    {
+      "id": "s8",
+      "title": "Webflow token endpoint",
+      "url": "https://api.webflow.com/oauth/access_token"
+    },
+    {
+      "id": "s9",
+      "title": "Webflow forum: How to get the refresh token",
+      "url": "https://discourse.webflow.com/t/how-to-get-the-refresh-token/276973"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://webflow.com/oauth/authorize: 302 to webflow.com/login",
+      "POST https://api.webflow.com/oauth/access_token with no body: {\"error\":\"unsupported_grant_type\"}",
+      "GET https://api.webflow.com/v2/token/introspect without a token: {\"code\":\"not_authorized\"}",
+      "GET https://webflow.com/.well-known/openid-configuration: 404 (no OIDC discovery)"
+    ],
+    "openQuestions": [
+      "Whether Webflow access tokens expire, and whether any refresh flow exists",
+      "Whether http://localhost redirect URIs are accepted for development (the form asks for HTTPS)",
+      "Typical real-world Marketplace review times versus the 10-business-day aim",
+      "Whether 'private apps' offer any distribution path for a single external customer without a public listing"
+    ]
+  }
+}

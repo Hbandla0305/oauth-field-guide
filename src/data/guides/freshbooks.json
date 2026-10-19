@@ -1,0 +1,509 @@
+{
+  "app": {
+    "name": "FreshBooks",
+    "slug": "freshbooks",
+    "website": "https://www.freshbooks.com",
+    "developerPortal": "https://my.freshbooks.com/#/developer",
+    "category": "Accounting"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authentication (OAuth 2.0)",
+      "url": "https://www.freshbooks.com/api/authentication"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://www.freshbooks.com/api/scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Requirements for public apps on the App Store",
+      "url": "https://www.freshbooks.com/api/requirement-for-public-apps-on-the-freshbooks-app-store"
+    },
+    {
+      "kind": "api",
+      "label": "Getting started",
+      "url": "https://www.freshbooks.com/api/start"
+    },
+    {
+      "kind": "console",
+      "label": "Developer page (create an app)",
+      "url": "https://my.freshbooks.com/#/developer"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Creating an app is self-serve from any FreshBooks account and the authorization link works straight away. App Store listing goes through a FreshBooks review, but nothing we read says unlisted apps are blocked for other users. The catches are no sandbox, unpublished rate limits (FreshBooks may disable apps that hit the API aggressively), and scopes that can't be reduced on an existing token, so you have to get them right before users consent.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Create an app with a unique name and an HTTPS redirect URI on the developer page, then authorize against a trial account. There's no sandbox."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
+      "assumes": "An unlisted app that customers authorize through your own link with user:invoices/clients/expenses scopes; an App Store listing adds a FreshBooks review of unknown length.",
+      "waitingOn": "Nothing — no review for unlisted use. Optional App Store review (Pending → In Review → Approved) only for a listing.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s1",
+          "s5"
+        ],
+        "note": "FreshBooks' docs describe review only for App Store listing and don't mention caps on unlisted apps. We couldn't confirm that unlisted apps have no hidden user limit."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A FreshBooks account (a trial works, or ask support for a partner plan)",
+      "why": "Apps are created from the developer page inside a FreshBooks account. There's no separate sandbox.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A globally unique app name",
+      "why": "The name appears on the authorization screen, in the App Store and on users' integrations pages, so it has to be unique.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An HTTPS redirect URI with no query string",
+      "why": "Redirect URIs must use HTTPS and can't contain query parameters. Use state instead.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "In development you can manually change the URL to http in the browser if you can't set up TLS."
+      }
+    },
+    {
+      "item": "The full scope list decided before launch",
+      "why": "Scopes can't be removed from an existing token, and adding or changing them means revoking and rerunning OAuth.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Profile (default)",
+      "examples": [
+        "user:profile:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Added to all new apps by default. Used with /auth/api/v1/users/me to discover accountId and businessId.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Accounting read",
+      "examples": [
+        "user:invoices:read",
+        "user:clients:read",
+        "user:expenses:read",
+        "user:payments:read",
+        "user:reports:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enough for an agent that answers questions about receivables, clients and spend. The scopes page doesn't describe any extra approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Accounting write and time tracking",
+      "examples": [
+        "user:invoices:write",
+        "user:clients:write",
+        "user:time_entries:write",
+        "user:projects:write",
+        "user:journal_entries:write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Lets an agent create invoices, log time and post journal entries. App Store reviewers check that requested scopes match the listing's described function.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in and open the developer page",
+      "owner": "human",
+      "detail": "Log in to (or sign up for) FreshBooks and open the developer page, then click to create a new app.",
+      "url": "https://my.freshbooks.com/#/developer",
+      "duration": "5–10 min",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The developer page URL returned HTTP 200 on 2026-10-20. We did not sign in."
+      }
+    },
+    {
+      "title": "Pick scopes and draft app details",
+      "owner": "agent",
+      "detail": "Pick the full set of user:<object>:<action> scopes the agent will ever need (they can't be trimmed later without reauthorization). Draft a unique app name, description and redirect URIs, one per line.",
+      "url": "https://www.freshbooks.com/api/scopes",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Create the app and copy credentials",
+      "owner": "human",
+      "detail": "Enter the name, redirect URI(s) and scopes, then save. FreshBooks generates the client ID and secret and a clickable authorization link.",
+      "url": "https://my.freshbooks.com/#/developer/new",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the OAuth code flow",
+      "owner": "agent",
+      "detail": "Redirect to https://auth.freshbooks.com/oauth/authorize/ with response_type=code, client_id, redirect_uri and state. Exchange the code (valid about 5 minutes) at https://api.freshbooks.com/auth/oauth/token.",
+      "url": "https://www.freshbooks.com/api/authentication",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "The 5-minute code lifetime is from a third party."
+      }
+    },
+    {
+      "title": "Handle single-use refresh tokens",
+      "owner": "agent",
+      "detail": "Access tokens last 12 hours. Refresh tokens never expire but are one-time-use, and only one is valid per user per app. Use a per-account lock and persist the new pair atomically.",
+      "url": "https://www.freshbooks.com/api/authentication",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Resolve account and business IDs",
+      "owner": "agent",
+      "detail": "Call GET /auth/api/v1/users/me and read business_memberships. Use accountId for /accounting endpoints and businessId for /timetracking and /projects. Let users pick the business when there are several.",
+      "url": null,
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": "Third-party guides."
+      }
+    },
+    {
+      "title": "Test against a trial account",
+      "owner": "human",
+      "detail": "Authorize with a trial or separate development FreshBooks account (there's no sandbox) and exercise reads and writes.",
+      "url": "https://my.freshbooks.com/#/developer",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Go live with your own authorization link",
+      "owner": "human",
+      "detail": "Put the authorization link in your product. Customers authorize on a FreshBooks-hosted page and are redirected back with a code.",
+      "url": "https://www.freshbooks.com/api/authentication",
+      "duration": "15 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "No doc we read says unlisted apps are limited, but none says outright that they aren't."
+      }
+    },
+    {
+      "title": "Optional: prepare and submit an App Store listing",
+      "owner": "agent",
+      "detail": "Make the install link jump straight to OAuth, follow brand guidelines, add a support email, help articles and an urgent contact, then submit. Payment gateway apps aren't allowed.",
+      "url": "https://www.freshbooks.com/api/requirement-for-public-apps-on-the-freshbooks-app-store",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Optional: wait for App Store review",
+      "owner": "wait",
+      "detail": "Status moves through Pending, In Review, then Approved or Rejected. FreshBooks may ask for more detail about features.",
+      "url": null,
+      "duration": "Unknown",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "No timeline is published."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Choose the complete scope set up front",
+    "Implement OAuth and lock-protected refresh-token rotation",
+    "Map accountId vs businessId per endpoint",
+    "Add 429 backoff and webhook verification handling",
+    "Draft App Store listing, support articles and privacy text"
+  ],
+  "humanMustDo": [
+    "Create or log in to a FreshBooks account",
+    "Create the app and copy client ID/secret",
+    "Authorize a test account in the browser",
+    "Submit the App Store listing if you want one"
+  ],
+  "blockers": [
+    {
+      "symptom": "invalid_grant (HTTP 400) on refresh and the account looks disconnected",
+      "cause": "The refresh token was already used: concurrent refreshes, or the new pair wasn't saved. Only one refresh token is valid per user per app.",
+      "fix": "Use a per-account refresh lock and persist the new tokens before using them. Otherwise the user has to reauthorize.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Authorization error on an endpoint after users have already connected",
+      "cause": "A needed scope wasn't requested at consent time, and scopes can't be changed on an existing token.",
+      "fix": "Add the scope to the app, revoke the token, and send the user through OAuth again.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 HTTP_RATE_LIMITED, or the app is disabled",
+      "cause": "Unpublished rate limits were exceeded. FreshBooks says it may disable apps that hit the API aggressively.",
+      "fix": "Pause on 429, honour Retry-After if present, back off with jitter, keep concurrency low, and use include[] to cut calls.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "404 with no explanation on a valid-looking resource",
+      "cause": "accountId was used where businessId (or business_uuid) is expected, or the reverse.",
+      "fix": "Use accountId for /accounting, businessId for /timetracking and /projects, and business_uuid for journal entries.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Third-party guide."
+      }
+    },
+    {
+      "symptom": "Redirect URI rejected when saving the app",
+      "cause": "The URI uses http:// or contains a query string.",
+      "fix": "Use an HTTPS URI with no query parameters and carry data in state.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The exact error text wasn't documented."
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 12 hours (expires_in 43200). Refresh tokens don't expire but are single-use, and a new bearer token invalidates older refresh tokens. Several bearer tokens can be valid at once.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "per_page is silently capped at 100, and mismatched sort syntax returns unsorted data with no error. Paginate explicitly.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": "Third-party guides."
+      }
+    },
+    {
+      "text": "One FreshBooks user can belong to several businesses with different roles, so an agent should ask which business to act on.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Webhooks need a verification handshake (POST, then a PUT echoing the verifier) before events flow, are signed with X-FreshBooks-Hmac-SHA256, and may be disabled after sustained failures with no replay.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Third-party guide."
+      }
+    },
+    {
+      "text": "App Store policy bans payment-gateway apps and multiple overlapping apps from one partner, and asks apps that store user data to follow current best practice and legal requirements.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "FreshBooks API: Authentication",
+      "url": "https://www.freshbooks.com/api/authentication"
+    },
+    {
+      "id": "s2",
+      "title": "FreshBooks API: Getting started",
+      "url": "https://www.freshbooks.com/api/start"
+    },
+    {
+      "id": "s3",
+      "title": "FreshBooks API: Requirements for public apps on the FreshBooks App Store",
+      "url": "https://www.freshbooks.com/api/requirement-for-public-apps-on-the-freshbooks-app-store"
+    },
+    {
+      "id": "s4",
+      "title": "FreshBooks API: Scopes",
+      "url": "https://www.freshbooks.com/api/scopes"
+    },
+    {
+      "id": "s5",
+      "title": "Apideck: How to integrate with the FreshBooks API",
+      "url": "https://apideck.com/blog/how-to-integrate-with-the-freshbooks-api"
+    },
+    {
+      "id": "s6",
+      "title": "Truto: How to integrate with the FreshBooks API (2026 engineering guide)",
+      "url": "https://truto.one/blog/how-to-integrate-with-the-freshbooks-api-2026-engineering-guide/"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://my.freshbooks.com/#/developer: HTTP 200 (did not sign in)",
+      "GET https://auth.freshbooks.com/oauth/authorize/: 302 to https://auth.freshbooks.com/service/auth/integrations/sign_in",
+      "POST https://api.freshbooks.com/auth/oauth/token with fake client: {\"error\":\"invalid_client\",...}",
+      "GET https://www.freshbooks.com/api/request-limits: HTTP 404 (request-limits doc page not found at that path)"
+    ],
+    "openQuestions": [
+      "Whether unlisted apps have any hidden cap on the number of authorizing users",
+      "Actual numeric rate limits (FreshBooks doesn't publish them)",
+      "App Store review turnaround",
+      "Any FreshBooks API terms on AI use of customer data"
+    ]
+  }
+}

@@ -1,0 +1,565 @@
+{
+  "app": {
+    "name": "Rippling",
+    "slug": "rippling",
+    "website": "https://www.rippling.com",
+    "developerPortal": "https://developer.rippling.com/documentation/developer-portal/",
+    "category": "HR & IT"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Installation (OAuth) guide",
+      "url": "https://developer.rippling.com/documentation/developer-portal/v2-guides/installation"
+    },
+    {
+      "kind": "scopes",
+      "label": "App Shop scopes",
+      "url": "https://developer.rippling.com/documentation/developer-portal/v2-guides/scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Partner requirements",
+      "url": "https://developer.rippling.com/documentation/developer-portal/getting-started/requirements"
+    },
+    {
+      "kind": "review",
+      "label": "Beta testing and launch review",
+      "url": "https://developer.rippling.com/documentation/developer-portal/creating-publishing/testing"
+    },
+    {
+      "kind": "api",
+      "label": "REST API usage and rate limits",
+      "url": "https://developer.rippling.com/documentation/rest-api/essentials/api-limits"
+    },
+    {
+      "kind": "console",
+      "label": "Become a technology partner",
+      "url": "https://www.rippling.com/developers"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "OAuth exists only for approved App Shop partners: you apply to the technology partner program, build in a sandbox, and the install must start and end inside Rippling's App Shop flow, with SSO, user management and an Integration Review before outside companies can install. Customers also need Rippling's Identity & Access Management package, and private scopes (the richer employee data) are 'extremely limited'.",
+    "timeToDev": {
+      "range": "1–3 weeks",
+      "hours": {
+        "min": 168,
+        "max": 504
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s4",
+          "s9"
+        ],
+        "note": "Sandbox, partner company and test company come only after Rippling approves your partner application, which has no published timeline. Once in, a first sandbox OAuth install with Postman takes about an hour."
+      }
+    },
+    "timeToProd": {
+      "range": "6–14 weeks",
+      "hours": {
+        "min": 1008,
+        "max": 2352
+      },
+      "assumes": "An App Shop partner app reading workers through public scopes, reaching the point where any company with your production listing URL can install (beta approval); public App Shop launch adds three external beta installs plus a Launch Review.",
+      "waitingOn": "Partner application approval, then building required SSO and user-management capabilities, then Rippling's Integration Review (beta), plus approval for any private scopes.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s5",
+          "s6",
+          "s9"
+        ],
+        "note": "Rippling publishes no review durations. The range is our estimate from the number of gated steps and required capabilities."
+      }
+    },
+    "cost": "No cost to partners for API use or App Shop listing, and no revenue share. Customers must have Rippling's Identity & Access Management package to install integrations."
+  },
+  "prerequisites": [
+    {
+      "item": "Acceptance into the Rippling technology partner program",
+      "why": "App listings, sandbox access and OAuth credentials are created only after your application is approved.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s9"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A product that can support SSO (SAML or OpenID Connect) and user management",
+      "why": "Partner requirements describe Rippling-initiated and SP-initiated SSO and automatic user provisioning from Rippling employees; the Integration Review form checks SSO, user management and data sync.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": "Merge's guide says all integrations must support SAML SSO; Rippling's page lists SAML SSO and OIDC SSO sections."
+      }
+    },
+    {
+      "item": "Customers on Rippling's Identity & Access Management package",
+      "why": "Required to install integrations built on Rippling's API, including beta installs.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6",
+          "s8",
+          "s12"
+        ],
+        "note": "Rippling's pricing page also says partners pay nothing to list and no revenue share is required."
+      }
+    },
+    {
+      "item": "Three external companies willing to beta test",
+      "why": "Launch Review can only be submitted after at least three outside companies install the beta listing.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Needed only for public App Shop discovery, not for beta installs via your production URL."
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Public scopes",
+      "examples": [
+        "employee:name",
+        "employee:workEmail",
+        "employee:saml"
+      ],
+      "reviewRequired": false,
+      "time": "Instant once you're a partner",
+      "impact": "Auto-approved when added to the listing. Every customer admin must consent to the full set; customers can't toggle individual scopes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Scope strings taken from the example token response and SAML requirement; check the scope reference for current names."
+      }
+    },
+    {
+      "tier": "Private scopes",
+      "examples": [
+        "employee:department:read",
+        "employee:read"
+      ],
+      "reviewRequired": true,
+      "time": "Unknown; often refused",
+      "impact": "Need a 'comprehensively documented business case' per scope. Rippling says access to private scopes is 'extremely limited'.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Which specific scopes are private isn't fully listed in what we could read; examples appear in the page FAQ."
+      }
+    },
+    {
+      "tier": "REST API v2 data scopes",
+      "examples": [
+        "workers.read",
+        "companies.read"
+      ],
+      "reviewRequired": false,
+      "time": "Depends on public/private status",
+      "impact": "New integrations should use the v2 REST API at https://rest.ripplingapis.com; access is the intersection of scopes and permissions. Call List companies after OAuth to bind the token to a company.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "workers.read appears in Rippling's llms.txt; whether each v2 scope is public or private wasn't confirmed."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Apply to the technology partner program",
+      "owner": "human",
+      "detail": "Submit company details, customers and integration goals. If you use Merge, its CSM must apply for you.",
+      "url": "https://www.rippling.com/developers",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9",
+          "s8"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for partner approval",
+      "owner": "wait",
+      "detail": "Rippling decides at its discretion and may not explain rejections.",
+      "url": null,
+      "duration": "Unknown (days to weeks)",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s8",
+          "s4"
+        ],
+        "note": "Discretionary approval is from Merge's guide; Rippling publishes no timeline."
+      }
+    },
+    {
+      "title": "Create a draft app listing",
+      "owner": "human",
+      "detail": "In your partner company, create a listing: set display name, main category, icon, default redirect URL and scopes. Client ID and secret are under Integration > Credentials.",
+      "url": "https://developer.rippling.com/documentation/developer-portal/creating-publishing/create",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Write private-scope business cases",
+      "owner": "agent",
+      "detail": "For each private scope, draft why you need the data, what you'll do with it and the customer value.",
+      "url": "https://developer.rippling.com/documentation/developer-portal/v2-guides/scopes",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the Rippling-initiated install flow",
+      "owner": "agent",
+      "detail": "Handle the redirect with code, buy and redirect_uri; have the user sign in to your app; exchange the code within 300 seconds at https://api.rippling.com/api/o/token/ with Basic auth; store tokens per company; call List companies and POST mark_app_installed; then redirect back to Rippling's return URL.",
+      "url": "https://developer.rippling.com/documentation/developer-portal/v2-guides/installation",
+      "duration": "4–8 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build SSO, user management and sync",
+      "owner": "agent",
+      "detail": "Implement SAML or OIDC SSO with a 'Sign in with Rippling' button, employee.created/employee.deleted webhooks, automatic user matching and creation, and a manual sync button.",
+      "url": "https://developer.rippling.com/documentation/developer-portal/getting-started/requirements",
+      "duration": "1–3 weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Deploy and install the sandbox app",
+      "owner": "human",
+      "detail": "Deploy the sandbox listing, switch to your test company admin and run the install (Postman works well).",
+      "url": "https://developer.rippling.com/documentation/developer-portal/creating-publishing/install",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit the Integration Review form",
+      "owner": "human",
+      "detail": "Includes requirement checklists, install flow videos, SSO, user management, data sync, support details, a test account and beta testers.",
+      "url": "https://developer.rippling.com/documentation/developer-portal/creating-publishing/testing",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for beta approval",
+      "owner": "wait",
+      "detail": "If approved, any company with your production listing URL (and the IAM package) can install. If rejected, fix and resubmit.",
+      "url": null,
+      "duration": "Unknown",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "No duration published."
+      }
+    },
+    {
+      "title": "Run beta with three companies and submit Launch Review",
+      "owner": "human",
+      "detail": "After three outside companies install, submit the Launch Review with integration documentation, then publish the listing.",
+      "url": "https://developer.rippling.com/documentation/developer-portal/creating-publishing/publish",
+      "duration": "Weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Write private-scope business cases",
+    "Build the install flow with the 300-second code exchange and return redirect",
+    "Implement refresh rotation within the 1-hour grace period",
+    "Build SAML/OIDC SSO and webhook-driven user sync",
+    "Draft Integration Review and Launch Review content"
+  ],
+  "humanMustDo": [
+    "Apply to the partner program",
+    "Create the listing and deploy the sandbox app",
+    "Record install flow videos",
+    "Recruit three beta companies",
+    "Submit Integration and Launch Review forms"
+  ],
+  "blockers": [
+    {
+      "symptom": "No way to get OAuth credentials",
+      "cause": "OAuth is only for approved App Shop partners; customer API tokens can't be used on behalf of another organization.",
+      "fix": "Apply to the partner program, or use Rippling MCP for a user-identity connection.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Token exchange fails with an invalid or expired code",
+      "cause": "Authorization codes expire after 300 seconds and are single-use.",
+      "fix": "Exchange the code server-side immediately on redirect.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s10"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Rippling shows 'waiting for a connection request' after install",
+      "cause": "No API call has been made yet for the new install.",
+      "fix": "Call List companies and POST mark_app_installed right after the token exchange.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Customer can't complete installation",
+      "cause": "The company doesn't have the Identity & Access Management package, or the installer isn't a Super Admin, Full Admin or App Admin.",
+      "fix": "Have the customer add the IAM package and install as an eligible admin.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Fields come back null or 403 'Insufficient oauth scopes'",
+      "cause": "Missing scope, or the data is redacted for the token.",
+      "fix": "Add the scope (private ones need approval) and check __meta.redacted_fields.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Scope changes don't appear for an existing install",
+      "cause": "Changes to a listing don't affect existing installs.",
+      "fix": "Resync the sandbox app and reinstall or reauthorize.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s10",
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Refresh tokens are single-use but have a 1-hour grace period after first use; access token lifetime comes from expires_in (129600 seconds, 36 hours, in Rippling's example).",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "One access token covers one Rippling company; twelve installing companies means twelve tokens.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rate limits on rest.ripplingapis.com use a 10-second sliding window counted per token plus endpoint path (600 and 300 requests per 10 seconds are listed), with Retry-After on 429 and no lockout.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11"
+        ],
+        "note": "The page lists two limits; which applies to which traffic wasn't clear in what we could read."
+      }
+    },
+    {
+      "text": "Partners agree not to promise launch dates to customers or share the integration before Rippling approves beta testing.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Rippling's requirements say integrations built through third-party integration services aren't supported, yet Merge documents a CSM-led path; expect Rippling to decide case by case.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s3",
+          "s8"
+        ],
+        "note": "Sources conflict."
+      }
+    },
+    {
+      "text": "Page size can't exceed 100 and list endpoints must be paginated.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s11"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Rippling Installation (OAuth) - v2 guide",
+      "url": "https://developer.rippling.com/documentation/developer-portal/v2-guides/installation"
+    },
+    {
+      "id": "s2",
+      "title": "Rippling App Shop scopes",
+      "url": "https://developer.rippling.com/documentation/developer-portal/v2-guides/scopes"
+    },
+    {
+      "id": "s3",
+      "title": "Rippling Partner Requirements",
+      "url": "https://developer.rippling.com/documentation/developer-portal/getting-started/requirements"
+    },
+    {
+      "id": "s4",
+      "title": "Rippling development process",
+      "url": "https://developer.rippling.com/documentation/developer-portal/getting-started/process"
+    },
+    {
+      "id": "s5",
+      "title": "Create an App Listing",
+      "url": "https://developer.rippling.com/documentation/developer-portal/creating-publishing/create"
+    },
+    {
+      "id": "s6",
+      "title": "Beta testing and Launch Review",
+      "url": "https://developer.rippling.com/documentation/developer-portal/creating-publishing/testing"
+    },
+    {
+      "id": "s7",
+      "title": "Rippling developer documentation index (llms.txt)",
+      "url": "https://developer.rippling.com/llms.txt"
+    },
+    {
+      "id": "s8",
+      "title": "Merge: Rippling - How do I set up my integration? (third-party)",
+      "url": "https://help.merge.dev/articles/9265388-rippling-how-do-i-set-up-my-integration"
+    },
+    {
+      "id": "s9",
+      "title": "Rippling for developers - technology partner program",
+      "url": "https://www.rippling.com/developers"
+    },
+    {
+      "id": "s10",
+      "title": "Install an App Listing (sandbox)",
+      "url": "https://developer.rippling.com/documentation/developer-portal/creating-publishing/install"
+    },
+    {
+      "id": "s11",
+      "title": "Rippling REST API usage and rate limits",
+      "url": "https://developer.rippling.com/documentation/rest-api/essentials/api-limits"
+    },
+    {
+      "id": "s12",
+      "title": "Rippling pricing for app partners",
+      "url": "https://developer.rippling.com/documentation/developer-portal/getting-started/pricing"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://developer.rippling.com/llms.txt is live and states App Shop partner apps authenticate with OAuth 2.0 and that customer API keys can't be used on behalf of another organization.",
+      "https://app.rippling.com/apps/PLATFORM/authorize returns HTTP 200.",
+      "Rippling's developer docs are client-rendered; page text was read from the site's published JavaScript bundles for the installation, scopes, requirements, process, pricing, testing, create, install and rate-limit pages."
+    ],
+    "openQuestions": [
+      "How long partner application, Integration Review and Launch Review typically take.",
+      "Full list of which scopes are public vs private.",
+      "Whether AI agent products without SSO/user provisioning features can qualify as partners.",
+      "Which of the two listed rate limits (600 vs 300 per 10 seconds) applies to OAuth partner tokens."
+    ]
+  }
+}

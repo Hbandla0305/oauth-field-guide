@@ -1,0 +1,275 @@
+{
+  "app": {
+    "name": "Snowflake",
+    "slug": "snowflake",
+    "website": "https://www.snowflake.com",
+    "developerPortal": "https://docs.snowflake.com/en/user-guide/oauth-custom",
+    "category": "Data warehouse"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Snowflake OAuth for custom clients",
+      "url": "https://docs.snowflake.com/en/user-guide/oauth-custom"
+    },
+    {
+      "kind": "oauth",
+      "label": "Snowflake OAuth overview and error codes",
+      "url": "https://docs.snowflake.com/en/user-guide/oauth-snowflake-overview"
+    },
+    {
+      "kind": "api",
+      "label": "CREATE SECURITY INTEGRATION (Snowflake OAuth)",
+      "url": "https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake"
+    },
+    {
+      "kind": "review",
+      "label": "OAuth partner applications",
+      "url": "https://docs.snowflake.com/en/user-guide/oauth-partner"
+    },
+    {
+      "kind": "console",
+      "label": "Snowsight",
+      "url": "https://app.snowflake.com/"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "There's no central developer console or app review: Snowflake OAuth clients are security integrations created inside each customer's Snowflake account, so every customer needs an ACCOUNTADMIN (or a role with CREATE INTEGRATION) to run CREATE SECURITY INTEGRATION and hand you a client ID and secret. Built-in partner integrations (Tableau, Looker and others) skip that step, but the docs don't describe how a new vendor joins that list.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": { "min": 0.5, "max": 1.5 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s5"],
+        "note": "Sign up for a 30-day trial account, create a custom OAuth integration as ACCOUNTADMIN, read the secret with SYSTEM$SHOW_OAUTH_CLIENT_SECRETS, and run the code flow against your account URL."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": { "min": 2, "max": 24 },
+      "assumes": "Each customer's Snowflake admin creates a custom OAuth security integration for your agent and shares the client credentials; the time per customer depends on how fast their admin acts.",
+      "waitingOn": "Nothing — no review. Each customer's ACCOUNTADMIN has to create the integration (and may need internal security sign-off).",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s3"],
+        "note": "No Snowflake review exists for custom clients. Customer-side security approval can take far longer and isn't something Snowflake controls."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Snowflake account for development (a 30-day trial works)",
+      "why": "OAuth integrations live inside an account; there's no account-independent developer console.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s1"], "note": "The trial page doesn't explicitly say security integrations work in trials; we assume they do." }
+    },
+    {
+      "item": "ACCOUNTADMIN, or a role granted CREATE INTEGRATION, in each customer account",
+      "why": "Only ACCOUNTADMIN has CREATE INTEGRATION by default, and it's needed to create the OAuth integration.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": null }
+    },
+    {
+      "item": "A TLS redirect URI with no query parameters",
+      "why": "Redirect URIs must use TLS unless OAUTH_ALLOW_NON_TLS_REDIRECT_URI is set, and the stored URI shouldn't include query parameters.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "item": "Each customer's account URL",
+      "why": "The authorize (/oauth/authorize) and token (/oauth/token-request) endpoints sit on the customer's own account URL.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Single-role session",
+      "examples": ["session:role:ANALYST", "refresh_token"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "The token is limited to one named role (case-sensitive). Best for an agent that queries a defined set of tables. Add refresh_token for offline access.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Role switching (preview)",
+      "examples": ["session:role-any"],
+      "reviewRequired": false,
+      "time": "Same day (admin must enable)",
+      "impact": "Lets the session USE ROLE at runtime. Rejected unless the integration sets OAUTH_ANY_ROLE_MODE to ENABLE or ENABLE_FOR_PRIVILEGE.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "tier": "Privileged admin roles",
+      "examples": ["session:role:ACCOUNTADMIN", "session:role:SECURITYADMIN"],
+      "reviewRequired": true,
+      "time": "Support request",
+      "impact": "ACCOUNTADMIN, SECURITYADMIN, ORGADMIN and GLOBALORGADMIN are blocked by default. Unblocking needs an account parameter change or a Snowflake Support request, which an agent shouldn't need.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "reviewRequired=true here means a Support request or account-level change, not an app review." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign up for a trial account",
+      "owner": "human",
+      "detail": "Create a 30-day Snowflake trial (or use an existing account) and sign in to Snowsight.",
+      "url": "https://app.snowflake.com/",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "title": "Generate the integration SQL",
+      "owner": "agent",
+      "detail": "Write CREATE SECURITY INTEGRATION ... TYPE=OAUTH OAUTH_CLIENT=CUSTOM OAUTH_CLIENT_TYPE='CONFIDENTIAL' OAUTH_REDIRECT_URI='https://...' OAUTH_ISSUE_REFRESH_TOKENS=TRUE OAUTH_ENFORCE_PKCE=TRUE, plus ALLOWED_ROLES_LIST and IS_AGENTIC=TRUE if you want sessions flagged as agent sessions.",
+      "url": "https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": null }
+    },
+    {
+      "title": "Create the integration and read the secret",
+      "owner": "human",
+      "detail": "As ACCOUNTADMIN, run the SQL, then SELECT SYSTEM$SHOW_OAUTH_CLIENT_SECRETS('<INTEGRATION_NAME>') to get the client ID and secret. DESCRIBE INTEGRATION shows the endpoints.",
+      "url": "https://docs.snowflake.com/en/user-guide/oauth-custom",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Implement the code flow per account",
+      "owner": "agent",
+      "detail": "Ask the user for their account URL, redirect to <account_url>/oauth/authorize with client_id, response_type=code, redirect_uri, state, scope and a PKCE S256 challenge, then POST form-encoded to <account_url>/oauth/token-request.",
+      "url": "https://docs.snowflake.com/en/user-guide/oauth-custom",
+      "duration": "1–2 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Connect drivers or the SQL API with the token",
+      "owner": "agent",
+      "detail": "Pass the access token to the connector (authenticator=oauth) or the SQL API, and refresh it every ~10 minutes (default access token validity 600 s).",
+      "url": "https://docs.snowflake.com/en/user-guide/oauth-snowflake-overview",
+      "duration": "30–60 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "The authenticator=oauth parameter name is from general Snowflake connector knowledge, not the pages cited." }
+    },
+    {
+      "title": "Write customer onboarding instructions",
+      "owner": "agent",
+      "detail": "Produce a copy-paste SQL script and a short guide for customer admins: create a dedicated role with least privilege, create the integration with your redirect URI, and send you the client ID/secret securely.",
+      "url": null,
+      "duration": "1 hour",
+      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+    },
+    {
+      "title": "Customer admin creates the integration",
+      "owner": "human",
+      "detail": "Each customer's ACCOUNTADMIN runs your script, optionally attaches a NETWORK_POLICY allowing your server IPs, and shares the credentials.",
+      "url": null,
+      "duration": "15–30 min per customer",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": "Duration is our estimate, excluding customer-side security review." }
+    },
+    {
+      "title": "Schedule refresh-token renewal",
+      "owner": "agent",
+      "detail": "Refresh tokens last 90 days by default (custom clients: 1–90 days). Prompt users to re-authorize before expiry, since a refresh doesn't extend the refresh token itself.",
+      "url": "https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake",
+      "duration": "30 min",
+      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": "Validity range is sourced. That refreshing doesn't extend the refresh token is our reading; the docs we read don't say." }
+    }
+  ],
+  "agentCanDo": [
+    "Generate least-privilege CREATE ROLE and CREATE SECURITY INTEGRATION scripts",
+    "Implement the per-account OAuth flow with PKCE",
+    "Write admin onboarding docs for customers",
+    "Map Snowflake OAuth error codes to user messages",
+    "Track refresh-token expiry and prompt re-authorization"
+  ],
+  "humanMustDo": [
+    "Create a Snowflake trial or dev account",
+    "Run the integration SQL as ACCOUNTADMIN and copy the secret",
+    "Get each customer's admin to create the integration",
+    "Request Support changes if longer token validity is needed"
+  ],
+  "blockers": [
+    {
+      "symptom": "Error 390307 OAUTH_AUTHORIZE_INVALID_REDIRECT_URI",
+      "cause": "redirect_uri doesn't match OAUTH_REDIRECT_URI / OAUTH_ALTERNATE_REDIRECT_URIS, or is malformed (for example has query parameters).",
+      "fix": "Use exactly the stored URI, and add others with OAUTH_ALTERNATE_REDIRECT_URIS.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+    },
+    {
+      "symptom": "Error 390308 OAUTH_AUTHORIZE_INVALID_SCOPE",
+      "cause": "The requested role isn't granted to the user, is blocked (for example ACCOUNTADMIN), or the role name's case is wrong.",
+      "fix": "Request a non-privileged role that's granted to the user, matching case exactly, or use session:role-encoded for special characters.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1"], "note": null }
+    },
+    {
+      "symptom": "Token request returns invalid_client although the secret is right",
+      "cause": "A network policy on the integration or account blocks your server's IP, or the client credentials are encoded wrongly.",
+      "fix": "Have the customer allow your egress IPs in the integration's NETWORK_POLICY, and check Basic auth encoding.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "Queries fail with 390303 OAUTH_ACCESS_TOKEN_INVALID after about 10 minutes",
+      "cause": "Access tokens default to 600 seconds.",
+      "fix": "Refresh proactively, or have the admin raise OAUTH_ACCESS_TOKEN_VALIDITY (max 3600).",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    },
+    {
+      "symptom": "invalid_grant on refresh after about 90 days",
+      "cause": "The refresh token reached OAUTH_REFRESH_TOKEN_VALIDITY (max 90 days unless Support extends it), or was revoked.",
+      "fix": "Send the user through authorization again; ask the customer to request a longer validity from Snowflake Support if needed.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s2"], "note": null }
+    },
+    {
+      "symptom": "Authorize URL 404s (\"File not Found\")",
+      "cause": "Wrong account URL or account locator, so the host isn't a real Snowflake account.",
+      "fix": "Have the user copy their account URL from Snowsight (account menu) and validate it before redirecting.",
+      "evidence": { "label": "tested", "sourceIds": ["s6"], "note": "A made-up account host returned HTTP 404 'File not Found' for /oauth/authorize on 2026-10-20; we didn't test a real account." }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens default to 10 minutes (60–3600 s configurable). Refresh tokens default to 90 days (custom clients 1–90 days); going outside that range needs a Snowflake Support request.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "text": "IS_AGENTIC = TRUE marks every session from the integration as an AI agent session (IS_AGENT_ACTIVATED returns TRUE), which customers can use in policies or auditing.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": null }
+    },
+    {
+      "text": "ACCOUNTADMIN, SECURITYADMIN, ORGADMIN and GLOBALORGADMIN are blocked from OAuth by default, so an agent can't run as an admin unless the customer changes account settings.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "text": "For SaaS clients the token request comes from your public servers, so use the customer's public account URL even if they use PrivateLink; USE_PRIVATELINK_FOR_AUTHORIZATION_ENDPOINT can keep the browser step private.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Security admins can pre-approve consent for users (ALTER USER ... ADD DELEGATED AUTHORIZATION) or via PRE_AUTHORIZED_ROLES_LIST for confidential clients, which removes the consent prompt.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+    },
+    {
+      "text": "Partner integrations (Tableau, Looker, Alation, ThoughtSpot, Collibra) use predefined OAUTH_CLIENT values; the docs don't describe a path for a new vendor to become one.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Snowflake docs: Configure Snowflake OAuth for custom clients", "url": "https://docs.snowflake.com/en/user-guide/oauth-custom" },
+    { "id": "s2", "title": "Snowflake docs: Snowflake OAuth overview", "url": "https://docs.snowflake.com/en/user-guide/oauth-snowflake-overview" },
+    { "id": "s3", "title": "Snowflake docs: CREATE SECURITY INTEGRATION (Snowflake OAuth)", "url": "https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake" },
+    { "id": "s4", "title": "Snowflake docs: Snowflake OAuth for partner applications", "url": "https://docs.snowflake.com/en/user-guide/oauth-partner" },
+    { "id": "s5", "title": "Snowflake docs: Trial accounts", "url": "https://docs.snowflake.com/en/user-guide/admin-trial-account" },
+    { "id": "s6", "title": "Live check: /oauth/authorize on a non-existent account host", "url": "https://zzzz-nonexistent123.snowflakecomputing.com/oauth/authorize" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://zzzz-nonexistent123.snowflakecomputing.com/oauth/authorize: HTTP 404 'File not Found' (wildcard host resolves; no real account)",
+      "POST https://zzzz-nonexistent123.snowflakecomputing.com/oauth/token-request: HTTP 404 'File not Found'",
+      "GET https://app.snowflake.com/: HTTP 200"
+    ],
+    "openQuestions": [
+      "Whether a SaaS vendor can become a built-in OAuth partner application (so customers skip creating a custom integration), and through which program",
+      "Whether security integrations are fully available in trial accounts",
+      "Whether standard refresh tokens rotate, and whether refreshing extends the refresh token's 90-day validity",
+      "Whether an account can hold many OAuth integrations (one per vendor) without a limit"
+    ]
+  }
+}

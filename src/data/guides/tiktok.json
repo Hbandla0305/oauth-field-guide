@@ -1,0 +1,325 @@
+{
+  "app": {
+    "name": "TikTok",
+    "slug": "tiktok",
+    "website": "https://www.tiktok.com",
+    "developerPortal": "https://developers.tiktok.com",
+    "category": "Social media"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Manage user access tokens",
+      "url": "https://developers.tiktok.com/doc/oauth-user-access-token-management"
+    },
+    {
+      "kind": "api",
+      "label": "Display API getting started",
+      "url": "https://developers.tiktok.com/doc/display-api-get-started/"
+    },
+    {
+      "kind": "review",
+      "label": "Content Posting API: Direct Post (audit rules)",
+      "url": "https://developers.tiktok.com/doc/content-posting-api-reference-direct-post"
+    },
+    {
+      "kind": "console",
+      "label": "TikTok for Developers",
+      "url": "https://developers.tiktok.com"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "You can build and test in a sandbox with a handful of invited TikTok accounts, but real users can only connect after TikTok approves the app and each product (Login Kit, Display API, Content Posting API). Posting has a second, separate content audit: until it passes, every post your agent publishes is forced to private, and posts made before the audit stay private afterwards.",
+    "timeToDev": {
+      "range": "1–3 h",
+      "hours": { "min": 1, "max": 3 },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["t4"],
+        "note": "Register, create the app, add products and scopes, enable sandbox, invite test accounts and run the flow. Based on a third-party guide, since TikTok's developer site was unreachable from our network."
+      }
+    },
+    "timeToProd": {
+      "range": "1–6 weeks",
+      "hours": { "min": 168, "max": 1008 },
+      "assumes": "An app that reads the user's profile and videos (user.info.basic, video.list). Public posting (video.publish) adds the content audit at the long end. Read-only apps sit at the short end.",
+      "waitingOn": "TikTok app/product review (third parties report about 1–2 weeks for a clean submission). Then, for posting, the Content Posting audit (reported as weeks).",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": ["t4", "t5"],
+        "note": "We found no official review SLA. Durations come from vendor guides."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A TikTok for Developers account and an app with the products you need (Login Kit plus Display API and/or Content Posting API)",
+      "why": "Scopes are tied to products, and each product needs approval.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["t3", "t4"],
+        "note": "The Display API guide says you need approval for both Login Kit and the API product. Text seen in a search excerpt, because the page was unreachable for us."
+      }
+    },
+    {
+      "item": "A public website, privacy policy and terms of service that load and describe how TikTok content is used",
+      "why": "Reviewers reject submissions whose policy pages don't load or don't explain data use.",
+      "evidence": { "label": "unverified", "sourceIds": ["t4", "t5"], "note": "Vendor guides." }
+    },
+    {
+      "item": "A demo video showing login, consent and every requested scope in use",
+      "why": "Missing demo coverage of a scope is a common rejection reason.",
+      "evidence": { "label": "unverified", "sourceIds": ["t4", "t5"], "note": "Vendor guides." }
+    },
+    {
+      "item": "Verified domains, if you post with PULL_FROM_URL",
+      "why": "TikTok only fetches media from domains verified for your app (signature file or DNS TXT).",
+      "evidence": { "label": "unverified", "sourceIds": ["t5"], "note": "Vendor guide." }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Sandbox (invited test accounts)",
+      "examples": ["user.info.basic", "video.list", "video.publish"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Up to 5 sandboxes per app, each shared with up to 10 TikTok accounts. Enough to build and record the demo.",
+      "evidence": { "label": "unverified", "sourceIds": ["t4"], "note": "Sandbox limits come from a third-party guide." }
+    },
+    {
+      "tier": "Login Kit and profile",
+      "examples": ["user.info.basic", "user.info.profile", "user.info.stats"],
+      "reviewRequired": true,
+      "time": "~1–2 weeks",
+      "impact": "Avatar, display name and profile fields for any TikTok user, once the app is approved.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["t3", "t4"],
+        "note": "user.info.stats wasn't confirmed in the sources we could read."
+      }
+    },
+    {
+      "tier": "Display API (read videos)",
+      "examples": ["video.list"],
+      "reviewRequired": true,
+      "time": "~1–2 weeks",
+      "impact": "Read-only access to the user's public videos and their metadata.",
+      "evidence": { "label": "sourced", "sourceIds": ["t3"], "note": "Seen in a search excerpt of TikTok's Display API page." }
+    },
+    {
+      "tier": "Content Posting (upload and direct post)",
+      "examples": ["video.upload", "video.publish"],
+      "reviewRequired": true,
+      "time": "Weeks (product review + content audit)",
+      "impact": "video.upload sends drafts to the creator's inbox. video.publish posts directly. Until the content audit passes, all posts are private (SELF_ONLY), and posting to a public account fails with unaudited_client_can_only_post_to_private_accounts.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["t2", "t5"],
+        "note": "The private-only rule is quoted from TikTok's Direct Post reference via a search excerpt. The audit duration is from vendors."
+      }
+    },
+    {
+      "tier": "Research API",
+      "examples": ["research.data.basic"],
+      "reviewRequired": true,
+      "time": "Not available for commercial products",
+      "impact": "Limited to eligible academic or institutional researchers. Not a route for a commercial agent.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": ["t4"],
+        "note": "The eligibility claim comes from a third-party guide. The scope string is from our memory and wasn't checked."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Register on TikTok for Developers",
+      "owner": "human",
+      "detail": "Sign up at developers.tiktok.com and create or join an organization.",
+      "url": "https://developers.tiktok.com",
+      "duration": "10 min",
+      "evidence": { "label": "unverified", "sourceIds": ["t4"], "note": "The site timed out from our network, so we couldn't observe the flow." }
+    },
+    {
+      "title": "Create the app and add products and scopes",
+      "owner": "human",
+      "detail": "Add Login Kit and the API products you need (Display API, Content Posting API), tick only the scopes your demo will show, and register the redirect URI(s).",
+      "url": "https://developers.tiktok.com",
+      "duration": "20 min",
+      "evidence": { "label": "unverified", "sourceIds": ["t4", "t5"], "note": null }
+    },
+    {
+      "title": "Enable sandbox and invite test accounts",
+      "owner": "human",
+      "detail": "Create a sandbox and add the TikTok accounts you'll test with (reported limit: 10 per sandbox).",
+      "url": null,
+      "duration": "10 min",
+      "evidence": { "label": "unverified", "sourceIds": ["t4"], "note": null }
+    },
+    {
+      "title": "Implement Login Kit OAuth and token refresh",
+      "owner": "agent",
+      "detail": "Send users to the authorize page with client_key, scope (comma-separated), response_type=code, redirect_uri and state. Exchange the code at POST https://open.tiktokapis.com/v2/oauth/token/ (form-encoded). Refresh the 24 h access token with grant_type=refresh_token, and store the returned refresh token, which may change.",
+      "url": "https://developers.tiktok.com/doc/oauth-user-access-token-management",
+      "duration": "2-3 h",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["t1", "t7"],
+        "note": "The token endpoint was live-checked. The authorize URL (https://www.tiktok.com/v2/auth/authorize/) timed out from our network."
+      }
+    },
+    {
+      "title": "Build the posting UX to audit standards",
+      "owner": "agent",
+      "detail": "Call creator_info when the composer opens and only offer the privacy levels and interaction settings it returns. Add a review screen confirming caption, privacy and settings before publishing. Handle spam_risk_* errors without retrying.",
+      "url": "https://developers.tiktok.com/doc/content-posting-api-reference-direct-post",
+      "duration": "1-2 days",
+      "evidence": { "label": "unverified", "sourceIds": ["t5"], "note": "Audit expectations come from a vendor guide." }
+    },
+    {
+      "title": "Draft the submission and demo script",
+      "owner": "agent",
+      "detail": "Write the app description, a justification per scope tied to demo timestamps, and a data-handling statement, and check that the privacy and terms pages describe TikTok data use.",
+      "url": null,
+      "duration": "2-4 h",
+      "evidence": { "label": "unverified", "sourceIds": ["t4", "t5"], "note": null }
+    },
+    {
+      "title": "Record the demo and submit for review",
+      "owner": "human",
+      "detail": "Record a narrated video of login, consent, each scope in use and (for posting) the post appearing, then submit the app for review in the portal.",
+      "url": "https://developers.tiktok.com",
+      "duration": "2-3 h",
+      "evidence": { "label": "unverified", "sourceIds": ["t4", "t5"], "note": null }
+    },
+    {
+      "title": "App and product review",
+      "owner": "wait",
+      "detail": "TikTok checks purpose, security and data use. Third parties report about 1–2 weeks for a clean first submission.",
+      "url": null,
+      "duration": "1-2 weeks",
+      "evidence": { "label": "unverified", "sourceIds": ["t4"], "note": "No official SLA found." }
+    },
+    {
+      "title": "Content Posting audit (only if posting)",
+      "owner": "wait",
+      "detail": "After the integration works, submit for the content audit to lift the private-only restriction. Do it before onboarding customers, because posts made while unaudited stay private.",
+      "url": "https://developers.tiktok.com/doc/content-posting-api-reference-direct-post",
+      "duration": "Weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": ["t2", "t5"],
+        "note": "The audit requirement is official. The timing and 'stays private' behaviour come from a vendor guide."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement Login Kit OAuth and the refresh scheduler",
+    "Build the creator_info-driven posting composer",
+    "Draft scope justifications and the demo script",
+    "Check privacy and terms pages cover TikTok data use"
+  ],
+  "humanMustDo": [
+    "Register and create the app in the developer portal",
+    "Invite sandbox test accounts",
+    "Record the narrated demo video",
+    "Submit for app review and the content audit",
+    "Verify domains for PULL_FROM_URL"
+  ],
+  "blockers": [
+    {
+      "symptom": "Posts succeed but are only visible to the creator",
+      "cause": "The client hasn't passed the Content Posting audit, so all content is restricted to private viewing.",
+      "fix": "Submit for the audit. Don't promise public posting until it passes.",
+      "evidence": { "label": "sourced", "sourceIds": ["t2"], "note": "Via a search excerpt of TikTok's Direct Post reference." }
+    },
+    {
+      "symptom": "unaudited_client_can_only_post_to_private_accounts at /publish/video/init/",
+      "cause": "An unaudited client tried to post to a public account.",
+      "fix": "Pass the content audit, or test with private accounts.",
+      "evidence": { "label": "sourced", "sourceIds": ["t2"], "note": null }
+    },
+    {
+      "symptom": "invalid_grant on refresh",
+      "cause": "The refresh token expired (365 days after issue), was replaced by a newer one, or the user revoked access.",
+      "fix": "Always store the latest returned refresh token, and send the user back through login.",
+      "evidence": { "label": "sourced", "sourceIds": ["t1"], "note": null }
+    },
+    {
+      "symptom": "Calls fail about a day after connecting",
+      "cause": "Access tokens expire after 24 hours.",
+      "fix": "Refresh proactively before expires_in runs out.",
+      "evidence": { "label": "sourced", "sourceIds": ["t1", "t4"], "note": null }
+    },
+    {
+      "symptom": "Review rejected",
+      "cause": "Scopes beyond what the demo shows, a demo that skips login or the post appearing, or policy pages that don't load.",
+      "fix": "Trim scopes, narrate a complete demo, and fix the policy pages.",
+      "evidence": { "label": "unverified", "sourceIds": ["t4", "t5"], "note": null }
+    },
+    {
+      "symptom": "spam_risk_too_many_posts",
+      "cause": "Posting frequency, or duplicate or watermarked content. Third parties report a 25 posts/day per-account cap.",
+      "fix": "Don't retry. Throttle posting per creator.",
+      "evidence": { "label": "unverified", "sourceIds": ["t4", "t5"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 24 hours. Refresh tokens last 365 days from initial issue, and a refresh can return a different refresh token.",
+      "evidence": { "label": "sourced", "sourceIds": ["t1"], "note": "Via a search excerpt of TikTok's token docs." }
+    },
+    {
+      "text": "TikTok uses client_key (not client_id), comma-separated scopes, and a form-encoded token endpoint that rejects other content types.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["t7"],
+        "note": "POST without a form Content-Type returned 'Please set Content-Type header to application/x-www-form-urlencoded'."
+      }
+    },
+    {
+      "text": "Users can grant some scopes and decline others, so read the scope field in the token response before calling the APIs.",
+      "evidence": { "label": "unverified", "sourceIds": ["t4"], "note": "Third-party guidance." }
+    },
+    {
+      "text": "Upload initiation is reportedly limited to 6 requests/min per user token. App-level limits aren't published.",
+      "evidence": { "label": "unverified", "sourceIds": ["t4"], "note": null }
+    },
+    {
+      "text": "TikTok's own web properties (developers.tiktok.com, www.tiktok.com) timed out or refused connections from our research network, while open.tiktokapis.com answered. Availability may depend on region.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": ["t7"],
+        "note": "Observed on 2026-10-20. It could be a local network issue."
+      }
+    }
+  ],
+  "sources": [
+    { "id": "t1", "title": "TikTok docs: Manage user access tokens (search excerpt; page unreachable from our network)", "url": "https://developers.tiktok.com/doc/oauth-user-access-token-management" },
+    { "id": "t2", "title": "TikTok docs: Content Posting API, Direct Post reference (search excerpt)", "url": "https://developers.tiktok.com/doc/content-posting-api-reference-direct-post" },
+    { "id": "t3", "title": "TikTok docs: Display API getting started (search excerpt)", "url": "https://developers.tiktok.com/doc/display-api-get-started/" },
+    { "id": "t4", "title": "Third-party: Phyllo, TikTok API integration guide 2026", "url": "https://www.getphyllo.com/post/tiktok-api-integration-guide-2026-setup-endpoints-common-pitfalls" },
+    { "id": "t5", "title": "Vendor blog: bundle.social, TikTok API approval (Aug 2026)", "url": "https://bundle.social/blog/tiktok-api-approval" },
+    { "id": "t6", "title": "Third-party: Zernio, TikTok API guide 2026", "url": "https://zernio.com/blog/tiktok-api" },
+    { "id": "t7", "title": "TikTok OAuth token endpoint", "url": "https://open.tiktokapis.com/v2/oauth/token/" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "POST https://open.tiktokapis.com/v2/oauth/token/ without a form Content-Type: invalid_request 'Please set Content-Type header to application/x-www-form-urlencoded'",
+      "POST https://open.tiktokapis.com/v2/oauth/token/ with a dummy code: invalid_grant 'Authorization code is expired.'",
+      "GET https://open.tiktokapis.com/v2/user/info/ without a token: access_token_invalid",
+      "GET https://developers.tiktok.com/* and https://www.tiktok.com/v2/auth/authorize/: connection timed out or refused from our network"
+    ],
+    "openQuestions": [
+      "Official app review SLA and current review checklist (developers.tiktok.com was unreachable, so the official review guidelines weren't read)",
+      "Exact sandbox limits (5 sandboxes × 10 accounts comes from a third party)",
+      "Whether PKCE is required for web Login Kit clients",
+      "Current per-creator daily post cap and app-level rate limits",
+      "Whether user.info.stats and video.list need separate product approvals beyond Display API"
+    ]
+  }
+}

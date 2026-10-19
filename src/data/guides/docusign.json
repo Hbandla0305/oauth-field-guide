@@ -1,0 +1,324 @@
+{
+  "app": {
+    "name": "DocuSign",
+    "slug": "docusign",
+    "website": "https://www.docusign.com",
+    "developerPortal": "https://apps.docusign.com/dev-console/integrations",
+    "category": "E-signature"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Authorization Code Grant",
+      "url": "https://developers.docusign.com/platform/auth/authcode/"
+    },
+    {
+      "kind": "scopes",
+      "label": "Scopes reference",
+      "url": "https://developers.docusign.com/platform/auth/reference/scopes/"
+    },
+    {
+      "kind": "review",
+      "label": "Go-Live process",
+      "url": "https://developers.docusign.com/platform/go-live/"
+    },
+    {
+      "kind": "review",
+      "label": "eSignature REST API Go-Live",
+      "url": "https://developers.docusign.com/docs/esign-rest-api/go-live/"
+    },
+    {
+      "kind": "api",
+      "label": "API resource limits",
+      "url": "https://developers.docusign.com/platform/resource-limits/"
+    },
+    {
+      "kind": "console",
+      "label": "Developer Console",
+      "url": "https://apps.docusign.com/dev-console/integrations"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "A demo-environment integration key works within the hour, but every production key has to be owned by a paid (or partner) production account, and DocuSign's docs say a public integration that many customers authorize needs Partner Program membership. In 2026 forum threads, small ISVs were turned away (a 20-employee minimum and a rejected Business Pro account), and DocuSign support pointed them to having customers bring their own integration key.",
+    "timeToDev": {
+      "range": "15–60 min",
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s3", "s1"],
+        "note": "Free developer account, create an integration in the Developer Console (Demo toggle), add a redirect URI and secret, then run the auth-code flow against account-d.docusign.com."
+      }
+    },
+    "timeToProd": {
+      "range": "2–8+ weeks",
+      "hours": {
+        "min": 336,
+        "max": 1344
+      },
+      "assumes": "A public integration that any DocuSign customer can authorize with their own account, which needs Partner Program acceptance plus Go-Live. A private custom integration on your own paid account can be promoted automatically the same day, or after a 24–48 hour manual review.",
+      "waitingOn": "Partner Program application decision, then the Go-Live check (automatic, or manual review typically 24–48 hours), plus a one-time identity verification on the production account",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": ["s2", "s4", "s7", "s8"],
+        "note": "The 24–48 hour manual review figure is from DocuSign's docs. The Partner Program timeline isn't published, and forum threads show applications rejected outright, so the range is our estimate for an accepted applicant."
+      }
+    },
+    "cost": "A paid DocuSign production account (forum reports say Business Pro may be rejected and a custom enterprise plan required) or Partner Program membership. Envelope billing depends on the integration classification."
+  },
+  "prerequisites": [
+    {
+      "item": "A free DocuSign developer (demo) account",
+      "why": "Integration keys are created and tested in the demo environment first.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "item": "A paid or partner production DocuSign account with admin access",
+      "why": "Each production integration key has to belong to a paid or partner production account that manages it.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "item": "DocuSign Partner Program membership (for public integrations)",
+      "why": "The docs say you need to join the Partner Program to launch a public integration; embedded use needs an ISV Embed licence.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "item": "OAuth 2.0 (Authorization Code Grant or JWT)",
+      "why": "REST integrations must use OAuth 2.0 to pass Go-Live, unless you get a policy exception.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Core eSignature (user consent)",
+      "examples": ["signature", "extended", "openid"],
+      "reviewRequired": true,
+      "time": "Same day–48 h (private) / weeks (public)",
+      "impact": "Send, read and track envelopes for the consenting user. 'extended' gives a fresh ~30-day refresh token on each refresh so users can stay connected. Review here means Go-Live, not per-scope review.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5", "s4"], "note": "Scopes aren't reviewed individually; the integration classification decides the path." }
+    },
+    {
+      "tier": "Service integration (JWT)",
+      "examples": ["signature", "impersonation"],
+      "reviewRequired": true,
+      "time": "Same day–48 h",
+      "impact": "Background agents acting as a user without a browser. Each user (or an org admin) grants consent once.",
+      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+    },
+    {
+      "tier": "Agreement data (Navigator / Connected Fields)",
+      "examples": ["adm_store_unified_repo_read", "models_read"],
+      "reviewRequired": true,
+      "time": "Weeks",
+      "impact": "Reading agreement data across the repository, which is what an AI contract agent often wants. The account also needs access to that API.",
+      "evidence": { "label": "inferred", "sourceIds": ["s5", "s2"], "note": "The account needs access to each API used; the time estimate is ours." }
+    },
+    {
+      "tier": "Organization admin",
+      "examples": ["organization_read", "user_read", "user_write", "account_read"],
+      "reviewRequired": true,
+      "time": "Weeks",
+      "impact": "Admin API access; needs an org admin to consent.",
+      "evidence": { "label": "inferred", "sourceIds": ["s5"], "note": "Admin consent requirement is our reading of the scope descriptions." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a developer account",
+      "owner": "human",
+      "detail": "Sign up for a free DocuSign developer account (demo environment).",
+      "url": "https://developers.docusign.com/",
+      "duration": "5 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Create an integration in the Developer Console",
+      "owner": "human",
+      "detail": "Click + Add, keep the toggle on Demo, copy the demo client ID and secret, and add redirect URIs.",
+      "url": "https://apps.docusign.com/dev-console/integrations",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The Developer Console is in open beta; the legacy Apps and Keys page still works." }
+    },
+    {
+      "title": "Implement OAuth and base-URI discovery",
+      "owner": "agent",
+      "detail": "Auth-code (or PKCE) against account-d.docusign.com/oauth/auth, exchange at /oauth/token, call /oauth/userinfo once to get the account's base_uri and cache it.",
+      "url": "https://developers.docusign.com/platform/auth/authcode/",
+      "duration": "1–3 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+    },
+    {
+      "title": "Use Connect webhooks instead of polling",
+      "owner": "agent",
+      "detail": "Subscribe to Connect for envelope status. Polling one envelope more than once per 15 minutes is flagged and can fail Go-Live.",
+      "url": "https://developers.docusign.com/platform/webhooks/connect/",
+      "duration": "1–3 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s9"], "note": null }
+    },
+    {
+      "title": "Decide the integration classification",
+      "owner": "agent",
+      "detail": "Choose Private custom, Third-party integration key (customer BYOK), Public (Partner Program) or Embedded (ISV Embed licence). This drives Go-Live and envelope billing.",
+      "url": "https://developers.docusign.com/docs/esign-rest-api/go-live/",
+      "duration": "30 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Apply to the Partner Program (public integrations)",
+      "owner": "human",
+      "detail": "Apply through the partner portal. Forum reports say applicants under 20 employees were rejected.",
+      "url": "https://partners.docusign.com/s/join-now",
+      "duration": "1 hour",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s7"], "note": "The 20-employee rule is from a community post (unverified)." }
+    },
+    {
+      "title": "Partner Program decision",
+      "owner": "wait",
+      "detail": "No published SLA.",
+      "url": null,
+      "duration": "Unknown",
+      "evidence": { "label": "unverified", "sourceIds": ["s7"], "note": "No official timeline found." }
+    },
+    {
+      "title": "Get a production account and verify identity",
+      "owner": "human",
+      "detail": "Have admin on a paid or partner production account; complete the one-time identity verification if 'Verification required' appears.",
+      "url": null,
+      "duration": "30 min–days",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "title": "Submit for Go-Live",
+      "owner": "human",
+      "detail": "In the Developer Console choose the integration type, Save, then Submit for Go-Live approval.",
+      "url": "https://apps.docusign.com/dev-console/integrations",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    },
+    {
+      "title": "Automatic promotion or manual review",
+      "owner": "wait",
+      "detail": "Eligible apps go live automatically; otherwise status is Pending approval or Declined, with manual reviews typically 24–48 hours.",
+      "url": null,
+      "duration": "Minutes–48 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "title": "Configure production settings",
+      "owner": "human",
+      "detail": "Toggle to Production, copy the production client ID/secret, and re-add redirect URIs and secrets; they aren't copied from demo.",
+      "url": "https://apps.docusign.com/dev-console/integrations",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Implement auth-code/PKCE or JWT and cache base_uri from /oauth/userinfo",
+    "Build Connect webhook handling instead of envelope polling",
+    "Add rate-limit header handling (3,000/hour, burst limits)",
+    "Pick the integration classification and draft the Partner Program application",
+    "Swap demo base paths and endpoints for production"
+  ],
+  "humanMustDo": [
+    "Create the developer account and integration key",
+    "Buy or provide a paid production account with admin access",
+    "Apply to the Partner Program and complete identity verification",
+    "Submit Go-Live and re-enter production redirect URIs and secrets"
+  ],
+  "blockers": [
+    {
+      "symptom": "\"Your account doesn't support promoting an integration key to production\" in the Go-Live dialog",
+      "cause": "The chosen production account's plan (Business Pro was reported) doesn't support key promotion.",
+      "fix": "Use a plan that supports it (sales quoted a custom enterprise plan in one thread), join the Partner Program, or have customers use their own key.",
+      "evidence": { "label": "unverified", "sourceIds": ["s8"], "note": "From a July 2026 community thread; DocuSign hadn't clarified the policy there." }
+    },
+    {
+      "symptom": "Partner Program application rejected for a small company",
+      "cause": "Applicants reportedly need at least 20 employees.",
+      "fix": "DocuSign support suggested having customers create an integration key in their own account (Third-party integration key) for now.",
+      "evidence": { "label": "unverified", "sourceIds": ["s7"], "note": "Community thread from September 2026." }
+    },
+    {
+      "symptom": "Go-Live status 'Declined'",
+      "cause": "The app needs manual review or more information, or the production account needs a one-time identity verification ('Verification required').",
+      "fix": "Download the review logs, fix errors, finish identity verification, and resubmit.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s6"], "note": null }
+    },
+    {
+      "symptom": "Go-Live fails although calls look fine",
+      "cause": "The review checks your 20 most recent API calls (login and userinfo calls excluded) for errors and polling violations; requesting the same envelope within 15 minutes counts as polling, and legacy or OAuth 1.0 auth isn't accepted.",
+      "fix": "Poll at 20-minute intervals or use Connect, cache document lists, and make 20 clean OAuth 2.0 calls right before submitting.",
+      "evidence": { "label": "sourced", "sourceIds": ["s9", "s10"], "note": null }
+    },
+    {
+      "symptom": "Production calls fail with invalid redirect URI or invalid_client after going live",
+      "cause": "Secrets and redirect URIs aren't copied from demo to production.",
+      "fix": "Add them again in the production version of the integration.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "The exact error strings are inferred." }
+    },
+    {
+      "symptom": "Hourly_Envelope_Polling_Limit_Exceeded or HTTP 429 from /oauth/userinfo",
+      "cause": "Per-envelope GET limits, or userinfo limits of 25,000/hour per user and 50,000/hour per integration key.",
+      "fix": "Cache base_uri once per user and switch to Connect.",
+      "evidence": { "label": "sourced", "sourceIds": ["s9"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 8 hours (expires_in 28800). Refresh tokens last about 30 days; with the extended scope each refresh issues a new full-lifetime token, so users can stay connected indefinitely.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s5"], "note": null }
+    },
+    {
+      "text": "Accounts get 3,000 API calls per hour by default, shared across all apps, plus a 30-second burst limit of 500 in production (200 in demo).",
+      "evidence": { "label": "sourced", "sourceIds": ["s9"], "note": null }
+    },
+    {
+      "text": "Production base URIs differ by data centre ({server}.docusign.net); get them from /oauth/userinfo rather than hard-coding.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "text": "The integration key is copied, not moved, to production, so the same client ID keeps working in demo.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "text": "DocuSign also runs an official MCP server with setup guides for Claude, ChatGPT, Copilot and others, which may suit agents better than raw REST.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "Seen in the docs navigation (/platform/mcp-server/); we didn't review its access terms." }
+    },
+    {
+      "text": "The integration classification you pick changes how envelopes are billed on your production account.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Confidential Authorization Code Grant: get token", "url": "https://developers.docusign.com/platform/auth/confidential-authcode-get-token/" },
+    { "id": "s2", "title": "Docusign Go-Live (platform)", "url": "https://developers.docusign.com/platform/go-live/" },
+    { "id": "s3", "title": "Create an IK in the Developer Console", "url": "https://developers.docusign.com/platform/create-ik-developer-console/" },
+    { "id": "s4", "title": "Go-Live: eSignature REST API", "url": "https://developers.docusign.com/docs/esign-rest-api/go-live/" },
+    { "id": "s5", "title": "Authentication scopes", "url": "https://developers.docusign.com/platform/auth/reference/scopes/" },
+    { "id": "s6", "title": "Go-Live troubleshooting", "url": "https://developers.docusign.com/platform/go-live/troubleshooting/" },
+    { "id": "s7", "title": "Community: Go-Live path for a public integration from an ISV with under 20 employees", "url": "https://community.docusign.com/go-live-70/go-live-path-for-a-public-integration-from-an-isv-with-under-20-employees-27679" },
+    { "id": "s8", "title": "Community: Go-Live eligibility question, ISV connector public integration for a small ISV", "url": "https://community.docusign.com/go-live-70/go-live-eligibility-question-isv-connector-public-integration-for-a-small-isv-27321" },
+    { "id": "s9", "title": "API resource limits", "url": "https://developers.docusign.com/platform/resource-limits/" },
+    { "id": "s10", "title": "From the Trenches: Go-Live failures (DocuSign developer blog)", "url": "https://docusign.com/blog/developers/the-trenches-go-live-failures" },
+    { "id": "s11", "title": "DocuSign OIDC discovery (production)", "url": "https://account.docusign.com/.well-known/openid-configuration" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://account.docusign.com/.well-known/openid-configuration: issuer https://account.docusign.com/, authorize /oauth/auth, token /oauth/token; scopes_supported includes signature, extended, impersonation, adm_store_unified_repo_read",
+      "GET https://account-d.docusign.com/.well-known/openid-configuration: issuer https://account-d.docusign.com/ (demo)",
+      "GET https://apps.docusign.com/dev-console/integrations: HTTP 200 (we didn't sign in)",
+      "Docs content read from developers.docusign.com/page-data/*.json because the pages render client-side"
+    ],
+    "openQuestions": [
+      "The official Partner Program eligibility criteria (the 20-employee minimum comes only from a forum post)",
+      "Which paid plans allow production key promotion for a private or public integration",
+      "Partner Program application turnaround",
+      "Whether the 'last 20 calls without error' Go-Live criterion still applies under the Developer Console flow"
+    ]
+  }
+}

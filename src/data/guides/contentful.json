@@ -1,0 +1,437 @@
+{
+  "app": {
+    "name": "Contentful",
+    "slug": "contentful",
+    "website": "https://www.contentful.com",
+    "developerPortal": "https://app.contentful.com/account/profile/developers/applications",
+    "category": "Headless CMS"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 applications",
+      "url": "https://www.contentful.com/developers/docs/extensibility/oauth/"
+    },
+    {
+      "kind": "scopes",
+      "label": "CMA access tokens and scopes",
+      "url": "https://contentful.com/developers/docs/references/content-management-api/access-tokens"
+    },
+    {
+      "kind": "api",
+      "label": "Content Management API overview (rate limits)",
+      "url": "https://contentful.com/developers/docs/references/content-management-api/overview.md"
+    },
+    {
+      "kind": "api",
+      "label": "Authentication reference",
+      "url": "https://contentful.com/developers/docs/references/authentication.md"
+    },
+    {
+      "kind": "console",
+      "label": "OAuth applications (account settings)",
+      "url": "https://app.contentful.com/account/profile/developers/applications"
+    }
+  ],
+  "verdict": {
+    "difficulty": "trivial",
+    "summary": "Any Contentful user can register an OAuth application in account settings and any other Contentful user can authorize it the same day; we found no review or install cap in the docs. The documented flow is implicit-style (response_type=token, token in the URL fragment), with only two scopes, and the token carries the user's full access across all their spaces.",
+    "timeToDev": {
+      "range": "15–45 min",
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Create the app, set an HTTPS redirect (ngrok for localhost), redirect to be.contentful.com/oauth/authorize, and read the token from the fragment."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 1,
+        "max": 8
+      },
+      "assumes": "An agent that reads or edits content via the Content Management API on behalf of any Contentful user; a Marketplace App Framework listing is a separate, optional path.",
+      "waitingOn": "Nothing — no review",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "Contentful's OAuth docs describe creating an app and requesting tokens with no review step; absence of review is our reading."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Contentful account",
+      "why": "OAuth applications are created under your account profile settings.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An HTTPS redirect URI",
+      "why": "The redirect URI must be HTTPS; Contentful suggests ngrok during development on localhost.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A front-end or redirect page that can read the URL hash fragment",
+      "why": "The access token arrives in the redirect URI's hash fragment, which isn't sent to your server.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read-only",
+      "examples": [
+        "content_management_read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read access to everything the authorizing user can see in the Content Management API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Read and write",
+      "examples": [
+        "content_management_manage"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Read and write; includes read, so request only this one if the agent edits content. Writes are limited only by the user's own space roles.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in to Contentful",
+      "owner": "human",
+      "detail": "Use or create a Contentful account (a free space is enough for testing).",
+      "url": "https://app.contentful.com",
+      "duration": "5 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Pick the scope",
+      "owner": "agent",
+      "detail": "Choose content_management_read for read-only agents or content_management_manage for editing; request one scope per authorization.",
+      "url": "https://contentful.com/developers/docs/references/content-management-api/access-tokens",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
+        "note": "Single-scope requests are reported by a third-party connector changelog."
+      }
+    },
+    {
+      "title": "Create the OAuth application",
+      "owner": "human",
+      "detail": "Account settings → OAuth applications → new app: name, description, HTTPS redirect URI, scope checkboxes, and confidential or public client type. Copy the client ID.",
+      "url": "https://app.contentful.com/account/profile/developers/applications",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Build the authorize redirect and callback",
+      "owner": "agent",
+      "detail": "Send users to https://be.contentful.com/oauth/authorize?response_type=token&client_id=...&redirect_uri=...&scope=content_management_manage and parse #access_token=... on the redirect page, then post it to your backend over HTTPS.",
+      "url": "https://www.contentful.com/developers/docs/extensibility/oauth/",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test the consent flow",
+      "owner": "human",
+      "detail": "Authorize with your own account and confirm the agent can list spaces and entries.",
+      "url": null,
+      "duration": "10 min",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Add rate-limit handling",
+      "owner": "agent",
+      "detail": "Respect the default 7 requests/second CMA limit; on 429 wait X-Contentful-RateLimit-Reset seconds.",
+      "url": "https://contentful.com/developers/docs/references/content-management-api/overview.md",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle EU data residency",
+      "owner": "agent",
+      "detail": "Route EU data residency customers to https://api.eu.contentful.com for CMA calls.",
+      "url": "https://contentful.com/developers/docs/references/content-management-api/overview.md",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Whether EU users use a different OAuth authorize host is unconfirmed."
+      }
+    },
+    {
+      "title": "Offer token revocation",
+      "owner": "agent",
+      "detail": "Let users disconnect and revoke tokens via the CMA access-token revoke endpoint; track revokedAt.",
+      "url": "https://contentful.com/developers/docs/references/content-management-api/access-tokens",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Choose the single needed scope",
+    "Generate the authorize URL and fragment-parsing callback",
+    "Build 7 rps throttling with 429 backoff",
+    "Route EU-residency customers to the EU API host"
+  ],
+  "humanMustDo": [
+    "Create the OAuth application in account settings",
+    "Register the HTTPS redirect URI",
+    "Authorize a test account"
+  ],
+  "blockers": [
+    {
+      "symptom": "Authorization error on Contentful's consent page",
+      "cause": "Requesting multiple scopes in one request, or a scope not ticked on the OAuth app.",
+      "fix": "Request a single scope that matches the app's configured checkbox.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6",
+          "s7"
+        ],
+        "note": "From third-party connector docs (Prismatic changelog, StackOne guide), not Contentful's own docs."
+      }
+    },
+    {
+      "symptom": "Redirect URI rejected when using http://localhost",
+      "cause": "Contentful requires an HTTPS redirect URI.",
+      "fix": "Use a tunnel such as ngrok during development.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Your server never receives the token",
+      "cause": "The token is returned in the URL hash fragment, which browsers don't send to the server.",
+      "fix": "Read the fragment with client-side JavaScript on the redirect page and post it to your backend.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "429 Too Many Requests during bulk sync",
+      "cause": "Default CMA limit is 7 requests per second.",
+      "fix": "Throttle and honor X-Contentful-RateLimit-Reset; higher limits depend on the customer's plan.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "API calls fail for an EU customer",
+      "cause": "EU data residency customers use a different base URL.",
+      "fix": "Use https://api.eu.contentful.com for those customers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "A CMA token inherits the same access rights as the user's account, so an OAuth token reaches every space and organization that user can access. There are no per-space scopes.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The documented flow returns no refresh token. OAuth tokens appear as OAuthApplication CMA tokens that can be listed and revoked; Contentful's docs don't state a default expiry for them.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Personal access tokens don't auto-expire unless expiresIn is set; we assume similar for OAuth tokens but couldn't confirm."
+      }
+    },
+    {
+      "text": "Content Delivery API (published content) uses separate space-level API keys, not OAuth tokens; OAuth covers the Content Management API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "For space-scoped, backend access, the App Framework (app definitions, app keys and app identities) is an alternative to user OAuth; most of its setup needs organization owner, admin or developer roles.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Contentful publishes Markdown versions of its docs (append .md) and a docs MCP server for AI coding tools.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The .md variant returned 200 on 2026-10-20 while the HTML docs returned 429 to automated fetches."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Contentful: OAuth (Markdown version)",
+      "url": "https://contentful.com/developers/docs/extensibility/oauth.md"
+    },
+    {
+      "id": "s2",
+      "title": "Contentful CMA: Access tokens",
+      "url": "https://contentful.com/developers/docs/references/content-management-api/access-tokens.md"
+    },
+    {
+      "id": "s3",
+      "title": "Contentful CMA: Overview (rate limits, EU base URL)",
+      "url": "https://contentful.com/developers/docs/references/content-management-api/overview.md"
+    },
+    {
+      "id": "s4",
+      "title": "Contentful: Authentication reference",
+      "url": "https://contentful.com/developers/docs/references/authentication.md"
+    },
+    {
+      "id": "s5",
+      "title": "Contentful App Framework: Building a backend app (app identities and events)",
+      "url": "https://contentful.com/developers/docs/extensibility/app-framework/app-identities-and-events.md"
+    },
+    {
+      "id": "s6",
+      "title": "Prismatic: Contentful connector changelog",
+      "url": "https://prismatic.io/docs/changelog/connectors/tags/contentful/"
+    },
+    {
+      "id": "s7",
+      "title": "StackOne: Contentful OAuth 2.0 connector guide",
+      "url": "https://docs.stackone.com/connectors/contentful/guides/connector-profile/oauth-2-0"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "https://be.contentful.com/oauth/authorize returned HTTP 200 (with and without dummy parameters; no login attempted)",
+      "https://app.contentful.com/account/profile/developers/applications returned HTTP 200",
+      "https://be.contentful.com/.well-known/openid-configuration returned a 'Page Not Found' page — no OIDC discovery",
+      "contentful.com HTML docs returned HTTP 429; the .md variants returned 200"
+    ],
+    "openQuestions": [
+      "Whether Contentful supports an authorization code grant (with refresh tokens) for confidential clients, beyond the documented response_type=token flow",
+      "Default lifetime of OAuth application tokens",
+      "Whether EU data residency users authorize at a different OAuth host",
+      "Whether organizations can block third-party OAuth apps"
+    ]
+  }
+}

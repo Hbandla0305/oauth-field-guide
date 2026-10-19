@@ -1,0 +1,322 @@
+{
+  "app": {
+    "name": "Dropbox Sign",
+    "slug": "dropbox-sign",
+    "website": "https://sign.dropbox.com",
+    "developerPortal": "https://app.hellosign.com/home/myAccount?current_tab=integrations#api",
+    "category": "E-signature"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "OAuth walkthrough",
+      "url": "https://developers.hellosign.com/docs/guides/o-auth/walkthrough"
+    },
+    {
+      "kind": "scopes",
+      "label": "OAuth overview (billing models and scopes)",
+      "url": "https://developers.hellosign.com/docs/guides/o-auth/overview"
+    },
+    {
+      "kind": "review",
+      "label": "App approval overview",
+      "url": "https://developers.hellosign.com/docs/guides/app-approval/overview"
+    },
+    {
+      "kind": "review",
+      "label": "Submitting for app approval",
+      "url": "https://developers.hellosign.com/docs/guides/app-approval/submitting"
+    },
+    {
+      "kind": "changelog",
+      "label": "API changelog",
+      "url": "https://developers.hellosign.com/changelog"
+    },
+    {
+      "kind": "console",
+      "label": "API settings",
+      "url": "https://app.hellosign.com/home/myAccount?current_tab=integrations#api"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "Building and testing an OAuth app is self-serve in test mode, but other users can't authorize an OAuth app until Dropbox Sign approves it through Support Assisted Approval (a Google Form with a screen-recorded demo of every enabled scope; self-publish isn't available for OAuth). Production calls also need an activated paid API plan.",
+    "timeToDev": {
+      "range": "30–90 min",
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": ["s1", "s2"],
+        "note": "Create an API app with OAuth enabled, pick a billing model and scopes, and authorize it from your own account. API calls run with test_mode=1 until approval."
+      }
+    },
+    "timeToProd": {
+      "range": "1–3 weeks",
+      "hours": {
+        "min": 168,
+        "max": 504
+      },
+      "assumes": "An OAuth app that sends and reads signature requests for other Dropbox Sign users, which always needs Support Assisted Approval and a paid API plan. Non-embedded, non-OAuth use of your own account needs no approval.",
+      "waitingOn": "Dropbox Sign API support review of the OAuth approval form and demo video (they contact you before rejecting), plus paid API plan activation via sales",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": ["s3", "s4", "s5"],
+        "note": "Dropbox Sign doesn't publish an OAuth review turnaround or self-serve pricing timeline; the range is our estimate including recording the demo and back-and-forth."
+      }
+    },
+    "cost": "A paid Dropbox Sign API plan is needed before production calls (pricing via app.hellosign.com/api/pricing or a sales form). With 'Charge me' scopes, requests bill to the app owner; with 'Charge users' scopes, to the user."
+  },
+  "prerequisites": [
+    {
+      "item": "A Dropbox Sign account with API access",
+      "why": "API apps and keys are created from the API settings page.",
+      "evidence": { "label": "sourced", "sourceIds": ["s6", "s1"], "note": null }
+    },
+    {
+      "item": "A paid API plan that includes the features you use",
+      "why": "You can finish approval first, but production calls are blocked until a paid plan is active.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+    },
+    {
+      "item": "A working, end-to-end integration and a 3–5 minute demo video",
+      "why": "Mockups aren't approved; the demo must show the OAuth flow and use of every enabled scope.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "item": "A public website URL and an HTTPS OAuth callback",
+      "why": "Required on the OAuth approval form and for the authorization redirect.",
+      "evidence": { "label": "sourced", "sourceIds": ["s4", "s1"], "note": null }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Own account only (test mode)",
+      "examples": ["basic_account_info", "request_signature"],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "You can authorize the app from your own account and make test_mode calls while building.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s5"], "note": null }
+    },
+    {
+      "tier": "'Charge me' (app owner pays, limited)",
+      "examples": ["basic_account_info", "request_signature"],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Send signature requests and read their status and files on a user's behalf, billed to you.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": "Duration is our estimate." }
+    },
+    {
+      "tier": "'Charge users' (full access)",
+      "examples": ["account_access", "signature_request_access", "template_access"],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Send, view and update signature requests, download files and manage templates, billed to the user. The docs note that signature requests must be made with the OAuth token to be accessible.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": "Duration is our estimate." }
+    },
+    {
+      "tier": "Team and app admin",
+      "examples": ["team_access", "api_app_access"],
+      "reviewRequired": true,
+      "time": "1–3 weeks",
+      "impact": "Manage team members and embedded API apps. Every enabled scope has to be demoed or explained in the form.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": "Duration is our estimate." }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Sign in and open API settings",
+      "owner": "human",
+      "detail": "Sign in to Dropbox Sign and open the API tab.",
+      "url": "https://app.hellosign.com/home/myAccount?current_tab=integrations#api",
+      "duration": "5 min",
+      "evidence": { "label": "tested", "sourceIds": ["s6"], "note": "The URL redirects to the login page when signed out." }
+    },
+    {
+      "title": "Create an API app with OAuth",
+      "owner": "human",
+      "detail": "Create the app, set the OAuth callback URL, choose the billing model ('Charge me' or 'Charge users') and scopes. Copy the client ID and secret.",
+      "url": "https://app.hellosign.com/oauth/createAppForm",
+      "duration": "10 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+    },
+    {
+      "title": "Choose the minimum scopes",
+      "owner": "agent",
+      "detail": "Each enabled scope must be demoed or justified, and changing scopes later de-authorizes every user, so decide up front.",
+      "url": "https://developers.hellosign.com/docs/guides/o-auth/overview",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s2", "s4"], "note": null }
+    },
+    {
+      "title": "Implement the OAuth flow",
+      "owner": "agent",
+      "detail": "Send users to https://app.hellosign.com/oauth/authorize?response_type=code&client_id=...&state=..., exchange the code at POST https://app.hellosign.com/oauth/token, store the refresh token, refresh hourly.",
+      "url": "https://developers.hellosign.com/docs/guides/o-auth/walkthrough",
+      "duration": "1–2 hours",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s7"], "note": null }
+    },
+    {
+      "title": "Build the workflow in test mode",
+      "owner": "agent",
+      "detail": "Call https://api.hellosign.com/v3 with the Bearer token and test_mode=1; add event callbacks for status.",
+      "url": "https://developers.hellosign.com/docs/guides/o-auth/walkthrough",
+      "duration": "Hours–days",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s5"], "note": null }
+    },
+    {
+      "title": "Plan the demo and draft form answers",
+      "owner": "agent",
+      "detail": "Script a 3–5 minute voiced-over demo covering the OAuth consent and each scope; list endpoints and signature_request_id/template_id used; explain any scope not shown.",
+      "url": "https://developers.hellosign.com/docs/guides/app-approval/submitting",
+      "duration": "1 hour",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Record the demo",
+      "owner": "human",
+      "detail": "Record from your own account (test mode) and upload to a shareable link.",
+      "url": null,
+      "duration": "1 hour",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Submit the OAuth Workflow App Approval Form",
+      "owner": "human",
+      "detail": "Submit website URL, client IDs, scopes, demo link and endpoints. Use only the OAuth form even if you also use embedded features.",
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLSd1MfLe892uCzZUJw5CELLd3TPaUQ3WRDwA7Q1PqI0kuaxGiQ/viewform",
+      "duration": "20 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+    },
+    {
+      "title": "Support review",
+      "owner": "wait",
+      "detail": "A dedicated API support expert evaluates the app and contacts you for more information or a live demo before any rejection.",
+      "url": null,
+      "duration": "Unknown (days–weeks)",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "No turnaround is published." }
+    },
+    {
+      "title": "Activate a paid API plan",
+      "owner": "human",
+      "detail": "Buy a plan that includes your features, or talk to sales via the pricing form.",
+      "url": "https://sign.dropbox.com/form/api-pricing",
+      "duration": "Days",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "Duration is our estimate." }
+    },
+    {
+      "title": "Switch to production",
+      "owner": "agent",
+      "detail": "Remove test_mode=1 from API calls (and skipDomainVerification from embeds if used).",
+      "url": "https://developers.hellosign.com/docs/guides/app-approval/approved",
+      "duration": "15 min",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s8"], "note": null }
+    }
+  ],
+  "agentCanDo": [
+    "Choose the billing model and minimum scopes",
+    "Implement the OAuth code flow and hourly token refresh",
+    "Build the signature-request workflow in test mode with callbacks",
+    "Script the demo video and draft the approval form answers",
+    "Remove test_mode after approval"
+  ],
+  "humanMustDo": [
+    "Create the API app and set the callback URL",
+    "Record the voiced-over demo video",
+    "Submit the OAuth approval form and answer support",
+    "Buy a paid API plan"
+  ],
+  "blockers": [
+    {
+      "symptom": "Other users can't authorize your app (only your own account works)",
+      "cause": "OAuth apps can't be authorized or added by other users until approved for production.",
+      "fix": "Submit the OAuth Workflow App Approval Form.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact error shown to other users isn't documented." }
+    },
+    {
+      "symptom": "Production calls fail although the app is approved",
+      "cause": "Production calls need an activated paid API plan.",
+      "fix": "Activate a paid API plan that includes your features.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": "The error string isn't documented in the pages we read." }
+    },
+    {
+      "symptom": "All connected users suddenly lose access after an app settings change",
+      "cause": "Any change to an app's scopes removes existing user authorizations.",
+      "fix": "Lock scopes before launch; if you must change them, prompt every user to re-run OAuth.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "symptom": "Approval delayed or not granted",
+      "cause": "The demo shows mockups or misses part of the workflow or an enabled scope.",
+      "fix": "Show the full flow end to end for every scope, or explain unused scopes in the form.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+    },
+    {
+      "symptom": "Access token stops working after about an hour",
+      "cause": "OAuth access tokens expire after roughly one hour.",
+      "fix": "Refresh with grant_type=refresh_token at /oauth/token and store the new tokens.",
+      "evidence": { "label": "sourced", "sourceIds": ["s7", "s1"], "note": null }
+    },
+    {
+      "symptom": "Token for a newly created user account returns errors",
+      "cause": "Accounts created via the API return a token that doesn't work until the user confirms the account by email and authorizes the app.",
+      "fix": "Wait for the confirmation callback before using the token.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last about one hour; refresh tokens are used to get new ones without user interaction.",
+      "evidence": { "label": "sourced", "sourceIds": ["s1", "s7"], "note": null }
+    },
+    {
+      "text": "The 'Signature Request Access' scope note says requests must be made with the OAuth token to be accessible, which suggests an agent may not see signature requests the user sent from the web app or another integration.",
+      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "Our reading of a one-line scope description; we didn't confirm it against the API." }
+    },
+    {
+      "text": "Billing follows the scope set: 'Charge me' scopes bill the app owner, 'Charge users' scopes bill the user being acted for.",
+      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+    },
+    {
+      "text": "Approved apps can still make test_mode=1 calls that don't count against quota, so one app can serve test and production.",
+      "evidence": { "label": "sourced", "sourceIds": ["s8"], "note": null }
+    },
+    {
+      "text": "Dropbox Sign runs a docs MCP server (developers.hellosign.com/_mcp/server) for coding agents; it's for documentation, not user data.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "'Not user data' is our reading of the docs banner." }
+    },
+    {
+      "text": "Non-embedded, non-OAuth integrations on your own account need no approval; they just need a plan and removing test_mode.",
+      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+    }
+  ],
+  "sources": [
+    { "id": "s1", "title": "Dropbox Sign OAuth walkthrough", "url": "https://developers.hellosign.com/docs/guides/o-auth/walkthrough" },
+    { "id": "s2", "title": "Dropbox Sign OAuth overview (billing and scopes)", "url": "https://developers.hellosign.com/docs/guides/o-auth/overview" },
+    { "id": "s3", "title": "App approval overview", "url": "https://developers.hellosign.com/docs/guides/app-approval/overview" },
+    { "id": "s4", "title": "Submitting for app approval", "url": "https://developers.hellosign.com/docs/guides/app-approval/submitting" },
+    { "id": "s5", "title": "Dropbox Help: How to get app approval for Dropbox Sign API", "url": "https://help.dropbox.com/integrations/how-to-get-app-approval-for-dropbox-sign-api" },
+    { "id": "s6", "title": "Dropbox Sign API authentication reference", "url": "https://developers.hellosign.com/api/api-reference-authentication" },
+    { "id": "s7", "title": "OAuth token refresh", "url": "https://developers.hellosign.com/docs/guides/o-auth/token-refresh" },
+    { "id": "s8", "title": "You've been approved (FAQ)", "url": "https://developers.hellosign.com/docs/guides/app-approval/approved" },
+    { "id": "s9", "title": "Dropbox Sign API changelog", "url": "https://developers.hellosign.com/changelog" }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "POST https://app.hellosign.com/oauth/token with no params: {\"error\":\"unsupported_grant_type\",...must be one of [\"authorization_code\",\"authorize_code\",\"refresh_token\"]}",
+      "GET https://api.hellosign.com/v3/account without credentials: {\"error\":{\"error_msg\":\"Unauthorized user. No credentials supplied.\",\"error_name\":\"unauthorized\"}}",
+      "GET https://app.hellosign.com/oauth/authorize and /oauth/createAppForm: 302 to /account/logIn",
+      "Changelog through October 6, 2026 shows no OAuth or approval policy changes (July 31, 2026: improved OAuth error handling only)"
+    ],
+    "openQuestions": [
+      "Typical OAuth approval turnaround",
+      "Which API plan tiers allow OAuth apps, and whether 'Charge users' requires end users to hold an API plan",
+      "Current API rate limits (the rate-limit page we tried returned 404)",
+      "Whether signature_request_access really excludes requests created outside your app"
+    ]
+  }
+}

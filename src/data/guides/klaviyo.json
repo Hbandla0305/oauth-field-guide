@@ -1,0 +1,551 @@
+{
+  "app": {
+    "name": "Klaviyo",
+    "slug": "klaviyo",
+    "website": "https://www.klaviyo.com",
+    "developerPortal": "https://www.klaviyo.com/manage-apps",
+    "category": "Email marketing"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Set up OAuth",
+      "url": "https://developers.klaviyo.com/en/docs/set_up_oauth"
+    },
+    {
+      "kind": "scopes",
+      "label": "Authentication and scopes",
+      "url": "https://developers.klaviyo.com/en/docs/authenticate_"
+    },
+    {
+      "kind": "review",
+      "label": "Submit your app for review",
+      "url": "https://developers.klaviyo.com/en/docs/submit_your_app_for_review"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits and error handling",
+      "url": "https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling"
+    },
+    {
+      "kind": "console",
+      "label": "Manage apps",
+      "url": "https://www.klaviyo.com/manage-apps"
+    }
+  ],
+  "verdict": {
+    "difficulty": "moderate",
+    "summary": "Any Klaviyo owner, admin or manager can create an OAuth app and share its install URL, and customers can install it the same day, but they'll see a 'not reviewed by Klaviyo' warning until the app passes App Marketplace review. Review needs 5 active real-customer installs first, has no published timeline, and in October 2026 Klaviyo said reviews were temporarily on hold.",
+    "timeToDev": {
+      "range": "1–2 hours",
+      "hours": {
+        "min": 1,
+        "max": 2
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Creating the app takes minutes; PKCE is mandatory even for confidential clients, which adds some implementation time."
+      }
+    },
+    "timeToProd": {
+      "range": "Same day",
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
+      "assumes": "An unlisted app installed via its shared install URL, reading and writing profiles, lists and campaigns; customers see an unreviewed-app warning. Removing the warning and getting listed needs 5 active installs and then a review of unknown length (over a month reported in 2026).",
+      "waitingOn": "Nothing — no review for unlisted installs. For the Marketplace listing: 5 real customer installs, then Klaviyo's app review.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s7"
+        ],
+        "note": "The docs say customers and testers can install and use the app before approval, with a warning."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Klaviyo account where you're an Owner, Admin or Manager",
+      "why": "Only those roles can create OAuth apps.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "PKCE support in your OAuth client",
+      "why": "Klaviyo requires PKCE (a fresh code_verifier/code_challenge per request) for both public and confidential clients.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An install URL that starts OAuth directly",
+      "why": "The installation must work when started from klaviyo.com or its subdomains, and reviewers reject install URLs that land on a marketing page instead of starting OAuth.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "In-app disconnect that revokes tokens",
+      "why": "Review requires disconnect from either side to work and your app to revoke the user's refresh token.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Read-only marketing data",
+      "examples": [
+        "accounts:read",
+        "profiles:read",
+        "lists:read",
+        "segments:read",
+        "campaigns:read",
+        "flows:read",
+        "metrics:read",
+        "events:read"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Enough for an analytics or reporting agent. accounts:read is required on every app. Installs work unreviewed, with a warning.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Write marketing data",
+      "examples": [
+        "profiles:write",
+        "lists:write",
+        "events:write",
+        "campaigns:write",
+        "templates:write",
+        "subscriptions:write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Lets an agent create profiles, track events, manage subscriptions and build campaigns. Klaviyo reviewers reject apps that request scopes they don't use, so ask only for what you call.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Sensitive account data",
+      "examples": [
+        "data-privacy:write",
+        "conversations:read",
+        "conversations:write",
+        "push-tokens:write"
+      ],
+      "reviewRequired": false,
+      "time": "Same day",
+      "impact": "Deletion requests, SMS/inbox conversations and push tokens. No separate review tier is documented, but expect reviewers to scrutinize them during Marketplace review.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s8",
+          "s5"
+        ],
+        "note": "Klaviyo doesn't tier review by scope; this grouping is ours."
+      }
+    },
+    {
+      "tier": "Marketplace listing (removes the warning)",
+      "examples": [
+        "Any scopes above, after review"
+      ],
+      "reviewRequired": true,
+      "time": "Weeks to months",
+      "impact": "Needs 5 active installs from real customer accounts, a security form, an integration registration form, testing instructions and listing assets. Approval removes the unreviewed warning and makes the app discoverable.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s7"
+        ],
+        "note": "Duration isn't published; 'weeks to months' is inferred from a 2026 community report of over a month with reviews on hold."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the app",
+      "owner": "human",
+      "detail": "Go to Manage apps, click Create app, name it, and save the client ID and secret (the secret can't be viewed again but can be regenerated).",
+      "url": "https://www.klaviyo.com/manage-apps",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "manage-apps redirected us to the Klaviyo login (HTTP 302) on 2026-10-20."
+      }
+    },
+    {
+      "title": "Choose least-privilege scopes",
+      "owner": "agent",
+      "detail": "Map each planned endpoint to its scope from the API reference and produce a space-separated list that includes accounts:read.",
+      "url": "https://developers.klaviyo.com/en/docs/authenticate_",
+      "duration": "30 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Enter scopes and redirect URLs",
+      "owner": "human",
+      "detail": "Paste the scopes and the allowlisted redirect URLs (space, tab or newline separated) in the app settings and Save.",
+      "url": "https://www.klaviyo.com/manage-apps",
+      "duration": "5 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement OAuth with PKCE",
+      "owner": "agent",
+      "detail": "Redirect to https://www.klaviyo.com/oauth/authorize with client_id, response_type=code, redirect_uri, scope, state and an S256 code_challenge. Exchange the code (valid 5 minutes) at https://a.klaviyo.com/oauth/token with the code_verifier; the redirect_uri must match.",
+      "url": "https://developers.klaviyo.com/en/docs/set_up_oauth",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle refresh, denial and uninstall",
+      "owner": "agent",
+      "detail": "Refresh with the stored refresh token near the 1-hour expiry (max 10 refreshes/min), treat invalid_grant as uninstall, show a clear message when the user denies scopes, and POST to https://a.klaviyo.com/oauth/revoke on disconnect.",
+      "url": "https://developers.klaviyo.com/en/docs/handle_your_apps_oauth_flow",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Respect per-install rate limits",
+      "owner": "agent",
+      "detail": "Read RateLimit-Remaining/Reset headers and honor Retry-After on 429. Each endpoint has a burst/steady tier (XS 1/s 15/m up to XL 350/s 3500/m) per account per app.",
+      "url": "https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Share the install URL with first customers",
+      "owner": "human",
+      "detail": "Give customers your OAuth install URL. They can install unreviewed apps after seeing a warning. Reach 5 active installs from real customer accounts with live API activity.",
+      "url": null,
+      "duration": "Days to weeks",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the submission materials",
+      "owner": "agent",
+      "detail": "Adapt Klaviyo's testing-instructions template into a Google Doc (Commenter access for app.marketplace@klaviyo.com), write the 75-char short and 300-char full descriptions, 2–6 features and at least one user guide article.",
+      "url": "https://developers.klaviyo.com/en/docs/submit_your_app_for_review",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Complete forms and submit",
+      "owner": "human",
+      "detail": "Fill the Authentication, Company details, App listing and Registration & security tabs (integration registration form once per company, security form per app), upload a 48x48 SVG logo and gallery, then Submit.",
+      "url": "https://www.klaviyo.com/manage-apps",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for App Marketplace review",
+      "owner": "wait",
+      "detail": "Klaviyo emails approval, rejection or change requests from app.marketplace@klaviyo.com. No timeline is published; Klaviyo said on 2026-10-02 that reviews were temporarily on hold while the process is updated.",
+      "url": null,
+      "duration": "Unknown (1+ month reported)",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7",
+          "s3"
+        ],
+        "note": "From a Klaviyo community manager's reply in the community forum, not the developer docs."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Map endpoints to least-privilege scopes",
+    "Implement the PKCE authorization code flow, refresh and revoke",
+    "Build rate-limit handling from RateLimit and Retry-After headers",
+    "Draft testing instructions, listing copy and user-guide articles",
+    "Check the install URL starts OAuth directly from klaviyo.com"
+  ],
+  "humanMustDo": [
+    "Create the app in Manage apps as an Owner, Admin or Manager",
+    "Store the client secret",
+    "Recruit 5 real customer installs",
+    "Complete the security and integration registration forms",
+    "Submit the listing and answer reviewer emails"
+  ],
+  "blockers": [
+    {
+      "symptom": "Customers see a warning that Klaviyo hasn't reviewed the app during install",
+      "cause": "The app isn't approved for the App Marketplace yet.",
+      "fix": "Expected for unlisted apps; installs still work. Pass Marketplace review to remove it.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Exact warning text wasn't documented in the pages we read."
+      }
+    },
+    {
+      "symptom": "Submission rejected or not accepted for review",
+      "cause": "Fewer than 5 active installs from real customer accounts with live API activity (test accounts don't count), or missing security/registration forms.",
+      "fix": "Get real customers installed and using the app, and complete both forms before submitting.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "App sits in 'Submitted for review' for over a month",
+      "cause": "No published SLA; in October 2026 Klaviyo said reviews were temporarily on hold while the process is updated.",
+      "fix": "Don't resubmit; make sure all fields are complete and keep onboarding customers via the install URL.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Community forum thread with a Klaviyo community manager reply (2026-10-02)."
+      }
+    },
+    {
+      "symptom": "Token or revoke calls to www.klaviyo.com fail",
+      "cause": "Since 2025-03-31 token and revoke traffic through www.klaviyo.com is blocked.",
+      "fix": "Use https://a.klaviyo.com/oauth/token and https://a.klaviyo.com/oauth/revoke.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "invalid_grant when refreshing",
+      "cause": "The user uninstalled the app, or the refresh token went unused for 90 days and was revoked.",
+      "fix": "Treat it as an uninstall and ask the user to reinstall; refresh at least every 90 days for idle accounts.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Rejected for requesting unused scopes or for keeping an API-key connection option",
+      "cause": "Reviewers reject apps whose scopes exceed what they use, and apps that still offer private API key connections.",
+      "fix": "Trim scopes to what the code calls and remove the API-key connection path.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 1 hour (subject to change; use expires_in). Refresh tokens last until uninstall but are revoked after 90 days unused. Refresh requests are limited to 10 per minute, and the token endpoint's limit is much lower than the API's.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "OAuth apps get their own rate-limit quota per installed instance (per account, per app), separate from the account's private-key integrations.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Access tokens can't be revoked; only refresh tokens can, via POST /oauth/revoke.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The discovery document at https://a.klaviyo.com/.well-known/oauth-authorization-server describes a staff MCP OAuth server (authorize at /staff/mcp/oauth/authorize, token at auth.services.klaviyo.com), not the public app endpoints. Configure your client with the endpoints from the Set up OAuth guide instead.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [],
+        "note": "Fetched on 2026-10-20: issuer https://a.klaviyo.com, S256 PKCE only, token_endpoint_auth_methods none, scopes openid/profile/email/phone."
+      }
+    },
+    {
+      "text": "Changing scopes or redirect URLs on a published app requires resubmission and re-review before the change goes live.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Klaviyo: Set up OAuth",
+      "url": "https://developers.klaviyo.com/en/docs/set_up_oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Klaviyo: Create a public OAuth app",
+      "url": "https://developers.klaviyo.com/en/docs/create_a_public_oauth_app"
+    },
+    {
+      "id": "s3",
+      "title": "Klaviyo: Submit your app for review",
+      "url": "https://developers.klaviyo.com/en/docs/submit_your_app_for_review"
+    },
+    {
+      "id": "s4",
+      "title": "Klaviyo: Rate limits and error handling",
+      "url": "https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling"
+    },
+    {
+      "id": "s5",
+      "title": "Klaviyo: Pass your app review",
+      "url": "https://developers.klaviyo.com/en/docs/pass_your_app_review"
+    },
+    {
+      "id": "s6",
+      "title": "Klaviyo: Handle your app's OAuth flow",
+      "url": "https://developers.klaviyo.com/en/docs/handle_your_apps_oauth_flow"
+    },
+    {
+      "id": "s7",
+      "title": "Klaviyo Community: OAuth app pending review for over a month (2026-09-30)",
+      "url": "https://community.klaviyo.com/accounts-and-settings-2/title-oauth-app-pending-review-for-over-a-month-has-anyone-experienced-this-19822"
+    },
+    {
+      "id": "s8",
+      "title": "Klaviyo: Authentication (scopes list)",
+      "url": "https://developers.klaviyo.com/en/docs/authenticate_"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://www.klaviyo.com/manage-apps and /oauth/authorize: 302 to klaviyo.com/login",
+      "POST https://a.klaviyo.com/oauth/token with no params: {\"error\":\"invalid_client\"}",
+      "GET https://a.klaviyo.com/.well-known/oauth-authorization-server: HTTP 200, staff MCP OAuth server metadata (S256 only)",
+      "GET https://www.klaviyo.com/.well-known/openid-configuration: HTTP 403"
+    ],
+    "openQuestions": [
+      "Whether App Marketplace reviews have resumed after the October 2026 hold, and typical turnaround",
+      "Exact text of the unreviewed-app install warning",
+      "Whether http://localhost redirect URLs are accepted",
+      "Whether there is any cap on installs for unreviewed apps (none found)"
+    ]
+  }
+}

@@ -1,0 +1,579 @@
+{
+  "app": {
+    "name": "Google Ads",
+    "slug": "google-ads",
+    "website": "https://ads.google.com",
+    "developerPortal": "https://console.cloud.google.com/google/ads-apis/overview",
+    "category": "Advertising"
+  },
+  "officialDocs": [
+    {
+      "kind": "review",
+      "label": "API access levels",
+      "url": "https://developers.google.com/google-ads/api/docs/api-policy/access-levels"
+    },
+    {
+      "kind": "changelog",
+      "label": "Access management and developer token sunset",
+      "url": "https://developers.google.com/google-ads/api/docs/api-policy/developer-token"
+    },
+    {
+      "kind": "oauth",
+      "label": "OAuth overview for the Google Ads API",
+      "url": "https://developers.google.com/google-ads/api/docs/oauth/overview"
+    },
+    {
+      "kind": "review",
+      "label": "Brand verification",
+      "url": "https://developers.google.com/google-ads/api/docs/api-policy/brand-verification"
+    },
+    {
+      "kind": "console",
+      "label": "Google Ads API overview (Cloud Console)",
+      "url": "https://console.cloud.google.com/google/ads-apis/overview"
+    }
+  ],
+  "verdict": {
+    "difficulty": "hard",
+    "summary": "Developer tokens were sunset on 2026-09-09: access levels now belong to the Google Cloud project that issues your OAuth credentials, Explorer access (2,880 production operations/day) is usually auto-approved, and Basic (15,000/day) follows brand verification within minutes. The slow part is Google's OAuth app verification for the Google Ads scope (Google Ads docs call it restricted, others call it sensitive), plus a manual audit (about 10 business days) if you need Standard's unlimited operations.",
+    "timeToDev": {
+      "range": "1–2 hours",
+      "hours": {
+        "min": 1,
+        "max": 2
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Enabling the API grants Test access immediately (test accounts only); Explorer for production accounts is automated 'in most cases'. Creating test accounts and the OAuth client takes most of the time."
+      }
+    },
+    "timeToProd": {
+      "range": "1–4 weeks",
+      "hours": {
+        "min": 168,
+        "max": 672
+      },
+      "assumes": "A multi-user agent that reads reports and manages campaigns at Basic access (15,000 ops/day), which needs brand verification plus Google OAuth app verification for the Google Ads scope; Standard access adds a manual audit of about 10 business days.",
+      "waitingOn": "Google's OAuth app verification for the Google Ads scope (3–5 business days typical for sensitive scopes, often longer), then automated Basic approval; Standard needs a manual Google compliance review.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s5",
+          "s6"
+        ],
+        "note": "Access-level timings are sourced; whether the scope goes through sensitive or restricted verification is unclear, so the range is our estimate."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "A Google Cloud project with the Google Ads API enabled",
+      "why": "Since 2026-09-09 the project that generates your OAuth credentials sets your API access level; sign-up and upgrades happen on the Google Ads API Overview page.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "An OAuth consent screen set to External and In production, with verified branding",
+      "why": "Brand verification is required before applying for Basic or Standard access, and Google's Ads guide says the app must be External and In production.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A paid (non-Free-Trial) Cloud billing account in good standing",
+      "why": "A known issue causes Basic access rejections for projects on the Free Trial or with a suspended or disabled billing account.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Google lists removing billing or using another brand-verified project as alternative workarounds."
+      }
+    },
+    {
+      "item": "Google Ads test accounts for development",
+      "why": "Test access only works against test accounts until Explorer or higher is granted.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A tool that meets the Required Minimum Functionality (for Standard)",
+      "why": "Standard access applicants must comply with RMF and may need to give Google demo sign-in access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Test access (automatic)",
+      "examples": [
+        "https://www.googleapis.com/auth/adwords"
+      ],
+      "reviewRequired": false,
+      "time": "Immediate",
+      "impact": "15,000 operations/day against test accounts only. Fine for building; useless for real customers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "The Google Ads API uses a single OAuth scope; access tiers, not scopes, change the review path."
+      }
+    },
+    {
+      "tier": "Explorer access",
+      "examples": [
+        "https://www.googleapis.com/auth/adwords"
+      ],
+      "reviewRequired": false,
+      "time": "Minutes (automated)",
+      "impact": "2,880 production operations/day. No account creation, user management, keyword/reach planning, or billing services. No brand verification needed, but unverified OAuth apps still face Google's user cap and warning screen.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "Explorer review is 'automated review and approval in most cases'."
+      }
+    },
+    {
+      "tier": "Basic access",
+      "examples": [
+        "https://www.googleapis.com/auth/adwords"
+      ],
+      "reviewRequired": true,
+      "time": "1–4 weeks (with OAuth verification)",
+      "impact": "15,000 operations/day on production accounts and all services. Needs brand verification (minutes) and, for many users, Google OAuth app verification of the Google Ads scope.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s4",
+          "s6"
+        ],
+        "note": "Basic approval itself is automated and typically within minutes; the 1–4 weeks is the OAuth verification estimate."
+      }
+    },
+    {
+      "tier": "Standard access",
+      "examples": [
+        "https://www.googleapis.com/auth/adwords"
+      ],
+      "reviewRequired": true,
+      "time": "~10 business days after Basic",
+      "impact": "Unlimited daily operations (feature rate limits still apply). Manual audit; permissible use is set to ad management, reporting, or keyword research.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create or pick a Cloud project with paid billing",
+      "owner": "human",
+      "detail": "Use a Google Cloud project on a paid billing account (not Free Trial). This project's access level will govern every OAuth credential it issues.",
+      "url": "https://console.cloud.google.com/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Enable the Google Ads API",
+      "owner": "human",
+      "detail": "Open the Google Ads API Overview page and complete sign-up. This grants Test access (15,000 ops/day, test accounts only). The old API Center (ads.google.com/aw/apicenter) no longer processes applications.",
+      "url": "https://console.cloud.google.com/google/ads-apis/overview",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "The Overview URL redirected us to Google sign-in (HTTP 302) on 2026-10-20."
+      }
+    },
+    {
+      "title": "Create a web OAuth client in the same project",
+      "owner": "human",
+      "detail": "Create a Web application OAuth client ID with your redirect URIs in the same project where the API is enabled.",
+      "url": "https://console.cloud.google.com/apis/credentials",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement multi-user OAuth",
+      "owner": "agent",
+      "detail": "Use Google's OAuth 2.0 web flow with scope https://www.googleapis.com/auth/adwords, access_type=offline and prompt=consent to get refresh tokens. Send login-customer-id when operating through a manager account. The developer-token header is now ignored and optional.",
+      "url": "https://developers.google.com/google-ads/api/docs/oauth/overview",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s8"
+        ],
+        "note": "The ignored, optional header is from a trade-press summary of Google's announcement; the scope string and login-customer-id usage come from long-standing Google Ads API docs, not a page we fetched today."
+      }
+    },
+    {
+      "title": "Apply for Explorer access",
+      "owner": "human",
+      "detail": "On the Overview page, expand Upgrade access level and click Apply for access. Review is automated in most cases and grants 2,880 production operations/day.",
+      "url": "https://console.cloud.google.com/google/ads-apis/overview",
+      "duration": "Minutes",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft branding, privacy policy and scope justification",
+      "owner": "agent",
+      "detail": "Prepare consistent app name, homepage and privacy policy (on a Search Console-verified domain), a per-scope justification for the Google Ads scope, and a script for the unlisted YouTube demo video showing the consent flow.",
+      "url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Verify branding and publish the consent screen",
+      "owner": "human",
+      "detail": "In Google Auth Platform set User type External, publish to In production, fill Branding, click Verify Branding, then Publish branding.",
+      "url": "https://console.cloud.google.com/auth/branding",
+      "duration": "Minutes",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Submit OAuth app verification for the Google Ads scope",
+      "owner": "human",
+      "detail": "Add the Google Ads scope to Data Access, record and upload the demo video, and submit for verification.",
+      "url": "https://console.cloud.google.com/auth/scopes",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for OAuth verification",
+      "owner": "wait",
+      "detail": "Sensitive scope verification typically takes 3–5 business days; Google's Ads docs say the scope is restricted, which (if enforced as such) adds a longer review.",
+      "url": null,
+      "duration": "3 days – 4 weeks",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Apply for Basic access",
+      "owner": "human",
+      "detail": "With branding verified, return to the Overview page and click Apply for access to move from Explorer to Basic. Approval is automated, typically within minutes.",
+      "url": "https://console.cloud.google.com/google/ads-apis/overview",
+      "duration": "Minutes",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Apply for Standard access if you need volume",
+      "owner": "human",
+      "detail": "From Basic, click Start application. Expect a manual audit (about 10 business days), questions about functionality and audience, RMF compliance and demo sign-in access; reply to Google Compliance emails promptly.",
+      "url": "https://console.cloud.google.com/google/ads-apis/overview",
+      "duration": "~10 business days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Implement the multi-user OAuth flow with offline refresh tokens",
+    "Draft the privacy policy, scope justification and demo-video script",
+    "Track daily operation counts against the access-level cap",
+    "Check RMF compliance before a Standard application",
+    "Prepare test-account fixtures for development"
+  ],
+  "humanMustDo": [
+    "Set up a Cloud project on paid billing and enable the API",
+    "Verify the domain in Search Console and verify branding",
+    "Record the demo video and submit OAuth verification",
+    "Click Apply for Explorer, Basic and Standard access",
+    "Answer Google Compliance emails during the Standard audit"
+  ],
+  "blockers": [
+    {
+      "symptom": "Basic application rejected: \"Basic Access requires a successfully verified OAuth brand profile.\"",
+      "cause": "Brand verification isn't complete, or (known issue) the project is on the Free Trial or has a suspended or disabled billing account.",
+      "fix": "Complete brand verification with an External, In-production app; upgrade billing to a paid tier or use a different brand-verified project.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Pending Basic application from the API Center disappeared or was closed",
+      "cause": "Applications submitted through the API Center before 2026-09-09 were closed when developer tokens were sunset.",
+      "fix": "Re-apply from the Google Ads API Overview page in Cloud Console.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Calls to production accounts fail while test accounts work",
+      "cause": "The project only has Test access.",
+      "fix": "Apply for Explorer access on the Overview page.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The exact error string wasn't checked."
+      }
+    },
+    {
+      "symptom": "Account creation, user management, keyword planning or billing calls are refused at Explorer",
+      "cause": "Explorer access excludes those services.",
+      "fix": "Get Basic or Standard access.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Requests start failing late in the day with quota errors",
+      "cause": "The project exceeded its daily operations cap (2,880 Explorer, 15,000 Basic) over a sliding 24-hour window, shared across all your users.",
+      "fix": "Use SearchStream and batch mutates to cut operations, cache reports, or apply for Standard.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Caps and sliding window are sourced; that one project-level cap covers all users is our reading of project-based access."
+      }
+    },
+    {
+      "symptom": "Users see Google's unverified-app warning, or new users are blocked",
+      "cause": "The OAuth app hasn't passed verification for the Google Ads scope; unverified apps are user-capped.",
+      "fix": "Complete OAuth app verification before launching to customers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s6"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "A Google Ads manager account is no longer required to use the API; it's only needed to link and manage multiple accounts through the API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Existing integrations keep working after the token sunset: access levels were mapped to Cloud projects from recent API activity, and the developer-token header is optional and ignored. Google plans to reject developer tokens in a future major API version, so remove the header.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "From a trade-press summary of Google's announcement; Google's deprecations page confirms the sunset only."
+      }
+    },
+    {
+      "text": "Older usage-based restrictions carry over: projects that hadn't used Customer Match (Oct 2025–Mar 2026) or offline conversion uploads (Dec 2025–Jun 2026) are restricted from them and pointed to the Data Manager API.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Standard access is tied to a permissible use (ad management, reporting-only, or keyword research); a reporting-only agent that later wants to mutate campaigns must file a permissible-use change.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "In Testing publishing status, external users' refresh tokens expire after 7 days for non-basic scopes; publish to production (which brand verification requires anyway) to avoid this.",
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "From an integration vendor's guide."
+      }
+    },
+    {
+      "text": "Google's Ads docs call the Google Ads OAuth scope 'restricted', while other guides call it sensitive; plan for verification either way before onboarding customers.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s9"
+        ],
+        "note": "Conflicting classifications; we couldn't confirm which review path Google applies."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Google Ads API: Access levels",
+      "url": "https://developers.google.com/google-ads/api/docs/api-policy/access-levels"
+    },
+    {
+      "id": "s2",
+      "title": "Google Ads API: API access management and developer token sunset",
+      "url": "https://developers.google.com/google-ads/api/docs/api-policy/developer-token"
+    },
+    {
+      "id": "s3",
+      "title": "Google Ads API: OAuth overview",
+      "url": "https://developers.google.com/google-ads/api/docs/oauth/overview"
+    },
+    {
+      "id": "s4",
+      "title": "Google Ads API: Brand verification",
+      "url": "https://developers.google.com/google-ads/api/docs/api-policy/brand-verification"
+    },
+    {
+      "id": "s5",
+      "title": "Google Ads API: Secure credentials (restricted scope note)",
+      "url": "https://developers.google.com/google-ads/api/docs/productionize/secure-credentials"
+    },
+    {
+      "id": "s6",
+      "title": "Google Identity: Sensitive scope verification",
+      "url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification"
+    },
+    {
+      "id": "s7",
+      "title": "Google Ads API: Feature deprecations and unversioned changes",
+      "url": "https://developers.google.com/google-ads/api/docs/deprecations"
+    },
+    {
+      "id": "s8",
+      "title": "PPC Land: Google drops developer tokens from Ads API access decisions",
+      "url": "https://ppc.land/google-drops-developer-tokens-from-ads-api-access-decisions/"
+    },
+    {
+      "id": "s9",
+      "title": "Nango: How to register your own Google Ads API OAuth app",
+      "url": "https://nango.dev/docs/api-integrations/google-ads/how-to-register-your-own-google-ads-api-oauth-app"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://console.cloud.google.com/google/ads-apis/overview: 302 to Google sign-in",
+      "GET https://accounts.google.com/.well-known/openid-configuration: HTTP 200, authorize https://accounts.google.com/o/oauth2/v2/auth"
+    ],
+    "openQuestions": [
+      "Whether Google applies sensitive or restricted (CASA) verification to the Google Ads scope in practice",
+      "Explorer eligibility criteria for direct production access (not published)",
+      "Whether unverified apps at Explorer access can serve customers beyond Google's user cap",
+      "Current real-world Standard review times after the Cloud Console move"
+    ]
+  }
+}

@@ -1,0 +1,548 @@
+{
+  "app": {
+    "name": "Brex",
+    "slug": "brex",
+    "website": "https://www.brex.com",
+    "developerPortal": "https://developer.brex.com",
+    "category": "Spend management"
+  },
+  "officialDocs": [
+    {
+      "kind": "oauth",
+      "label": "Partner authentication (OAuth 2.0)",
+      "url": "https://developer.brex.com/guides/partner_authentication"
+    },
+    {
+      "kind": "review",
+      "label": "Launch checklist",
+      "url": "https://developer.brex.com/guides/checklist"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developer.brex.com/guides/rate_limits"
+    },
+    {
+      "kind": "oauth",
+      "label": "User token authentication (own account)",
+      "url": "https://developer.brex.com/docs/authentication/"
+    },
+    {
+      "kind": "console",
+      "label": "Partner program",
+      "url": "https://www.brex.com/partners"
+    }
+  ],
+  "verdict": {
+    "difficulty": "gated",
+    "summary": "OAuth is only for Brex developer partners: there's no self-serve app console, so you apply to the partner program, sign an access agreement, and ask Brex developer support to issue a client ID/secret, register your redirect URIs and assign your scopes. A Brex customer can mint a user token for their own company in minutes, but that isn't a path for connecting other companies' accounts.",
+    "timeToDev": {
+      "range": "1–3 weeks",
+      "hours": {
+        "min": 168,
+        "max": 504
+      },
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s5",
+          "s3"
+        ],
+        "note": "Even staging OAuth needs Brex-issued partner credentials. Brex publishes no timeline for partner acceptance or credential issuance. A user token on your own Brex account works in minutes for prototyping."
+      }
+    },
+    "timeToProd": {
+      "range": "3–8 weeks",
+      "hours": {
+        "min": 504,
+        "max": 1344
+      },
+      "assumes": "An agent reading card/cash transactions and expenses for other Brex customers through partner OAuth; customers automating only their own Brex account can use a user token the same day.",
+      "waitingOn": "Partner program acceptance, the access agreement, credential and scope issuance by developer support, and Brex reviewing your demo video.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s5"
+        ],
+        "note": "There's no documented formal review beyond sharing a demo video. The total is our estimate because no Brex timeline is published."
+      }
+    },
+    "cost": null
+  },
+  "prerequisites": [
+    {
+      "item": "Acceptance as a Brex developer partner",
+      "why": "Partner authentication is only for Brex developer partners. Client IDs and secrets are issued by Brex developer support, not a self-serve console.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A signed partner access agreement",
+      "why": "The launch checklist has partners sign the access agreement, which arrives by email, before development.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "Exact redirect URIs and the list of APIs you need",
+      "why": "Redirect URIs are supplied to Brex when credentials are set up and have to match exactly. Brex assigns the scopes for your client.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "item": "A demo video of the finished integration",
+      "why": "The partner checklist asks you to share a demo video with Brex once the integration is built.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "scopeTiers": [
+    {
+      "tier": "Identity and refresh",
+      "examples": [
+        "openid",
+        "offline_access",
+        "profile",
+        "email"
+      ],
+      "reviewRequired": true,
+      "time": "With partner credentials",
+      "impact": "openid is required for OIDC requests and offline_access for a refresh token. Every scope needs partner credentials first.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "tier": "Read-only financial data",
+      "examples": [
+        "transactions.card.readonly",
+        "transactions.cash.readonly",
+        "expenses.card.readonly",
+        "accounts.card.readonly",
+        "statements.card.readonly",
+        "users.readonly",
+        "budgets.readonly"
+      ],
+      "reviewRequired": true,
+      "time": "Assigned by Brex at credential issuance",
+      "impact": "What a spend-analysis or bookkeeping agent needs. Brex customers can grant none, some or all requested scopes at consent.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s6",
+          "s1"
+        ],
+        "note": "Scope strings come from scopes_supported in the live OIDC discovery document. The mapping to APIs is inferred from names."
+      }
+    },
+    {
+      "tier": "Write and money movement",
+      "examples": [
+        "cards",
+        "budgets",
+        "transfers",
+        "expenses.card",
+        "accounting.record.write"
+      ],
+      "reviewRequired": true,
+      "time": "Assigned by Brex; likely more scrutiny",
+      "impact": "Lets an agent issue cards, set budgets or move money. Brex's prohibited and restricted activities list and transfer limits (1,000 transfers and 100 international wires per 24h) apply.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6",
+          "s4",
+          "s2"
+        ],
+        "note": "'More scrutiny' is our assumption. Brex doesn't document per-scope approval."
+      }
+    },
+    {
+      "tier": "Sensitive card data",
+      "examples": [
+        "cards.pan",
+        "https://corpcard.brexapis.com/cards.pan"
+      ],
+      "reviewRequired": true,
+      "time": "Unknown",
+      "impact": "Full card numbers. This probably brings PCI obligations for your service.",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "The scope exists in the discovery document. The approval requirements weren't documented on pages we could read."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Prototype with a user token on your own Brex account (optional)",
+      "owner": "human",
+      "detail": "As an account or card admin, accept the developer API agreement, then create a scoped user token under Developer > Settings in the dashboard. It's shown once and expires after 90 days without use.",
+      "url": "https://developer.brex.com/docs/authentication/",
+      "duration": "10 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Draft the partner application",
+      "owner": "agent",
+      "detail": "Describe the agent's use case, the Brex APIs and scopes needed (read-only where possible), the data handling and security posture, and the redirect URIs for staging and production.",
+      "url": "https://www.brex.com/partners",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Apply to the Brex partner program",
+      "owner": "human",
+      "detail": "Submit the 'Become a partner' form or use 'Talk with the partner team' for technology partners.",
+      "url": "https://www.brex.com/partners",
+      "duration": "15 min",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Wait for partner acceptance",
+      "owner": "wait",
+      "detail": "Brex's partner team evaluates the request. No criteria or timeline are published.",
+      "url": null,
+      "duration": "1–3 weeks",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Our estimate."
+      }
+    },
+    {
+      "title": "Sign the access agreement and request credentials",
+      "owner": "human",
+      "detail": "Sign the emailed access agreement, then contact developer support with redirect URIs to get a client ID/secret and assigned scopes for staging and production.",
+      "url": "https://developer.brex.com/guides/partner_authentication",
+      "duration": "Days",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Implement the authorization code flow",
+      "owner": "agent",
+      "detail": "Read endpoints from https://accounts-api.brex.com/oauth2/default/.well-known/openid-configuration. Send a random state of 9+ characters and verify it on return. Optionally use PKCE (S256). Open consent in a real browser, not a webview or iframe. Request openid offline_access plus API scopes.",
+      "url": "https://developer.brex.com/guides/partner_authentication",
+      "duration": "2–4 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Handle rotation, partial grants and rate limits",
+      "owner": "agent",
+      "detail": "Store the new refresh token on every refresh (90-day lifetime, rotates on each use). Handle insufficient-scope and permission errors from partial grants. Back off with jitter on 429 and prefer webhooks over polling.",
+      "url": "https://developer.brex.com/guides/rate_limits",
+      "duration": "2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s4"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Test in staging",
+      "owner": "human",
+      "detail": "Authorize against the staging auth server (accounts-api.staging.brexapps.com) and the api-staging.brex.com API. Staging data can be purged at any time.",
+      "url": "https://developer.brex.com/guides/partner_authentication",
+      "duration": "1–2 hours",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Record and share the demo video",
+      "owner": "human",
+      "detail": "Record the end-to-end connect flow and agent features, and share it with Brex as the checklist asks.",
+      "url": "https://developer.brex.com/guides/checklist",
+      "duration": "1 hour",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "title": "Brex sign-off and production launch",
+      "owner": "wait",
+      "detail": "Brex reviews the demo and production credentials are used for customer connections. Only Brex users with the proper roles can grant consent.",
+      "url": null,
+      "duration": "Days to weeks",
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "The checklist doesn't describe a formal approval step after the demo."
+      }
+    }
+  ],
+  "agentCanDo": [
+    "Draft the partner application and scope justification",
+    "Implement OAuth from the OIDC discovery document",
+    "Build refresh-token rotation and partial-grant handling",
+    "Add 429 backoff and webhook-based sync",
+    "Script the demo video walkthrough"
+  ],
+  "humanMustDo": [
+    "Apply to the Brex partner program",
+    "Sign the access agreement",
+    "Request credentials from Brex developer support",
+    "Record the demo video and handle partner calls"
+  ],
+  "blockers": [
+    {
+      "symptom": "No 'create app' or client ID option anywhere in the Brex dashboard",
+      "cause": "Partner OAuth credentials are issued only by Brex developer support to accepted partners. The dashboard only offers user tokens for your own company.",
+      "fix": "Apply to the partner program and request credentials from developer support.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "Consent fails or the user can't approve your app",
+      "cause": "Only Brex users with the proper roles can grant permission to partner apps.",
+      "fix": "Ask the customer to have an account or card admin complete the connection.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Exact role names weren't readable (the roles and permissions page returned 404)."
+      }
+    },
+    {
+      "symptom": "Calls fail with insufficient-scope or permission errors after a successful connect",
+      "cause": "The customer granted only some of the requested scopes, or the scope wasn't assigned to your client by Brex.",
+      "fix": "Check granted scopes after token exchange, degrade gracefully, and ask Brex support to add missing scopes to your client.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "redirect_uri mismatch at authorize",
+      "cause": "The URI doesn't exactly match one registered with Brex at credential setup.",
+      "fix": "Send Brex support the exact URIs, including the staging and production variants.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "symptom": "HTTP 429 Too Many Requests",
+      "cause": "More than 1,000 requests per 60 seconds per Client ID and Brex account, or daily transfer/card limits. Brex may also lower limits.",
+      "fix": "Exponential backoff with jitter, per-client token bucket throttling, and webhooks instead of polling.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
+    }
+  ],
+  "nuances": [
+    {
+      "text": "Access tokens last 3600s. Refresh tokens last 90 days and rotate on every refresh. A lapsed refresh token means the user has to reauthenticate, so refresh idle connections before 90 days.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Brex moved hosts. API servers are api.brex.com and api-staging.brex.com, and the auth servers are accounts-api.brex.com and accounts-api.staging.brexapps.com (the transition began 2026-01-01). Treat the OIDC discovery document as the source of truth.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Client Credentials grants are only for the Onboarding API (referrals). Every API that touches an existing customer's data uses the Authorization Code grant.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "User tokens (own-company use) expire after 90 days without an API call and stop working if the creating user is deactivated, so they're a poor base for a long-running agent.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "Use random idempotency keys on create-transfer and create-card calls so an agent's retries don't duplicate money movement.",
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
+    },
+    {
+      "text": "The Brex auth server is Okta-based. Its discovery document advertises many grant types, but Brex's partner docs only describe authorization code (optional PKCE) and client credentials.",
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s6",
+          "s1"
+        ],
+        "note": "Seen in the live discovery document (okta.myAccount.* scopes, many grant types)."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "Brex Developer: Partner authentication",
+      "url": "https://developer.brex.com/guides/partner_authentication"
+    },
+    {
+      "id": "s2",
+      "title": "Brex Developer: Launch checklist",
+      "url": "https://developer.brex.com/guides/checklist"
+    },
+    {
+      "id": "s3",
+      "title": "Brex Developer: Authentication (user tokens)",
+      "url": "https://developer.brex.com/docs/authentication/"
+    },
+    {
+      "id": "s4",
+      "title": "Brex Developer: Rate limits",
+      "url": "https://developer.brex.com/guides/rate_limits"
+    },
+    {
+      "id": "s5",
+      "title": "Brex: Partners",
+      "url": "https://www.brex.com/partners"
+    },
+    {
+      "id": "s6",
+      "title": "Brex OpenID Connect discovery document",
+      "url": "https://accounts-api.brex.com/oauth2/default/.well-known/openid-configuration"
+    },
+    {
+      "id": "s7",
+      "title": "Nango: How to register your own Brex OAuth app",
+      "url": "https://nango.dev/docs/api-integrations/brex/how-to-register-your-own-brex-oauth-app"
+    }
+  ],
+  "verification": {
+    "status": "agent-researched",
+    "lastChecked": "2026-10-20",
+    "tested": [
+      "GET https://accounts-api.brex.com/oauth2/default/.well-known/openid-configuration: issuer https://accounts-api.brex.com/oauth2/default, authorize .../v1/authorize, token .../v1/token, PKCE S256, about 100 scopes including transactions.card.readonly, expenses.card.readonly, cards.pan, transfers, offline_access",
+      "GET https://developer.brex.com/guides/partner_authentication and /guides/checklist: HTTP 200 (the /docs/ variants returned 404 via fetch)",
+      "GET https://www.brex.com/partners: HTTP 200"
+    ],
+    "openQuestions": [
+      "Partner acceptance criteria and typical turnaround",
+      "Whether Brex formally approves the demo video before production use, and how long that takes",
+      "Which Brex user roles can grant consent, and which scopes need extra approval (such as cards.pan or transfers)",
+      "Whether Brex has policies on AI agents acting on customer spend data"
+    ]
+  }
+}

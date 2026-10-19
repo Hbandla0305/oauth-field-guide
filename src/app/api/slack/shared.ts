@@ -38,10 +38,10 @@ export function guideMessage(g: Guide, section: Section | null) {
 }
 
 export const HELP = [
-  "*OAuth Field Guide* tells you what it takes to get your own OAuth app approved with a provider.",
+  "*OAuth Guide* tells you what it takes to get your own OAuth app approved with a provider.",
   "• `/oauth-guide gmail`: difficulty, how long until it works in dev and until any user can connect, what you're waiting on, cost",
   "• `/oauth-guide gmail permissions`: one section (`steps`, `permissions`, `troubleshoot`, `good-to-know`, `resources`)",
   "• `/oauth-guide research loom`: research an app that isn't in the library (about 2 minutes)",
-  "• `@OAuth Field Guide what blocks a Slack app from reading messages?`: an answer from the matching guide, with sources",
+  "• `@OAuth Guide what blocks a Slack app from reading messages?`: an answer from the matching guide, with sources",
   `Browse every guide: ${SITE}`,
 ].join("\n");

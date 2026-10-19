@@ -10,7 +10,7 @@ type Message = { role: "user" | "assistant"; content: string; task?: "draft" | "
 export type AssistantTask = { kind: "draft"; title: string; detail?: string } | { kind: "pack" } | { kind: "setup" };
 
 const MAX_MESSAGES = 8;
-const PROFILE_KEY = "oauth-field-guide:profile";
+const PROFILE_KEY = "oauth-guide:profile";
 
 function questions(g: Guide): string[] {
   const out = ["What's the fastest way to get any user connected?"];

@@ -2,6 +2,7 @@ import { LIBRARY, recentGenerated, summarise } from "@/lib/guides";
 import { DIFFICULTY } from "@/components/difficulty";
 import { EvidenceLegend } from "@/components/evidence";
 import { GuideSearch } from "@/components/guide-search";
+import { Typewriter } from "@/components/typewriter";
 import { PageTour } from "@/components/page-tour";
 import { TOURS } from "@/lib/tours";
 
@@ -16,7 +17,7 @@ export default async function Home() {
       <PageTour id="home" steps={TOURS.home} />
       <section className="pt-12 pb-8 sm:pt-16">
         <h1 className="max-w-3xl font-display text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-5xl">
-          How long until your users can connect?
+          <Typewriter text="How long until your users can connect?" />
         </h1>
         <div className="mt-6 grid max-w-5xl gap-6 text-[1.0625rem] leading-relaxed md:grid-cols-2 md:gap-10">
           <div>

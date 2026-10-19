@@ -5,6 +5,7 @@ import { LIMITS, MODELS, costOf, generationEnabled } from "@/lib/agent/config";
 import { CHAT_INSTRUCTIONS } from "@/lib/agent/prompts";
 import { findGuide } from "@/lib/guides";
 import { hashIp, reserveChat, settleRun } from "@/lib/db";
+import { clientIp } from "@/lib/generation";
 import type { Guide } from "@/lib/guide-schema";
 
 export const runtime = "nodejs";
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
   const guide = await findGuide(slug);
   if (!guide) return Response.json({ error: "Guide not found." }, { status: 404 });
 
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = clientIp(req.headers);
   const reservation = await reserveChat(hashIp(ip), `${slug}: ${question.content.slice(0, 200)}`);
   if (!reservation.ok) return Response.json({ error: REFUSALS[reservation.reason] }, { status: 429 });
 

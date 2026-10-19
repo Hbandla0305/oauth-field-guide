@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "An agent using the read or write scopes to inspect or manage apps, dynos and add-ons; read-protected is needed if it must see config vars.",
-      "waitingOn": "Nothing — no review. Separately, a team admin must not have disabled third-party OAuth for that team's apps.",
+      "waitingOn": "No review needed. Separately, a team admin must not have disabled third-party OAuth for that team's apps.",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1"],

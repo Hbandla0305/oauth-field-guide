@@ -1,6 +1,6 @@
 import type { Evidence, Guide } from "./guide-schema";
 
-const OWNER = { agent: "AI can do", human: "You (Developer)", wait: "Provider review" } as const;
+const OWNER = { agent: "AI can help", human: "You (Developer)", wait: "Provider review" } as const;
 
 // Plain-Markdown export so a guide can be pasted into a ticket, doc or Slack thread.
 export function guideToMarkdown(g: Guide, url: string): string {
@@ -32,7 +32,7 @@ export function guideToMarkdown(g: Guide, url: string): string {
     ...g.steps.map((s, i) => `${i + 1}. **${s.title}** [${OWNER[s.owner]}${s.duration ? `, ${s.duration}` : ""}]: ${s.detail}${s.url ? ` (${s.url})` : ""}${ev(s.evidence)}`),
     "",
     "## Who does what",
-    "**AI can do:**",
+    "**AI can help:**",
     ...g.agentCanDo.map((x) => `- ${x}`),
     "",
     "**You (Developer) must:**",

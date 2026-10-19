@@ -57,7 +57,7 @@
         "max": 24
       },
       "assumes": "An unlisted OAuth integration that reads and writes audiences and campaigns; a Marketplace listing via the Integration Partner Program is optional and needs 25+ active users first.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": [

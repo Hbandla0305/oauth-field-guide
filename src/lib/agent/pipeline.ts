@@ -132,7 +132,8 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, emi
   }
   emit({ type: "stage", stage: "audit", status: "done", detail: applied ? `Downgraded ${applied} claim${applied === 1 ? "" : "s"}` : "No claims downgraded" });
 
-  return Guide.parse(guide);
+  // House style: no em dashes, even if the model ignores the instruction.
+  return Guide.parse(JSON.parse(JSON.stringify(guide).replace(/\s*—\s*/g, ", ")));
 }
 
 type Draft = { guide: Guide; pages: Page[] | null };

@@ -26,10 +26,10 @@ const BANNER = {
   "agent-generated": { cls: "bg-moderate-bg text-moderate", text: "Written live by an agent, not reviewed by a person" },
 } as const;
 
-// "AI can do" means an AI coding assistant can do the step for you; not the agent you're building.
+// "AI can help" means an AI coding assistant can do the step for you; not the agent you're building.
 export const OWNER = {
   agent: {
-    label: "AI can do",
+    label: "AI can help",
     cls: "bg-trivial-bg text-trivial",
     hint: "An AI assistant (ChatGPT, Claude, Copilot) can do this for you: drafting a privacy policy or scope justification, generating config, or checking endpoints. Use Copy prompt to get a ready-made prompt.",
   },
@@ -257,7 +257,7 @@ function IntroPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) 
 
       <section>
         <PanelTitle
-          tip="How the steps split between an AI assistant, you, and waiting on the provider. Hover each for the details."
+          tip="How the steps split between an AI assistant, you, and waiting on the provider. Click a card to see its steps."
         >
           Who does what
         </PanelTitle>
@@ -267,40 +267,59 @@ function IntroPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) 
   );
 }
 
-// Three counts; the detail is one hover away so the Intro stays light.
+// Three counts; click one to see which steps fall to it.
 function WhoDoesWhat({ guide }: { guide: Guide }) {
-  const rows: { owner: keyof typeof OWNER; items: string[] }[] = [
-    { owner: "agent", items: guide.agentCanDo },
-    { owner: "human", items: guide.humanMustDo },
-    { owner: "wait", items: guide.steps.filter((s) => s.owner === "wait").map((s) => s.title) },
-  ];
+  const [open, setOpen] = useState<keyof typeof OWNER | null>(null);
+  const owners = ["agent", "human", "wait"] as const;
+  const steps = (o: keyof typeof OWNER) => guide.steps.map((s, i) => ({ ...s, n: i + 1 })).filter((s) => s.owner === o);
   return (
-    <ul className="mt-4 grid grid-cols-3 gap-3">
-      {rows.map(({ owner, items }) => {
-        const steps = guide.steps.filter((s) => s.owner === owner).length;
-        return (
-          <li key={owner} className="rounded-xl border border-line bg-surface p-4">
-            <p className="font-display text-2xl font-semibold">{steps}</p>
-            <p className="mt-0.5 flex flex-wrap items-center text-sm">
-              <span className="font-medium">{OWNER[owner].label}</span>
-              <InfoTip label={`What ${OWNER[owner].label} covers`} align={owner === "wait" ? "end" : "start"}>
-                <span className="block text-surface/80">{OWNER[owner].hint}</span>
-                {items.length > 0 && (
-                  <span className="mt-2 block space-y-1 border-t border-surface/15 pt-2">
-                    {items.map((x) => (
-                      <span key={x} className="block">
-                        – {x}
-                      </span>
-                    ))}
+    <div className="mt-4">
+      <div className="grid grid-cols-3 gap-3">
+        {owners.map((o) => {
+          const n = steps(o).length;
+          const active = open === o;
+          return (
+            <button
+              key={o}
+              type="button"
+              aria-expanded={active}
+              aria-controls="who-panel"
+              onClick={() => setOpen(active ? null : o)}
+              className={`rounded-xl border p-4 text-left transition-colors ${active ? "border-ink bg-surface" : "border-line bg-surface hover:border-ink/40"}`}
+            >
+              <span className="flex items-start justify-between gap-2">
+                <span className="font-display text-2xl font-semibold">{n}</span>
+                <svg viewBox="0 0 20 20" className={`mt-1.5 size-4 shrink-0 text-muted transition-transform ${active ? "rotate-180" : ""}`} aria-hidden>
+                  <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <span className="mt-0.5 block text-sm font-medium">{OWNER[o].label}</span>
+              <span className="block text-xs text-muted">{n === 1 ? "step" : "steps"}</span>
+            </button>
+          );
+        })}
+      </div>
+      {open && (
+        <div id="who-panel" className="mt-3 rounded-xl border border-line bg-surface p-4">
+          <p className="text-sm text-muted">{OWNER[open].hint}</p>
+          {steps(open).length === 0 ? (
+            <p className="mt-3 text-sm">None for this provider.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-line">
+              {steps(open).map((s) => (
+                <li key={s.n} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
+                  <span className="min-w-0 flex-1 font-medium">
+                    {s.n}. {s.title}
                   </span>
-                )}
-              </InfoTip>
-            </p>
-            <p className="text-xs text-muted">{steps === 1 ? "step" : "steps"}</p>
-          </li>
-        );
-      })}
-    </ul>
+                  {s.duration && <span className="text-sm text-muted">{s.duration}</span>}
+                  {open === "agent" && <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

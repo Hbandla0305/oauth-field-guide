@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "A confidential web app requesting granular read scopes (and create/update where the agent acts) for the user's selected team.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1"],

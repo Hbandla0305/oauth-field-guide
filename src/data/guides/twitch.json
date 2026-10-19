@@ -58,7 +58,7 @@
         "max": 24
       },
       "assumes": "An agent reading or acting on a user's Twitch data (chat, subscriptions, channel info) with user access tokens. There's no listing or review path to wait for.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": [
@@ -310,7 +310,7 @@
       "owner": "agent",
       "detail": "Swap in the production redirect URL. No submission or review step is documented, so any Twitch user can connect once you ship.",
       "url": null,
-      "duration": "—",
+      "duration": ", ",
       "evidence": {
         "label": "inferred",
         "sourceIds": [

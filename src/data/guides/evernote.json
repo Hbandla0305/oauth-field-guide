@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "Your agent acts as an MCP client against https://mcp.evernote.com/mcp and registers itself via Dynamic Client Registration; the legacy EDAM API instead needs a manually reviewed API key plus production activation.",
-      "waitingOn": "Nothing — no review on the MCP/DCR path (end users need a paid Evernote plan; Business/Teams admins can restrict MCP access).",
+      "waitingOn": "No review needed on the MCP/DCR path (end users need a paid Evernote plan; Business/Teams admins can restrict MCP access).",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["e3", "e4", "e12"],

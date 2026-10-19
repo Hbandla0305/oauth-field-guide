@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 2, "max": 24 },
       "assumes": "An unlisted public app shared via its install URL, which is enough for an agent reading and writing boards. A Marketplace listing is a slower, optional path (weeks to months).",
-      "waitingOn": "Nothing — no review for share-link installs. Marketplace listing waits on monday's review board (first response within 72 business hours).",
+      "waitingOn": "No review needed for share-link installs. Marketplace listing waits on monday's review board (first response within 72 business hours).",
       "evidence": {
         "label": "sourced",
         "sourceIds": ["s3", "s4"],

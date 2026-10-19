@@ -1,6 +1,3 @@
-import type { GuideSummary } from "@/lib/guides";
-import { DIFFICULTY } from "./difficulty";
-
 // Log scale from 5 minutes to 6 months, so "15 min" and "6 weeks" both read clearly.
 const MIN_H = 5 / 60;
 const MAX_H = 24 * 182;
@@ -36,17 +33,6 @@ export function TimelineTicks() {
           {t.label}
         </span>
       ))}
-    </div>
-  );
-}
-
-type CompactProps = Pick<GuideSummary, "difficulty" | "dev" | "prod" | "devHours" | "prodHours">;
-
-export function TimelineCompact({ difficulty, dev, prod, devHours, prodHours }: CompactProps) {
-  return (
-    <div className="relative h-2 w-full min-w-28 rounded-full bg-faint" role="img" aria-label={`Working in dev: ${dev}. Any user can connect: ${prod}.`}>
-      <TimelineBand min={prodHours.min} max={prodHours.max} className={`${DIFFICULTY[difficulty].bar} opacity-90`} />
-      <TimelineBand min={devHours.min} max={devHours.max} className="bg-ink" />
     </div>
   );
 }

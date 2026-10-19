@@ -412,7 +412,7 @@
       }
     },
     {
-      "text": "The review guide says apps can only use user data and endpoints needed for clearly communicated functionality, and can't resell or publish data obtained from Stripe users — relevant if you send Stripe data to an LLM provider.",
+      "text": "The review guide says apps can only use user data and endpoints needed for clearly communicated functionality, and can't resell or publish data obtained from Stripe users, relevant if you send Stripe data to an LLM provider.",
       "evidence": {
         "label": "sourced",
         "sourceIds": ["s5"],

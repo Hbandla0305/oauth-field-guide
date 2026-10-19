@@ -49,7 +49,7 @@
       "range": "Same day",
       "hours": { "min": 2, "max": 24 },
       "assumes": "An OAuth 2.0 user-context app on pay-per-use credits that reads and writes the connected user's posts. There's no review on any path. Volumes above 3M post reads a month need Enterprise.",
-      "waitingOn": "Nothing — no review. You need a funded credit balance, or requests are blocked.",
+      "waitingOn": "No review needed. You need a funded credit balance, or requests are blocked.",
       "evidence": {
         "label": "sourced",
         "sourceIds": ["x3", "x2"],

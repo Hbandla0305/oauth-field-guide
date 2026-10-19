@@ -58,7 +58,7 @@
         "max": 24
       },
       "assumes": "An unlisted production app using the code flow with read permissions such as PAYMENTS_READ and ORDERS_READ. An App Marketplace listing is a separate, currently paused, partner track.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "unverified",
         "sourceIds": [

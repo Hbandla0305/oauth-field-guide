@@ -58,7 +58,7 @@
         "max": 24
       },
       "assumes": "A 3LO OAuth consumer requesting repository and pullrequest scopes to read code and PRs on users' behalf; no Atlassian Marketplace listing.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": [

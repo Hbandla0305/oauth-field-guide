@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 2, "max": 24 },
       "assumes": "A Public app reading call logs, messages and recordings (ReadCallLog, ReadMessages, ReadCallRecording), with no 'available on request' scopes and no App Gallery listing; a gallery listing adds a review of unknown length.",
-      "waitingOn": "Nothing — no review for standard scopes. Restricted scopes wait on a support ticket; an App Gallery listing waits on RingCentral review.",
+      "waitingOn": "No review needed for standard scopes. Restricted scopes wait on a support ticket; an App Gallery listing waits on RingCentral review.",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s4", "s5"],

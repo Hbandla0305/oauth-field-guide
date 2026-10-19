@@ -25,6 +25,7 @@ A developer building an AI agent who needs **their own production OAuth app** wi
 - `sourced`: stated in a source you cite. It must have `sourceIds`.
 - `inferred`: your reasoning from sources. Opinions ("unlikely", "easy", "rarely approved") are always `inferred`.
 - `unverified`: forums, old docs, or conflicting sources. Say why in `note`.
+- **No em dashes** anywhere in guide text.
 - **No absolutes the source doesn't use.** Don't write "every", "only if", "always" or "must" unless the source says it that strongly.
 - Every source must be a real https URL you opened. Never invent URLs.
 
@@ -40,7 +41,7 @@ A developer building an AI agent who needs **their own production OAuth app** wi
 - `verdict.summary`: at most 2 sentences.
 - `timeToDev.range` and `timeToProd.range`: SHORT, e.g. "15–60 min", "Same day", "2–6 weeks". `hours.min/max` in hours (day = 24, week = 168, month = 720).
 - `timeToProd.assumes`: one sentence naming the path the headline assumes. Pick what a typical AI agent needs (reading or writing user data), and mention the faster path if there is one.
-- `timeToProd.waitingOn`: what you wait for, or "Nothing — no review".
+- `timeToProd.waitingOn`: what you wait for, or "No review needed".
 - `verdict.cost`: required fees, or null.
 - `scopeTiers`: 2–5 tiers grouped by how they change the review path. Give real scope strings in `examples` and a short `time` per tier.
 - `steps`: 6–14 concrete steps, from account to production-ready. `owner` is one of:

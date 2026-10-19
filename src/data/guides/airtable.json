@@ -29,7 +29,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "A public integration that reads and writes records with data.records:* and schema.bases:read, once privacy policy and terms URLs are on the integration.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s3"],

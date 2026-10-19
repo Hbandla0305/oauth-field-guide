@@ -28,7 +28,7 @@
       "range": "Same day",
       "hours": { "min": 1, "max": 24 },
       "assumes": "A standard authorization-code OAuth app reading or writing sites, deploys and forms through the REST API; there is no separate path for sensitive data.",
-      "waitingOn": "Nothing — no review",
+      "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
         "sourceIds": ["s1", "s3"],
@@ -57,7 +57,7 @@
   "scopeTiers": [
     {
       "tier": "Full account access (no scopes)",
-      "examples": ["(none — Netlify OAuth has no scope parameter)"],
+      "examples": ["(none, Netlify OAuth has no scope parameter)"],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "The token can call the same API endpoints the user could: list and create sites, trigger deploys, read form submissions, manage DNS and env vars. You can't ask for read-only access, which may worry security-conscious users.",

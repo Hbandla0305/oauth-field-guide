@@ -555,7 +555,7 @@
   ],
   "nuances": [
     {
-      "text": "Slack's API ToS (effective 2025-10-10) says commercial distribution needs authorization, which for most apps 'simply means submitting to our Marketplace'. The May 2025 changelog calls unlisted apps 'for development and testing—not large-scale or commercial distribution'. Unlisted distribution is a pilot channel, not a production path, for a paid product.",
+      "text": "Slack's API ToS (effective 2025-10-10) says commercial distribution needs authorization, which for most apps 'simply means submitting to our Marketplace'. The May 2025 changelog calls unlisted apps 'for development and testing, not large-scale or commercial distribution'. Unlisted distribution is a pilot channel, not a production path, for a paid product.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [

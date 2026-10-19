@@ -59,7 +59,7 @@
         "max": 24
       },
       "assumes": "You're on a plan that includes OAuth applications (API Developer Plan) and your agent reads and writes documents in users' own PandaDoc workspaces.",
-      "waitingOn": "Nothing — no review. The only gate is the paid plan or add-on (and sales, if you go the add-on route).",
+      "waitingOn": "No review needed. The only gate is the paid plan or add-on (and sales, if you go the add-on route).",
       "evidence": {
         "label": "inferred",
         "sourceIds": [

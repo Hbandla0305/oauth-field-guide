@@ -59,7 +59,7 @@
         "max": 24
       },
       "assumes": "An unlisted app distributed with a share install link or the external install flow that reads site data (stores, CRM, bookings); App Market listing goes through an automated review that usually adds minutes, plus fix-and-resubmit loops.",
-      "waitingOn": "Nothing — no review for unlisted apps. Automated AI review only if you list on the App Market.",
+      "waitingOn": "No review needed for unlisted apps. Automated AI review only if you list on the App Market.",
       "evidence": {
         "label": "sourced",
         "sourceIds": [

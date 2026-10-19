@@ -1,4 +1,5 @@
 import type { Evidence } from "@/lib/guide-schema";
+import { HoverCard } from "./info-tip";
 
 export const EVIDENCE = {
   tested: { label: "Tested", meaning: "Observed directly in a setup attempt or live check", dot: "bg-tested", text: "text-tested" },
@@ -7,25 +8,37 @@ export const EVIDENCE = {
   unverified: { label: "Unverified", meaning: "Not confirmed; check before relying on it", dot: "bg-unverified", text: "text-unverified" },
 } as const;
 
-// Inline evidence marker: a coloured label plus numbered citations that jump to the source list.
-// Notes are shown inline only where they explain uncertainty; otherwise they're a tooltip.
-export function EvidenceTag({ evidence, sourceIndex, showNote }: { evidence: Evidence; sourceIndex: Map<string, number>; showNote?: boolean }) {
+export type SourceIndex = Map<string, { n: number; title: string; url: string }>;
+
+// A small coloured label; hover shows what it means, any note, and the sources behind it.
+export function EvidenceTag({ evidence, sources, align = "start" }: { evidence: Evidence; sources: SourceIndex; align?: "start" | "center" | "end" }) {
   const e = EVIDENCE[evidence.label];
-  const cites = evidence.sourceIds.filter((id) => sourceIndex.has(id));
-  const noteInline = evidence.note && (showNote || evidence.label === "inferred" || evidence.label === "unverified");
+  const cited = evidence.sourceIds.flatMap((id) => (sources.has(id) ? [sources.get(id)!] : []));
   return (
-    <span className="inline-flex flex-wrap items-center gap-x-1.5 text-xs leading-5">
-      <span className={`inline-flex items-center gap-1 font-medium ${e.text}`} title={evidence.note ?? e.meaning}>
-        <span className={`size-1.5 rounded-full ${e.dot}`} aria-hidden />
-        {e.label}
-      </span>
-      {cites.map((id) => (
-        <a key={id} href={`#source-${id}`} className="text-muted underline decoration-line underline-offset-2 hover:text-cobalt" aria-label={`Source ${sourceIndex.get(id)}`}>
-          [{sourceIndex.get(id)}]
-        </a>
-      ))}
-      {noteInline && <span className="basis-full text-muted">{evidence.note}</span>}
-    </span>
+    <HoverCard
+      label={`Evidence: ${e.label}. Show details`}
+      align={align}
+      trigger={
+        <span className={`inline-flex items-center gap-1 text-xs font-medium ${e.text}`}>
+          <span className={`size-1.5 rounded-full ${e.dot}`} aria-hidden />
+          {e.label}
+          {cited.length > 0 && <span className="font-normal text-muted">· {cited.length} source{cited.length > 1 ? "s" : ""}</span>}
+        </span>
+      }
+    >
+      <span className="block font-medium">{e.label}</span>
+      <span className="block text-surface/75">{e.meaning}.</span>
+      {evidence.note && <span className="mt-2 block">{evidence.note}</span>}
+      {cited.length > 0 && (
+        <span className="mt-2 block space-y-1 border-t border-surface/15 pt-2">
+          {cited.map((s) => (
+            <a key={s.n} href={s.url} target="_blank" rel="noreferrer" className="block truncate underline decoration-surface/30 underline-offset-2 hover:decoration-surface">
+              [{s.n}] {s.title}
+            </a>
+          ))}
+        </span>
+      )}
+    </HoverCard>
   );
 }
 

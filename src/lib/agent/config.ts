@@ -2,7 +2,7 @@
 // Prices: https://developers.openai.com/api/docs/pricing (checked 2026-10-19), USD per 1M tokens.
 
 export const MODELS = {
-  research: "gpt-5-mini", // web search + writing the guide
+  research: "gpt-5-mini", // writing the guide, and answering questions about one
   fast: "gpt-5-nano", // input screening and the evidence audit
 } as const;
 
@@ -22,6 +22,14 @@ export const LIMITS = {
   runsPerDay: 25,
   runTimeoutMs: 240_000,
   inputMaxLength: 80,
+  chat: {
+    reservePerMessageUsd: 0.01,
+    perIpPerHour: 20,
+    perDay: 300,
+    maxTurns: 8, // messages in one conversation, both sides
+    maxQuestionLength: 500,
+    maxOutputTokens: 1_200,
+  },
   firecrawl: {
     totalCredits: 400, // hard cap across all runs; free tier is enough for dev + demo
     reservePerRun: 20,

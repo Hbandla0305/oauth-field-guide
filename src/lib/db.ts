@@ -31,6 +31,8 @@ export const SCHEMA = [
      created_at timestamptz not null default now()
    )`,
   `create index if not exists runs_ip_time on runs (ip_hash, created_at)`,
+  // "generate" for live guides, "chat" for questions asked inside a guide. Both share the spend cap.
+  `alter table runs add column if not exists kind text not null default 'generate'`,
 ];
 
 export function hashIp(ip: string): string {
@@ -64,9 +66,26 @@ export type Reservation =
   | { ok: true; runId: string }
   | { ok: false; reason: "budget" | "ip_rate" | "daily_rate" };
 
+type Kind = "generate" | "chat";
+
+const KIND_LIMITS: Record<Kind, { reserve: number; perIpPerHour: number; perDay: number }> = {
+  generate: { reserve: LIMITS.reservePerRunUsd, perIpPerHour: LIMITS.runsPerIpPerHour, perDay: LIMITS.runsPerDay },
+  chat: { reserve: LIMITS.chat.reservePerMessageUsd, perIpPerHour: LIMITS.chat.perIpPerHour, perDay: LIMITS.chat.perDay },
+};
+
+export function reserveRun(ipHash: string, input: string) {
+  return reserve("generate", ipHash, input);
+}
+
+export function reserveChat(ipHash: string, input: string) {
+  return reserve("chat", ipHash, input);
+}
+
 // Reserves worst-case spend for one run. The advisory lock serialises concurrent
-// reservations so two requests can't both squeeze under the cap.
-export async function reserveRun(ipHash: string, input: string): Promise<Reservation> {
+// reservations so two requests can't both squeeze under the cap. Rate limits are per
+// kind; the dollar cap is shared.
+async function reserve(kind: Kind, ipHash: string, input: string): Promise<Reservation> {
+  const { reserve: amount, perIpPerHour, perDay } = KIND_LIMITS[kind];
   const db = sql();
   const [, result] = await db.transaction([
     db`select pg_advisory_xact_lock(7203)`,
@@ -74,31 +93,31 @@ export async function reserveRun(ipHash: string, input: string): Promise<Reserva
       with spend as (
         select coalesce(sum(coalesce(actual_usd, reserved_usd)), 0) as total from runs
       ), ip as (
-        select count(*) as n from runs where ip_hash = ${ipHash} and created_at > now() - interval '1 hour'
+        select count(*) as n from runs where kind = ${kind} and ip_hash = ${ipHash} and created_at > now() - interval '1 hour'
       ), day as (
-        select count(*) as n from runs where created_at > now() - interval '1 day'
+        select count(*) as n from runs where kind = ${kind} and created_at > now() - interval '1 day'
       ), ins as (
-        insert into runs (ip_hash, input, reserved_usd)
-        select ${ipHash}, ${input}, ${LIMITS.reservePerRunUsd}
+        insert into runs (ip_hash, input, reserved_usd, kind)
+        select ${ipHash}, ${input}, ${amount}, ${kind}
         from spend, ip, day
-        where spend.total + ${LIMITS.reservePerRunUsd} <= ${LIMITS.totalBudgetUsd}
-          and ip.n < ${LIMITS.runsPerIpPerHour}
-          and day.n < ${LIMITS.runsPerDay}
+        where spend.total + ${amount} <= ${LIMITS.totalBudgetUsd}
+          and ip.n < ${perIpPerHour}
+          and day.n < ${perDay}
         returning id
       )
       select (select id from ins) as id, spend.total, ip.n as ip_n, day.n as day_n from spend, ip, day`,
   ]);
   const row = result[0];
   if (row.id) return { ok: true, runId: row.id };
-  if (Number(row.total) + LIMITS.reservePerRunUsd > LIMITS.totalBudgetUsd) return { ok: false, reason: "budget" };
-  if (Number(row.ip_n) >= LIMITS.runsPerIpPerHour) return { ok: false, reason: "ip_rate" };
+  if (Number(row.total) + amount > LIMITS.totalBudgetUsd) return { ok: false, reason: "budget" };
+  if (Number(row.ip_n) >= perIpPerHour) return { ok: false, reason: "ip_rate" };
   return { ok: false, reason: "daily_rate" };
 }
 
 export async function settleRun(
   runId: string,
   actualUsd: number,
-  status: "done" | "failed" | "rejected" | "cached",
+  status: "done" | "failed" | "rejected" | "cached" | "answered",
   slug: string | null,
   error?: string,
   firecrawlCredits = 0,
@@ -111,7 +130,7 @@ export async function settleRun(
 // Credits already spent, plus a reservation for each run still in flight.
 export async function firecrawlCreditsCommitted(): Promise<number> {
   const rows = await sql()`
-    select coalesce(sum(case when status = 'running' then ${LIMITS.firecrawl.reservePerRun} else firecrawl_credits end), 0) as total from runs`;
+    select coalesce(sum(case when status = 'running' and kind = 'generate' then ${LIMITS.firecrawl.reservePerRun} else firecrawl_credits end), 0) as total from runs`;
   return Number(rows[0].total);
 }
 

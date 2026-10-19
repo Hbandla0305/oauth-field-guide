@@ -37,6 +37,8 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans), system-ui, sans-serif;
   font-feature-settings: "tnum" 1;
+  /* Hidden hover cards are positioned absolutely; clip (not hidden) so they never cause sideways scroll and sticky still works. */
+  overflow-x: clip;
 }
 
 :focus-visible {

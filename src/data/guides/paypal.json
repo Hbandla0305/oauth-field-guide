@@ -506,6 +506,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://www.paypal.com/.well-known/openid-configuration: authorize https://www.paypal.com/signin/authorize, token https://api.paypal.com/v1/oauth2/token, pairwise subjects, scopes openid/profile/email/address/phone plus three legacy uri.paypal.com scopes",
       "GET https://www.paypal.com/signin/authorize with a dummy client: HTTP 200",

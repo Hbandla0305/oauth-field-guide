@@ -38,21 +38,33 @@
     "summary": "Miro OAuth is self-serve: create an app in a free Developer team, share its installation URL, and any Miro user can authorize boards:read/boards:write the same day with no review, since Marketplace listing is optional (and now partner-gated). The friction is configuration and customer admins: the expiring-token choice is locked at app creation, and company admins can restrict members to approved apps only.",
     "timeToDev": {
       "range": "30–90 min",
-      "hours": { "min": 0.5, "max": 1.5 },
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": "Create a Developer team and app, set the redirect URI and scopes, install to your team, then wire the code exchange."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 2, "max": 24 },
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
       "assumes": "Private distribution via the app's installation URL with board read/write scopes; a public Marketplace listing is optional and adds partner approval plus a review of up to 8–12 weeks.",
       "waitingOn": "No review needed (customer company admins may need to approve the app if they restrict app installs)",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3", "s4"],
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
         "note": "Miro states the Marketplace partner requirement doesn't affect privately distributed apps and that anyone with the installation link can install."
       }
     },
@@ -62,56 +74,123 @@
     {
       "item": "A Miro account and a Developer team",
       "why": "Apps are created and first installed in a Developer team; the OAuth guide lists it as a prerequisite.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A redirect URI registered in app settings",
       "why": "The redirect_uri must be configured on the app and match the value sent in the token exchange.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A decision on expiring vs non-expiring tokens before you create the app",
       "why": "The choice is made at creation time and can't be enabled, disabled or updated afterwards.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A public app/webhook URL if you use webhooks or a Web SDK panel",
       "why": "Miro webhooks can't be registered against a non-public URL, and LAN/VPN app URLs only work for people on that network.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Board read/write (REST API, all plans)",
-      "examples": ["boards:read", "boards:write"],
+      "examples": [
+        "boards:read",
+        "boards:write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Read and edit boards, members and items for whatever the user can access. This is what most agents need.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Projects and team/identity (all plans)",
-      "examples": ["projects:read", "projects:write", "identity:read", "team:read", "team:write"],
+      "examples": [
+        "projects:read",
+        "projects:write",
+        "identity:read",
+        "team:read",
+        "team:write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Projects scopes work on the REST API. identity and team scopes are listed for the Web SDK only, so they're of limited use to a headless REST agent.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Enterprise organization scopes",
-      "examples": ["organizations:read", "organizations:teams:read", "auditlogs:read", "boards:export"],
+      "examples": [
+        "organizations:read",
+        "organizations:teams:read",
+        "auditlogs:read",
+        "boards:export"
+      ],
       "reviewRequired": false,
       "time": "Same day, Enterprise customers only",
       "impact": "Only work when the authorizing user is in an Enterprise organization (typically an admin). Not useful for a general consumer agent.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "The scopes page lists these under 'Enterprise plan only'; who exactly can grant them is our inference." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The scopes page lists these under 'Enterprise plan only'; who exactly can grant them is our inference."
+      }
     },
     {
       "tier": "Enterprise Guard compliance scopes",
-      "examples": ["contentlogs:export", "aiinteractionlogs:read", "organizations:cases:management"],
+      "examples": [
+        "contentlogs:export",
+        "aiinteractionlogs:read",
+        "organizations:cases:management"
+      ],
       "reviewRequired": false,
       "time": "Customer must have Enterprise Guard",
       "impact": "Gated by the customer's add-on purchase, not by Miro reviewing your app.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "The page labels them Enterprise Guard without explaining the gating." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The page labels them Enterprise Guard without explaining the gating."
+      }
     }
   ],
   "steps": [
@@ -121,7 +200,13 @@
       "detail": "Sign in to Miro and create a free Developer team from the developer docs' getting-started flow.",
       "url": "https://developers.miro.com/docs/getting-started-with-oauth",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Decide token expiry and scopes",
@@ -129,7 +214,15 @@
       "detail": "Pick expiring tokens (1 h access, 60-day rotating refresh) for production; the setting is permanent per app. List the minimal scopes, usually boards:read and boards:write.",
       "url": "https://developers.miro.com/reference/scopes",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create the app",
@@ -137,7 +230,14 @@
       "detail": "In Your apps, click Create new app, choose the Developer team, and tick the expiring-token option if wanted. Copy the client ID and secret.",
       "url": "https://miro.com/app/settings/user-profile/apps",
       "duration": "5 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s6"], "note": "Console URL resolved (302 to login); button names weren't observed because we didn't sign in." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "Console URL resolved (302 to login); button names weren't observed because we didn't sign in."
+      }
     },
     {
       "title": "Configure redirect URI and permissions, then install",
@@ -145,7 +245,13 @@
       "detail": "Add your redirect URI, tick the scopes, and click Install app and get OAuth token to test against your Developer team.",
       "url": "https://miro.com/app/settings/user-profile/apps",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the OAuth code flow",
@@ -153,7 +259,13 @@
       "detail": "Redirect to https://miro.com/oauth/authorize?response_type=code&client_id=...&redirect_uri=...&state=.... Exchange the code with POST https://api.miro.com/v1/oauth/token (grant_type=authorization_code, client_id, client_secret, code, redirect_uri). Store team_id with the tokens.",
       "url": "https://developers.miro.com/docs/getting-started-with-oauth",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement refresh",
@@ -161,7 +273,13 @@
       "detail": "POST grant_type=refresh_token to the same token endpoint. Each refresh returns a new refresh token and invalidates the old pair, so persist atomically.",
       "url": "https://developers.miro.com/docs/getting-started-with-oauth",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Handle rate limits",
@@ -169,7 +287,13 @@
       "detail": "Budget against credit weights (Level 1 = 50 credits ... Level 4 = 2,000) and back off on 429 tooManyRequests using X-RateLimit-Reset.",
       "url": "https://developers.miro.com/reference/rate-limiting",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Share the installation URL",
@@ -177,7 +301,14 @@
       "detail": "Copy the Installation URL from the bottom of the app's settings page under Share app and use it in your connect flow. Anyone with the link can install to a team they belong to.",
       "url": "https://miro.com/app/settings/user-profile/apps",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optional: apply to list on the Marketplace",
@@ -185,7 +316,13 @@
       "detail": "Fill in the Partner Interest Form. Only approved partners get the listing-submission link; Miro favours apps with customer demand and traction.",
       "url": "https://developers.miro.com/changelog/updated-submission-process-for-the-miro-marketplace",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optional: Marketplace review",
@@ -193,7 +330,11 @@
       "detail": "Partner approval (no stated timeline) followed by listing review; third-party summaries of Miro's docs cite up to 8–12 weeks.",
       "url": null,
       "duration": "8–12 weeks",
-      "evidence": { "label": "unverified", "sourceIds": [], "note": "The 8–12 week figure came from search summaries of Miro's 'Publish your app' page, which we didn't open." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "The 8–12 week figure came from search summaries of Miro's 'Publish your app' page, which we didn't open."
+      }
     }
   ],
   "agentCanDo": [
@@ -214,74 +355,174 @@
       "symptom": "Tokens never expire and there's no refresh_token, or you want to switch to expiring tokens later",
       "cause": "The app was created without the expiring-token option; it can't be enabled, disabled or updated after creation.",
       "fix": "Create a new app with expiring tokens and migrate users through re-authorization.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Refresh fails with an invalid token after a previous successful refresh",
       "cause": "Every refresh issues a new refresh token and invalidates the old pair; refresh tokens also lapse after 60 days unused.",
       "fix": "Persist the newest refresh token atomically and refresh before 60 days of inactivity.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Enterprise users can't add your app, or only see a request-access option",
       "cause": "Their company admin restricted members to an approved-apps list.",
       "fix": "Ask the admin to approve your app (internal apps can be approved by pasting the client ID).",
-      "evidence": { "label": "unverified", "sourceIds": [], "note": "From search summaries of Miro's help article 'App management', which returned 403 to our fetcher." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [],
+        "note": "From search summaries of Miro's help article 'App management', which returned 403 to our fetcher."
+      }
     },
     {
       "symptom": "HTTP 429 with code tooManyRequests 'Request rate limit exceeded'",
       "cause": "The user-app pair exceeded its credit budget, or the app hit its global 100,000 credits/min.",
       "fix": "Back off using X-RateLimit-Reset and favour cheaper (Level 1) methods.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Webhook registration fails",
       "cause": "Miro can't register webhooks with a non-public URL.",
       "fix": "Expose a public HTTPS endpoint (use a tunnel in development).",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Your app doesn't appear in Miro's Marketplace even though it works",
       "cause": "Marketplace listing now needs partner approval first; private apps are only reachable via the installation URL.",
       "fix": "Distribute via the installation URL, or apply through the Partner Interest Form.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "Expiring tokens: access tokens last 60 minutes and refresh tokens 60 days, rotating on each refresh. Non-expiring tokens last until the user uninstalls the app from the team.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": "The non-expiring lifetime wording came from search summaries; s6 confirms both modes exist." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "The non-expiring lifetime wording came from search summaries; s6 confirms both modes exist."
+      }
     },
     {
       "text": "Installs are per team: the token response carries a team_id, so a user in several teams may need to authorize once per team.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "The OAuth guide shows team_id but doesn't explain team selection." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The OAuth guide shows team_id but doesn't explain team selection."
+      }
     },
     {
       "text": "Rate limits are per user per app in credits (Level 1: 2,000 req/min ... Level 4: 50 req/min) with an app-wide ceiling of 100,000 credits per minute.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Miro also runs a hosted MCP server (mcp.miro.com) with its own OAuth 2.1 server, dynamic client registration and scopes boards:read, boards:write, openid, email; Miro says it works on all plans including free.",
-      "evidence": { "label": "tested", "sourceIds": ["s7", "s8"], "note": "Fetched mcp.miro.com/.well-known/oauth-authorization-server on 2026-10-20: DCR endpoint, S256 PKCE, refresh_token and jwt-bearer grants." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s7",
+          "s8"
+        ],
+        "note": "Fetched mcp.miro.com/.well-known/oauth-authorization-server on 2026-10-20: DCR endpoint, S256 PKCE, refresh_token and jwt-bearer grants."
+      }
     },
     {
       "text": "identity:read and team:read are listed for the Web SDK only, so a REST-only agent may not be able to read the user's email via those scopes.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Miro docs: Get started with OAuth 2.0 and Miro", "url": "https://developers.miro.com/docs/getting-started-with-oauth" },
-    { "id": "s2", "title": "Miro docs: Scopes", "url": "https://developers.miro.com/reference/scopes" },
-    { "id": "s3", "title": "Miro docs: Updated submission process for the Miro Marketplace", "url": "https://developers.miro.com/changelog/updated-submission-process-for-the-miro-marketplace" },
-    { "id": "s4", "title": "Miro docs: Deploy a Miro app", "url": "https://developers.miro.com/docs/deploy-a-miro-app" },
-    { "id": "s5", "title": "Miro docs: Rate limiting", "url": "https://developers.miro.com/reference/rate-limiting" },
-    { "id": "s6", "title": "Miro docs: Authorization flow for non-expiring/expiring access tokens", "url": "https://developers.miro.com/reference/authorization-flow-for-expiring-access-tokens" },
-    { "id": "s7", "title": "Miro docs: Miro MCP server", "url": "https://developers.miro.com/docs/miro-mcp" },
-    { "id": "s8", "title": "Miro MCP OAuth authorization server metadata", "url": "https://mcp.miro.com/.well-known/oauth-authorization-server" }
+    {
+      "id": "s1",
+      "title": "Miro docs: Get started with OAuth 2.0 and Miro",
+      "url": "https://developers.miro.com/docs/getting-started-with-oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Miro docs: Scopes",
+      "url": "https://developers.miro.com/reference/scopes"
+    },
+    {
+      "id": "s3",
+      "title": "Miro docs: Updated submission process for the Miro Marketplace",
+      "url": "https://developers.miro.com/changelog/updated-submission-process-for-the-miro-marketplace"
+    },
+    {
+      "id": "s4",
+      "title": "Miro docs: Deploy a Miro app",
+      "url": "https://developers.miro.com/docs/deploy-a-miro-app"
+    },
+    {
+      "id": "s5",
+      "title": "Miro docs: Rate limiting",
+      "url": "https://developers.miro.com/reference/rate-limiting"
+    },
+    {
+      "id": "s6",
+      "title": "Miro docs: Authorization flow for non-expiring/expiring access tokens",
+      "url": "https://developers.miro.com/reference/authorization-flow-for-expiring-access-tokens"
+    },
+    {
+      "id": "s7",
+      "title": "Miro docs: Miro MCP server",
+      "url": "https://developers.miro.com/docs/miro-mcp"
+    },
+    {
+      "id": "s8",
+      "title": "Miro MCP OAuth authorization server metadata",
+      "url": "https://mcp.miro.com/.well-known/oauth-authorization-server"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://mcp.miro.com/.well-known/oauth-authorization-server: issuer https://mcp.miro.com/, register endpoint, S256, grants authorization_code/refresh_token/jwt-bearer, scopes boards:read boards:write openid email",
       "GET https://mcp.miro.com/.well-known/oauth-protected-resource: resource https://mcp.miro.com/",

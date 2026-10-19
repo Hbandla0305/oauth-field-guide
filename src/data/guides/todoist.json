@@ -33,21 +33,31 @@
     "summary": "Todoist OAuth is fully self-serve: register an app in the App Management Console (or register at runtime through dynamic client registration), request data:read or data:read_write, and any Todoist user can connect the same day with no review. The main things to get right are rotating refresh tokens, where replaying a used token revokes all of that user's tokens for your app, and building on API v1, because REST v2 now returns 'This endpoint is deprecated'.",
     "timeToDev": {
       "range": "15–60 min",
-      "hours": { "min": 0.25, "max": 1 },
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "Create the app, set a redirect URL, implement the code exchange; no verification steps."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 1, "max": 24 },
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
       "assumes": "A standard OAuth app reading and writing tasks with data:read_write; listing in Todoist's integrations directory is optional and not needed for users to connect.",
       "waitingOn": "No review needed",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "The docs describe submission to the official integrations list as optional marketing; the Authorization section has no review step."
       }
     },
@@ -57,43 +67,90 @@
     {
       "item": "A Todoist account",
       "why": "Apps are created in the App Management Console inside Todoist settings.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A redirect URL configured on the app",
       "why": "The OAuth flow redirects back to a configured URL; redirect_uri is optional in the authorize request.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "An app name that isn't primarily 'Todoist' and a non-affiliation disclaimer",
       "why": "Brand rules require names like 'X for Todoist' and a description stating the app isn't affiliated with Todoist.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Add-only",
-      "examples": ["task:add"],
+      "examples": [
+        "task:add"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Can only create tasks; least-privilege option for capture agents.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Read / read-write",
-      "examples": ["data:read", "data:read_write"],
+      "examples": [
+        "data:read",
+        "data:read_write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Read (or read and modify) tasks, projects, labels and filters. data:read_write includes task:add and data:read. What most agents need.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Destructive and backup scopes",
-      "examples": ["data:delete", "project:delete", "backups:read"],
+      "examples": [
+        "data:delete",
+        "project:delete",
+        "backups:read"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Deleting tasks/labels/filters or projects, and listing backups without MFA. No review, but users see them on the consent screen, so request only if needed.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -103,7 +160,13 @@
       "detail": "Open the App Management Console in Todoist settings, create an app (named like 'X for Todoist'), and copy the client ID and secret.",
       "url": "https://app.todoist.com/app/settings/integrations/app-management",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Console URL returned HTTP 200 (login-gated SPA); we didn't sign in." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Console URL returned HTTP 200 (login-gated SPA); we didn't sign in."
+      }
     },
     {
       "title": "Set the redirect URL and check refresh tokens are on",
@@ -111,7 +174,13 @@
       "detail": "Add your OAuth redirect URL. New apps get refresh tokens by default; legacy apps can opt in, but the setting can't be turned off afterwards.",
       "url": "https://app.todoist.com/app/settings/integrations/app-management",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Alternatively, register at runtime",
@@ -119,7 +188,14 @@
       "detail": "Todoist supports RFC 7591 dynamic client registration at https://api.todoist.com/oauth/register (no auth, rate-limited per caller) and Client ID Metadata Documents with PKCE, useful for MCP-style clients.",
       "url": "https://api.todoist.com/.well-known/oauth-authorization-server",
       "duration": "15 min",
-      "evidence": { "label": "tested", "sourceIds": ["s2", "s1"], "note": "Metadata lists registration_endpoint and client_id_metadata_document_supported: true." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Metadata lists registration_endpoint and client_id_metadata_document_supported: true."
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -127,7 +203,13 @@
       "detail": "Redirect to https://app.todoist.com/oauth/authorize?client_id=...&scope=data:read_write&state=.... Exchange the code at POST https://api.todoist.com/oauth/access_token with client_id, client_secret and code. Check state.",
       "url": "https://developer.todoist.com/api/v1/#tag/Authorization",
       "duration": "45 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement rotating refresh",
@@ -135,7 +217,13 @@
       "detail": "Access tokens expire after 3,600 s. On HTTP 401 with error_code 477, POST grant_type=refresh_token and store the new refresh token immediately; never reuse a consumed one after the 60-second grace window.",
       "url": "https://developer.todoist.com/api/v1/#tag/Authorization",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Build on API v1 with sync limits in mind",
@@ -143,7 +231,13 @@
       "detail": "Use /api/v1/ endpoints. Prefer incremental syncs and batch up to 100 commands per request (counts as one) to stay under 1,000 partial / 100 full syncs per user per 15 minutes.",
       "url": "https://developer.todoist.com/api/v1/",
       "duration": "1–3 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test with your own account and ship",
@@ -151,7 +245,13 @@
       "detail": "Authorize, run read/write flows, and launch; any Todoist user can connect.",
       "url": null,
       "duration": "15 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optional: submit to the integrations directory",
@@ -159,7 +259,13 @@
       "detail": "Submit for evaluation and inclusion in Todoist's official integrations list for marketing; not required for OAuth to work.",
       "url": "https://developer.todoist.com/api/v1/",
       "duration": "varies",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Evaluation timeline not stated." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Evaluation timeline not stated."
+      }
     }
   ],
   "agentCanDo": [
@@ -180,64 +286,144 @@
       "symptom": "All of a user's tokens suddenly stop working and they must re-authorize",
       "cause": "A consumed refresh token was presented after the 60-second grace window; Todoist treats it as replay and revokes all the user's tokens for the app.",
       "fix": "Serialize refreshes per user and atomically persist the newest refresh token.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "HTTP 401 with error_code 477",
       "cause": "The one-hour access token expired.",
       "fix": "Refresh and retry with the new token; don't retry the same token.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Old endpoints return 'This endpoint is deprecated'",
       "cause": "REST API v2 and Sync v9 were retired in favour of the unified API v1 (/api/v1/), which also uses different IDs.",
       "fix": "Follow the 'Migrating from v9' guide and switch to /api/v1/ paths and IDs.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "GET https://api.todoist.com/rest/v2/tasks returned 'This endpoint is deprecated' pointing to /api/v1/ on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "GET https://api.todoist.com/rest/v2/tasks returned 'This endpoint is deprecated' pointing to /api/v1/ on 2026-10-20."
+      }
     },
     {
       "symptom": "{\"error\": \"invalid_client\"} on the authorize URL",
       "cause": "Unknown or mistyped client_id.",
       "fix": "Copy the client ID from the App Management Console, or re-register the dynamic client.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed with a dummy client_id on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed with a dummy client_id on 2026-10-20."
+      }
     },
     {
       "symptom": "Requests throttled after heavy polling",
       "cause": "Per-user caps of 1,000 partial and 100 full syncs per 15 minutes.",
       "fix": "Use incremental sync tokens, batch commands, and use webhooks instead of polling.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact throttle error isn't quoted in the docs section we read." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The exact throttle error isn't quoted in the docs section we read."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Legacy apps created before refresh tokens became the default get effectively non-expiring tokens (expires_in 315360000, no refresh token). Opting a legacy app into refresh tokens is one-way and doesn't convert existing tokens.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Todoist hosts an official MCP server at https://ai.todoist.net/mcp that uses the same Todoist authorization server and requests data:read_write.",
-      "evidence": { "label": "tested", "sourceIds": ["s3", "s1"], "note": "Fetched ai.todoist.net/.well-known/oauth-protected-resource on 2026-10-20: authorization_servers [https://todoist.com], scopes [data:read_write]." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": "Fetched ai.todoist.net/.well-known/oauth-protected-resource on 2026-10-20: authorization_servers [https://todoist.com], scopes [data:read_write]."
+      }
     },
     {
       "text": "Public clients can use PKCE with token_endpoint_auth_method 'none'; confidential clients default to client_secret_post.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Webhook deliveries that fail are retried after 15 minutes, at most three times, so don't rely on webhooks alone for consistency.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Users can migrate a personal API token to an OAuth token via POST /api/v1/access_tokens/migrate_personal_token, which helps move existing PAT-based users onto OAuth.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Todoist API v1 documentation", "url": "https://developer.todoist.com/api/v1/" },
-    { "id": "s2", "title": "Todoist OAuth authorization server metadata", "url": "https://api.todoist.com/.well-known/oauth-authorization-server" },
-    { "id": "s3", "title": "Todoist MCP protected-resource metadata", "url": "https://ai.todoist.net/.well-known/oauth-protected-resource" },
-    { "id": "s4", "title": "Todoist App Management Console", "url": "https://app.todoist.com/app/settings/integrations/app-management" }
+    {
+      "id": "s1",
+      "title": "Todoist API v1 documentation",
+      "url": "https://developer.todoist.com/api/v1/"
+    },
+    {
+      "id": "s2",
+      "title": "Todoist OAuth authorization server metadata",
+      "url": "https://api.todoist.com/.well-known/oauth-authorization-server"
+    },
+    {
+      "id": "s3",
+      "title": "Todoist MCP protected-resource metadata",
+      "url": "https://ai.todoist.net/.well-known/oauth-protected-resource"
+    },
+    {
+      "id": "s4",
+      "title": "Todoist App Management Console",
+      "url": "https://app.todoist.com/app/settings/integrations/app-management"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://api.todoist.com/.well-known/oauth-authorization-server: registration endpoint, S256 PKCE, grants authorization_code/refresh_token, scopes task:add data:read data:read_write data:delete project:delete (and more), client_id_metadata_document_supported true",
       "GET https://ai.todoist.net/.well-known/oauth-protected-resource: resource https://ai.todoist.net/mcp, scope data:read_write",

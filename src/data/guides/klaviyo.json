@@ -535,6 +535,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://www.klaviyo.com/manage-apps and /oauth/authorize: 302 to klaviyo.com/login",
       "POST https://a.klaviyo.com/oauth/token with no params: {\"error\":\"invalid_client\"}",

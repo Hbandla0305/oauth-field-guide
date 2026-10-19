@@ -510,6 +510,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://login.salesforce.com/.well-known/openid-configuration: issuer https://login.salesforce.com, authorize /services/oauth2/authorize, token /services/oauth2/token, registration and introspection endpoints, scopes incl. api, refresh_token, offline_access, full, mcp_api",
       "GET https://login.salesforce.com/services/oauth2/authorize with a bogus client_id: HTTP 400"

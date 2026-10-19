@@ -455,6 +455,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.pandadoc.com/oauth2/authorize: 302 to /login/?next=/oauth2/authorize",
       "POST https://api.pandadoc.com/oauth2/access_token with no body: {\"error\": \"unsupported_grant_type\"}"

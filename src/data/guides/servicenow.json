@@ -486,6 +486,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://developer.servicenow.com/: HTTP 302 to /dev.do",
       "GET https://store.servicenow.com/: HTTP 302 to /store"

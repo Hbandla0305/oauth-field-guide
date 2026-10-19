@@ -883,6 +883,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "Fetched https://accounts.google.com/.well-known/openid-configuration: authorization_endpoint https://accounts.google.com/o/oauth2/v2/auth, token_endpoint https://oauth2.googleapis.com/token, revocation https://oauth2.googleapis.com/revoke, PKCE plain+S256, grants authorization_code/refresh_token/device_code/jwt-bearer",
       "curl'd console.cloud.google.com/auth/{overview,branding,audience,scopes,clients,verification} and /projectcreate: each returns 302 to accounts.google.com ServiceLogin with the path preserved in continue= (shows the routes are recognized, not that they render the named page)"

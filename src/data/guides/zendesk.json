@@ -7,33 +7,71 @@
     "category": "Customer support"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth guide (authorize, PKCE, scopes)", "url": "https://support.zendesk.com/hc/en-us/articles/203663836-Using-OAuth-authentication-with-your-application" },
-    { "kind": "review", "label": "Set up a global OAuth client", "url": "https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/" },
-    { "kind": "review", "label": "Submit your app to the Marketplace", "url": "https://developer.zendesk.com/documentation/marketplace/publishing-to-the-marketplace/submit-your-app/" },
-    { "kind": "oauth", "label": "Refresh tokens and token expiration", "url": "https://developer.zendesk.com/documentation/api-basics/authentication/refresh-token" },
-    { "kind": "console", "label": "Marketplace developer portal", "url": "https://apps.zendesk.com/" },
-    { "kind": "api", "label": "API rate limits", "url": "https://developer.zendesk.com/api-reference/introduction/rate-limits/" }
+    {
+      "kind": "oauth",
+      "label": "OAuth guide (authorize, PKCE, scopes)",
+      "url": "https://support.zendesk.com/hc/en-us/articles/203663836-Using-OAuth-authentication-with-your-application"
+    },
+    {
+      "kind": "review",
+      "label": "Set up a global OAuth client",
+      "url": "https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/"
+    },
+    {
+      "kind": "review",
+      "label": "Submit your app to the Marketplace",
+      "url": "https://developer.zendesk.com/documentation/marketplace/publishing-to-the-marketplace/submit-your-app/"
+    },
+    {
+      "kind": "oauth",
+      "label": "Refresh tokens and token expiration",
+      "url": "https://developer.zendesk.com/documentation/api-basics/authentication/refresh-token"
+    },
+    {
+      "kind": "console",
+      "label": "Marketplace developer portal",
+      "url": "https://apps.zendesk.com/"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits",
+      "url": "https://developer.zendesk.com/api-reference/introduction/rate-limits/"
+    }
   ],
   "verdict": {
     "difficulty": "hard",
     "summary": "OAuth clients are per Zendesk subdomain, so a local client only works for one account; to let any Zendesk customer connect you need Zendesk to convert your client into a global OAuth client, which requires a d3v- sponsored partner account, and since August 2025 multi-customer integrations must also be submitted for Marketplace review. Using a customer's API token or their own OAuth client is now banned by the Developer Terms, so there is no self-serve shortcut for a commercial agent.",
     "timeToDev": {
       "range": "30–90 min",
-      "hours": { "min": 0.5, "max": 1.5 },
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": "Start a free 14-day trial, create a local OAuth client in Admin Center, and run the authorization code flow against that subdomain. No review is needed for a local client."
       }
     },
     "timeToProd": {
       "range": "2–6 weeks",
-      "hours": { "min": 336, "max": 1008 },
+      "hours": {
+        "min": 336,
+        "max": 1008
+      },
       "assumes": "A server-side agent that reads and writes tickets across many customers' Zendesk accounts, which needs a global OAuth client plus a Marketplace listing; there is no faster path for third parties.",
       "waitingOn": "Sponsored d3v- account approval (no stated SLA), the global OAuth client request (no stated SLA), and Marketplace review (1–3 weeks for new apps).",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s2", "s3", "s5", "s6"],
+        "sourceIds": [
+          "s2",
+          "s3",
+          "s5",
+          "s6"
+        ],
         "note": "Only the Marketplace review window (1–3 weeks) is stated by Zendesk. Sponsored-account and global-client approval times are not published, so the total is an estimate."
       }
     },
@@ -43,56 +81,127 @@
     {
       "item": "A Zendesk Support trial with a subdomain starting d3v-, converted to a sponsored account",
       "why": "Global OAuth requests are only accepted from d3v- subdomains, and sponsored accounts are reserved for developers building for the Marketplace.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s5"], "note": "Sponsored accounts don't expire after the 14-day trial and cover up to 5 agents." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": "Sponsored accounts don't expire after the 14-day trial and cover up to 5 agents."
+      }
     },
     {
       "item": "An organization registered on the Zendesk Marketplace developer portal",
       "why": "Both the global OAuth request form and Marketplace submissions live in that portal.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "item": "An HTTPS redirect URL and a confidential server to hold the client secret",
       "why": "Confidential clients authenticate with a secret (or PKCE) when exchanging the code; public clients must use PKCE.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Refresh token handling in your token store",
       "why": "New global clients get 30-minute access tokens by default, and Zendesk says refresh support is required for global clients from January 31, 2026.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s6"], "note": "The refresh-token page itself says the adoption deadline is April 1, 2027 and its FAQ says adoption is optional, so the sources conflict on the hard deadline." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s6"
+        ],
+        "note": "The refresh-token page itself says the adoption deadline is April 1, 2027 and its FAQ says adoption is optional, so the sources conflict on the hard deadline."
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Single-account (local client, your own or one customer's instance)",
-      "examples": ["read", "write", "tickets:read", "users:read"],
+      "examples": [
+        "read",
+        "write",
+        "tickets:read",
+        "users:read"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Any scope works for a local client, but only on the subdomain where it was created. Fine for development and for a customer building their own internal integration. Third parties may not use a customer's own OAuth client to serve that customer.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Read-only resource scopes on a global client",
-      "examples": ["tickets:read", "users:read", "organizations:read", "hc:read"],
+      "examples": [
+        "tickets:read",
+        "users:read",
+        "organizations:read",
+        "hc:read"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "Enough for an agent that summarizes or searches tickets. Zendesk's Marketplace Operations team sets 'allowed scopes' on your global client, and anything outside that list fails with invalid_scope.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2", "s1"], "note": "Zendesk doesn't say whether narrower scopes speed up approval. Grouping them separately is our reading of the allowed-scopes mechanism." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": "Zendesk doesn't say whether narrower scopes speed up approval. Grouping them separately is our reading of the allowed-scopes mechanism."
+      }
     },
     {
       "tier": "Write scopes on a global client",
-      "examples": ["write", "tickets:write", "users:write"],
+      "examples": [
+        "write",
+        "tickets:write",
+        "users:write"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "Needed for agents that reply to, tag, or update tickets. Same global-client and Marketplace path; justify write access in the request.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2", "s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Impersonation",
-      "examples": ["impersonate"],
+      "examples": [
+        "impersonate"
+      ],
       "reviewRequired": true,
       "time": "Unclear",
       "impact": "Lets an admin's token make requests on behalf of end users. Expect extra scrutiny; it has to be in your client's allowed scopes.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s2"], "note": "No source says how often impersonate is granted to global clients." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "No source says how often impersonate is granted to global clients."
+      }
     }
   ],
   "steps": [
@@ -102,7 +211,13 @@
       "detail": "Sign up for a free Zendesk Support trial and choose a subdomain that starts with d3v- (for example d3v-yourcompany).",
       "url": "https://developer.zendesk.com/documentation/developer-tools/getting-started/getting-a-trial-or-sponsored-account-for-development/",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Request sponsorship for the account",
@@ -110,7 +225,13 @@
       "detail": "Fill in the Sponsored Account Request Form linked from the sponsored-account page so the trial doesn't expire.",
       "url": "https://developer.zendesk.com/documentation/developer-tools/getting-started/getting-a-trial-or-sponsored-account-for-development/",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Wait for sponsored-account approval",
@@ -118,7 +239,13 @@
       "detail": "Zendesk emails you when the trial becomes a sponsored account. Build against the trial meanwhile.",
       "url": null,
       "duration": "unknown (no SLA)",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": "No timeframe is published." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "No timeframe is published."
+      }
     },
     {
       "title": "Create a local OAuth client prepared for global conversion",
@@ -126,7 +253,15 @@
       "detail": "In Admin Center > Apps and integrations > APIs > OAuth clients, add a client of kind Confidential. Prefix the Unique Identifier with zdg-, fill every field (including 'optional' ones), use production names and redirect URLs, and copy the secret, which is shown once.",
       "url": "https://support.zendesk.com/hc/en-us/articles/4408845965210",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s1", "s9"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s1",
+          "s9"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -134,7 +269,14 @@
       "detail": "Send users to https://{subdomain}.zendesk.com/oauth/authorizations/new with response_type=code, client_id, redirect_uri, scope and state (plus code_challenge/S256 if using PKCE). Ask the user for their subdomain first. Exchange the code within 120 seconds at POST https://{subdomain}.zendesk.com/oauth/tokens. Store tokens per subdomain.",
       "url": "https://support.zendesk.com/hc/en-us/articles/203663836-Using-OAuth-authentication-with-your-application",
       "duration": "2–4 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s7"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Add refresh-token handling",
@@ -142,7 +284,14 @@
       "detail": "Request tokens with expires_in/refresh_token_expires_in within the allowed ranges, refresh via grant_type=refresh_token, and atomically save the new refresh token because the old pair is invalidated.",
       "url": "https://developer.zendesk.com/documentation/api-basics/authentication/refresh-token",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s7"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s7"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Register your organization on the Marketplace portal",
@@ -150,7 +299,13 @@
       "detail": "Sign in to the Marketplace developer portal and create your organization profile.",
       "url": "https://apps.zendesk.com/",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Draft the global OAuth request",
@@ -158,7 +313,13 @@
       "detail": "List only the scopes you need with a short justification each, and confirm the d3v- subdomain and zdg- identifier match the local client.",
       "url": "https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Submit the global OAuth request",
@@ -166,7 +327,14 @@
       "detail": "In the Marketplace portal choose Global OAuth > Request new OAuth and submit. Add support@appsubmission.zendesk.com to your contacts so updates aren't filtered.",
       "url": "https://apps.zendesk.com/",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s8"], "note": "Older docs call the tab Organization > Global OAuth Request." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s8"
+        ],
+        "note": "Older docs call the tab Organization > Global OAuth Request."
+      }
     },
     {
       "title": "Wait for global client approval",
@@ -174,7 +342,13 @@
       "detail": "Zendesk replies with a ticket reference. On approval the local client is converted to global and you lose access to its admin page.",
       "url": null,
       "duration": "unknown (no SLA)",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "No timeframe is published." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "No timeframe is published."
+      }
     },
     {
       "title": "Prepare and submit the Marketplace listing",
@@ -182,7 +356,14 @@
       "detail": "Build the ZIP for an integration (marketingOnly: true) app with marketing assets and translations, and draft the listing copy. After acceptance, send the app ID and organization ID headers on every Zendesk API call. A human uploads and submits.",
       "url": "https://developer.zendesk.com/documentation/marketplace/publishing-to-the-marketplace/submit-your-app/",
       "duration": "half a day",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Marketplace review",
@@ -190,7 +371,13 @@
       "detail": "Zendesk reviews new submissions in about 1–3 weeks (1–2 weeks for updates).",
       "url": null,
       "duration": "1–3 weeks",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -213,86 +400,216 @@
       "symptom": "Customers on other subdomains get an error or can't find your client when authorizing",
       "cause": "Local OAuth clients only work on the subdomain where they were created.",
       "fix": "Request a global OAuth client from a d3v- sponsored account.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s8"], "note": "The exact error string wasn't documented in the pages we read." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s8"
+        ],
+        "note": "The exact error string wasn't documented in the pages we read."
+      }
     },
     {
       "symptom": "Global OAuth request rejected immediately",
       "cause": "Submitted from a subdomain without the d3v- prefix, or the local client identifier lacks the zdg- prefix.",
       "fix": "Create the client in a d3v- sponsored account with a zdg- identifier and resubmit.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "400 invalid_scope during authorization",
       "cause": "Your app asked for a scope outside the global client's allowed scopes set by Zendesk.",
       "fix": "Request only allowed scopes, or contact Zendesk Support mentioning 'global oauth allowed scopes' and your client_id to change them.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "invalid_grant on refresh",
       "cause": "A stale refresh token was reused; each refresh invalidates the previous access and refresh token.",
       "fix": "Persist the new refresh token atomically and serialize refreshes per connection.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s10"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s10"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Token exchange fails even though the user just approved",
       "cause": "The authorization code is only valid for 120 seconds.",
       "fix": "Exchange the code immediately in the callback handler.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Lost the client secret after global approval",
       "cause": "Converting to a global client removes your access to the client administration page.",
       "fix": "Save identifier and secret before submitting; otherwise contact Zendesk Support.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "Since August 2025, Zendesk's Developer Terms bar third parties from authenticating with a customer's API token or the customer's own OAuth client, and multi-customer apps must go through Marketplace review. Private apps customers build for their own use are exempt.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Token lifetimes: new global clients (from February 2, 2026) and new local clients (from April 30, 2026) default to 30-minute access tokens and 30-day refresh tokens. Access tokens can be set from 5 minutes to 48 hours and refresh tokens from 7 to 90 days.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limits are per customer plan: 200 requests/min on Team, 400 on Growth/Professional, 700 on Enterprise, 2,500 with High Volume API or Enterprise Plus. Your agent's throughput depends on each customer's plan.",
-      "evidence": { "label": "sourced", "sourceIds": ["s11"], "note": "The page doesn't say whether the limit is shared with the customer's other integrations; we assume it is." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s11"
+        ],
+        "note": "The page doesn't say whether the limit is shared with the customer's other integrations; we assume it is."
+      }
     },
     {
       "text": "OAuth is per subdomain: the authorize and token URLs include the customer's subdomain, so your connect UI has to ask for it, and host-mapped domains can't be used for OAuth.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Scopes can be broad (read, write) or resource-specific (tickets:read, users:write). Leaving scopes empty on a client allows all of them.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "If the admin who created a client loses permission to manage OAuth clients, client-credentials tokens stop working but authorization-code tokens keep working.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Global clients can't be used to build Sunshine Conversations bots, and Zendesk Sell uses a separate Multi-User Application instead of global OAuth.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Zendesk Help: Using OAuth authentication with your application", "url": "https://support.zendesk.com/hc/en-us/articles/203663836-Using-OAuth-authentication-with-your-application" },
-    { "id": "s2", "title": "Zendesk developer docs: Set up a global OAuth client", "url": "https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/" },
-    { "id": "s3", "title": "Zendesk developer docs: Submit your app", "url": "https://developer.zendesk.com/documentation/marketplace/publishing-to-the-marketplace/submit-your-app/" },
-    { "id": "s4", "title": "Zendesk developer docs: Refresh token", "url": "https://developer.zendesk.com/documentation/api-basics/authentication/refresh-token" },
-    { "id": "s5", "title": "Zendesk developer docs: Getting a trial or sponsored account for development", "url": "https://developer.zendesk.com/documentation/developer-tools/getting-started/getting-a-trial-or-sponsored-account-for-development/" },
-    { "id": "s6", "title": "Zendesk announcement: Developer update, enhanced security guidelines for third-party apps, integrations and bots", "url": "https://support.zendesk.com/hc/en-us/articles/9590471542170-Developer-update-Enhanced-security-guidelines-for-third-party-apps-integrations-and-bots" },
-    { "id": "s7", "title": "Zendesk API reference: OAuth tokens for grant types", "url": "https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/" },
-    { "id": "s8", "title": "Third-party: Nango, how to register your own Zendesk OAuth app", "url": "https://nango.dev/docs/api-integrations/zendesk/how-to-register-your-own-zendesk-api-oauth-app" },
-    { "id": "s9", "title": "Zendesk Help: Using OAuth authentication with your application (Admin Center client setup)", "url": "https://support.zendesk.com/hc/en-us/articles/4408845965210" },
-    { "id": "s10", "title": "Third-party: Nango blog, Zendesk OAuth refresh token invalid_grant", "url": "https://nango.dev/blog/zendesk-oauth-refresh-token-invalid-grant" },
-    { "id": "s11", "title": "Zendesk API reference: Rate limits", "url": "https://developer.zendesk.com/api-reference/introduction/rate-limits/" },
-    { "id": "s12", "title": "Zendesk Marketplace developer portal", "url": "https://apps.zendesk.com/" }
+    {
+      "id": "s1",
+      "title": "Zendesk Help: Using OAuth authentication with your application",
+      "url": "https://support.zendesk.com/hc/en-us/articles/203663836-Using-OAuth-authentication-with-your-application"
+    },
+    {
+      "id": "s2",
+      "title": "Zendesk developer docs: Set up a global OAuth client",
+      "url": "https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/"
+    },
+    {
+      "id": "s3",
+      "title": "Zendesk developer docs: Submit your app",
+      "url": "https://developer.zendesk.com/documentation/marketplace/publishing-to-the-marketplace/submit-your-app/"
+    },
+    {
+      "id": "s4",
+      "title": "Zendesk developer docs: Refresh token",
+      "url": "https://developer.zendesk.com/documentation/api-basics/authentication/refresh-token"
+    },
+    {
+      "id": "s5",
+      "title": "Zendesk developer docs: Getting a trial or sponsored account for development",
+      "url": "https://developer.zendesk.com/documentation/developer-tools/getting-started/getting-a-trial-or-sponsored-account-for-development/"
+    },
+    {
+      "id": "s6",
+      "title": "Zendesk announcement: Developer update, enhanced security guidelines for third-party apps, integrations and bots",
+      "url": "https://support.zendesk.com/hc/en-us/articles/9590471542170-Developer-update-Enhanced-security-guidelines-for-third-party-apps-integrations-and-bots"
+    },
+    {
+      "id": "s7",
+      "title": "Zendesk API reference: OAuth tokens for grant types",
+      "url": "https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/"
+    },
+    {
+      "id": "s8",
+      "title": "Third-party: Nango, how to register your own Zendesk OAuth app",
+      "url": "https://nango.dev/docs/api-integrations/zendesk/how-to-register-your-own-zendesk-api-oauth-app"
+    },
+    {
+      "id": "s9",
+      "title": "Zendesk Help: Using OAuth authentication with your application (Admin Center client setup)",
+      "url": "https://support.zendesk.com/hc/en-us/articles/4408845965210"
+    },
+    {
+      "id": "s10",
+      "title": "Third-party: Nango blog, Zendesk OAuth refresh token invalid_grant",
+      "url": "https://nango.dev/blog/zendesk-oauth-refresh-token-invalid-grant"
+    },
+    {
+      "id": "s11",
+      "title": "Zendesk API reference: Rate limits",
+      "url": "https://developer.zendesk.com/api-reference/introduction/rate-limits/"
+    },
+    {
+      "id": "s12",
+      "title": "Zendesk Marketplace developer portal",
+      "url": "https://apps.zendesk.com/"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://apps.zendesk.com/: HTTP 200 (Marketplace developer portal resolves; not signed in)",
       "GET https://support.zendesk.com/oauth/authorizations/new?response_type=code&client_id=x&scope=read&redirect_uri=https://example.com: 302 to /access/unauthenticated (authorize endpoint exists per subdomain and requires login)",

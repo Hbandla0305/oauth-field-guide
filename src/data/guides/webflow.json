@@ -538,6 +538,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://webflow.com/oauth/authorize: 302 to webflow.com/login",
       "POST https://api.webflow.com/oauth/access_token with no body: {\"error\":\"unsupported_grant_type\"}",

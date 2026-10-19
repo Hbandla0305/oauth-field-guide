@@ -521,6 +521,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://auth.lever.co/.well-known/openid-configuration: 200, issuer https://auth.lever.co/, authorize /authorize, token /oauth/token (Auth0 tenant)",
       "GET https://sandbox-lever.auth0.com/.well-known/openid-configuration: 200",

@@ -533,6 +533,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://accounts-api.brex.com/oauth2/default/.well-known/openid-configuration: issuer https://accounts-api.brex.com/oauth2/default, authorize .../v1/authorize, token .../v1/token, PKCE S256, about 100 scopes including transactions.card.readonly, expenses.card.readonly, cards.pan, transfers, offline_access",
       "GET https://developer.brex.com/guides/partner_authentication and /guides/checklist: HTTP 200 (the /docs/ variants returned 404 via fetch)",

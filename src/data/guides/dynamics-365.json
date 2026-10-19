@@ -7,32 +7,65 @@
     "category": "CRM / ERP"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth with Dataverse", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth" },
-    { "kind": "console", "label": "Register an app for Dataverse", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/walkthrough-register-app-azure-active-directory" },
-    { "kind": "review", "label": "Multitenant server-to-server setup", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-multi-tenant-server-server-authentication" },
-    { "kind": "api", "label": "Dataverse service protection limits", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits" },
-    { "kind": "api", "label": "Global Discovery Service", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/discovery-service" }
+    {
+      "kind": "oauth",
+      "label": "OAuth with Dataverse",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth"
+    },
+    {
+      "kind": "console",
+      "label": "Register an app for Dataverse",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/walkthrough-register-app-azure-active-directory"
+    },
+    {
+      "kind": "review",
+      "label": "Multitenant server-to-server setup",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-multi-tenant-server-server-authentication"
+    },
+    {
+      "kind": "api",
+      "label": "Dataverse service protection limits",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits"
+    },
+    {
+      "kind": "api",
+      "label": "Global Discovery Service",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/discovery-service"
+    }
   ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "Dynamics 365 Sales, Customer Service and other model-driven apps are reached through the Dataverse Web API with a normal multitenant Microsoft Entra app: there's no Microsoft app review, and the delegated user_impersonation permission inherits each user's Dynamics security roles. The friction is per customer: each environment has its own URL and token audience, an unverified multitenant app gets stepped up to admin consent, and app-only (server-to-server) access requires an admin to create an application user with a custom security role in every environment.",
     "timeToDev": {
       "range": "1–3 hours",
-      "hours": { "min": 1, "max": 3 },
+      "hours": {
+        "min": 1,
+        "max": 3
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s2", "s6"],
+        "sourceIds": [
+          "s2",
+          "s6"
+        ],
         "note": "Most of the time goes to getting an environment with Dynamics 365 apps (a trial), since the free Developer Plan environment can't install Dynamics 365 apps."
       }
     },
     "timeToProd": {
       "range": "1–3 weeks",
-      "hours": { "min": 168, "max": 504 },
+      "hours": {
+        "min": 168,
+        "max": 504
+      },
       "assumes": "A multitenant agent using delegated user_impersonation, made publisher verified so users aren't stepped up to admin consent; if you accept per-customer admin consent, an unverified app works the same day.",
       "waitingOn": "Microsoft AI Cloud Partner Program verification for publisher verification (usually 3–5 business days), then each customer's admin consent and, for app-only access, their admin creating an application user.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s3", "s8", "s9"],
+        "sourceIds": [
+          "s3",
+          "s8",
+          "s9"
+        ],
         "note": "There's no Dynamics-specific review. The range reuses the Entra publisher verification path; see the Microsoft guide."
       }
     },
@@ -42,48 +75,100 @@
     {
       "item": "A Microsoft Entra work/school tenant to register the app in",
       "why": "Dataverse uses Entra ID as its only OAuth identity provider; personal Microsoft accounts can't sign up.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A Dataverse environment with Dynamics 365 apps enabled (for example a Dynamics 365 trial)",
       "why": "Dynamics 365 apps can't be installed in a Developer Plan environment, and from 15 Nov 2026 signing up for the Developer Plan no longer creates an environment at all.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A second Dataverse tenant for testing multitenant consent",
       "why": "Microsoft says testing only in your own tenant isn't a valid test of multitenant behaviour.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "item": "For app-only access: a managed solution containing a custom security role",
       "why": "Application users can't be given the default security roles, and the application user itself can't be shipped in a solution.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Delegated Dataverse access (acts as the signed-in user)",
-      "examples": ["https://{org}.crm.dynamics.com/user_impersonation", "offline_access"],
+      "examples": [
+        "https://{org}.crm.dynamics.com/user_impersonation",
+        "offline_access"
+      ],
       "reviewRequired": false,
       "time": "Same day (verified publisher)",
       "impact": "Single delegated permission ('Access Dynamics 365 as organization users'); what the agent can read or write is set by the user's Dynamics security roles, not by scopes. Unverified multitenant apps get stepped up to admin consent.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "Whether user_impersonation itself is user-consentable was not confirmed in a primary source; the walkthrough tells you to grant admin consent." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Whether user_impersonation itself is user-consentable was not confirmed in a primary source; the walkthrough tells you to grant admin consent."
+      }
     },
     {
       "tier": "Environment discovery",
-      "examples": ["https://globaldisco.crm.dynamics.com/user_impersonation"],
+      "examples": [
+        "https://globaldisco.crm.dynamics.com/user_impersonation"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Lets the app list the environments a user can access (ApiUrl, FriendlyName) so the user can pick one. Each environment then needs its own token.",
-      "evidence": { "label": "inferred", "sourceIds": ["s5"], "note": "The docs show the resource URL but not the exact scope string; the scope shown follows the Dataverse pattern." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "The docs show the resource URL but not the exact scope string; the scope shown follows the Dataverse pattern."
+      }
     },
     {
       "tier": "App-only / server-to-server",
-      "examples": ["https://{org}.crm.dynamics.com/.default"],
+      "examples": [
+        "https://{org}.crm.dynamics.com/.default"
+      ],
       "reviewRequired": true,
       "time": "Per customer: admin setup",
       "impact": "Tenant admin consent, then an admin creates an application user in each environment and assigns your custom security role. Good for background agents; doesn't consume a license.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": "'Review' here is the customer admin's setup, not a Microsoft review." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": "'Review' here is the customer admin's setup, not a Microsoft review."
+      }
     }
   ],
   "steps": [
@@ -93,7 +178,13 @@
       "detail": "Start a Dynamics 365 trial (for example Sales) with a work account so you have an environment with Dynamics 365 apps enabled. Note its URL (https://{org}.crm.dynamics.com).",
       "url": "https://admin.powerplatform.microsoft.com",
       "duration": "30-60 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s6"], "note": "Trial sign-up flow wasn't observed." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "Trial sign-up flow wasn't observed."
+      }
     },
     {
       "title": "Register a multitenant app in Entra",
@@ -101,7 +192,13 @@
       "detail": "App registrations > New registration, 'Accounts in any organizational directory'. Add a Web redirect URI and a client secret or certificate.",
       "url": "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Add the Dynamics CRM delegated permission",
@@ -109,7 +206,13 @@
       "detail": "API permissions > Add a permission > APIs my organization uses > Dataverse (Dynamics CRM) > Delegated > user_impersonation. Grant admin consent in your own tenant.",
       "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/walkthrough-register-app-azure-active-directory",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement sign-in, discovery and per-environment tokens",
@@ -117,7 +220,14 @@
       "detail": "Auth code + PKCE against https://login.microsoftonline.com/organizations. Call GET https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances?$select=ApiUrl,FriendlyName, let the user choose, then request {ApiUrl}/user_impersonation and call {ApiUrl}/api/data/v9.2/WhoAmI.",
       "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/discovery-service",
       "duration": "2-4 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Build 429 / Retry-After handling",
@@ -125,7 +235,13 @@
       "detail": "Service protection limits are per user per web server: 6,000 requests and 20 minutes of execution time per 5-minute window, about 52 concurrent requests. Honour Retry-After and start slow.",
       "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits",
       "duration": "1-2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "(App-only) Package a custom security role",
@@ -133,7 +249,13 @@
       "detail": "Define the minimum table privileges the agent needs in a custom security role, ship it in a managed solution, and script application-user creation for customers (for example with Package Deployer or the Web API).",
       "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-multi-tenant-server-server-authentication",
       "duration": "half a day",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test in a second tenant",
@@ -141,7 +263,14 @@
       "detail": "Sign in from a separate trial tenant, accept consent as that tenant's admin, and (for S2S) create the application user there via Power Platform admin center > Environments > S2S > New app user.",
       "url": "https://admin.powerplatform.microsoft.com",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Get publisher verified",
@@ -149,7 +278,13 @@
       "detail": "Verify your domain in Entra, enroll and pass Microsoft AI Cloud Partner Program verification, then attach the Partner One ID under the app's Branding & properties.",
       "url": "https://learn.microsoft.com/en-us/entra/identity-platform/publisher-verification-overview",
       "duration": "1-2 h of work",
-      "evidence": { "label": "sourced", "sourceIds": ["s8"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Partner Center business verification",
@@ -157,7 +292,13 @@
       "detail": "Email, identity, employment and business checks on your Partner Center account.",
       "url": "https://partner.microsoft.com/dashboard/account/v3/organization/legalinfo",
       "duration": "3-5 business days (often)",
-      "evidence": { "label": "sourced", "sourceIds": ["s9"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Customer admin onboarding",
@@ -165,7 +306,14 @@
       "detail": "Each customer's admin grants consent (always for S2S), creates the application user and assigns your security role. Delegated users also need a Dynamics license and suitable roles.",
       "url": null,
       "duration": "varies by customer",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -186,74 +334,186 @@
       "symptom": "Installing Dynamics 365 apps is only supported on environments that are created with a database with the option to Enable Dynamics 365 apps set to Yes",
       "cause": "You're using a Power Apps Developer Plan environment, which can't install Dynamics 365 apps.",
       "fix": "Use a Dynamics 365 trial or a sandbox environment created with Dynamics 365 apps enabled.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "AADSTS90094 'needs permission to access resources in your organization that only an admin can grant' for customer users",
       "cause": "Risk-based step-up consent applies to new unverified multitenant apps requesting more than basic sign-in permissions.",
       "fix": "Publisher-verify the app, or send the customer's admin to the admin consent endpoint.",
-      "evidence": { "label": "sourced", "sourceIds": ["s7"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Token works for discovery but Dataverse returns 401 for the chosen environment",
       "cause": "Dataverse tokens are audience-specific: you need a token whose scope is that environment's URL.",
       "fix": "Request {ApiUrl}/user_impersonation (or /.default for S2S) per environment and cache tokens by environment.",
-      "evidence": { "label": "inferred", "sourceIds": ["s2", "s5"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "S2S call succeeds in your tenant but fails in a customer's with a user-not-found style error",
       "cause": "No application user bound to your app exists in that customer environment.",
       "fix": "Customer admin creates the application user (Power Platform admin center > Environments > S2S) and assigns your custom role.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s1"], "note": "Exact error text not documented in the pages we read." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
+        "note": "Exact error text not documented in the pages we read."
+      }
     },
     {
       "symptom": "HTTP 429 with 'Number of requests exceeded the limit of 6000 over time window of 300 seconds'",
       "cause": "Service protection limits per user per web server; trial environments have only one web server.",
       "fix": "Honour Retry-After, reduce batch size, and ramp concurrency gradually.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens last about 60 minutes; refresh tokens follow normal Entra rules (90 days by default for confidential web apps).",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s10"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s10"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Delegated access is only as broad as the user's Dynamics security roles, and impersonated users must be licensed. App-only users avoid a license but need a custom role in each environment.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Besides service protection limits, Power Platform request entitlements (daily request allocations per license) apply separately and accrue even inside batches.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Unmanaged developer environments are deprecated: suspension starts 15 Dec 2026 and deletion 15 Jan 2027, so don't build your test setup on one.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Marketplace (AppSource) listing is optional; Microsoft says multitenant S2S works without listing.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Dynamics 365 Business Central and Finance & Operations use different APIs and endpoints from Dataverse; this guide covers the Dataverse-based apps (Sales, Customer Service, Field Service, Marketing).",
-      "evidence": { "label": "inferred", "sourceIds": ["s2"], "note": "Business Central and F&O auth weren't researched." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Business Central and F&O auth weren't researched."
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Microsoft Learn: Register an app with Microsoft Entra ID (Dataverse)", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/walkthrough-register-app-azure-active-directory" },
-    { "id": "s2", "title": "Microsoft Learn: Use OAuth authentication with Dataverse", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth" },
-    { "id": "s3", "title": "Microsoft Learn: Use multi-tenant server-to-server authentication (Dataverse)", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-multi-tenant-server-server-authentication" },
-    { "id": "s4", "title": "Microsoft Learn: Service protection API limits (Dataverse)", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits" },
-    { "id": "s5", "title": "Microsoft Learn: Discover user organizations (Global Discovery Service)", "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/discovery-service" },
-    { "id": "s6", "title": "Microsoft Learn: Power Apps Developer Plan", "url": "https://learn.microsoft.com/en-us/power-platform/developer/plan" },
-    { "id": "s7", "title": "Microsoft Learn: Configure risk-based step-up consent", "url": "https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/configure-risk-based-step-up-consent" },
-    { "id": "s8", "title": "Microsoft Learn: Publisher verification overview", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/publisher-verification-overview" },
-    { "id": "s9", "title": "Microsoft Learn: Understand the verification process in Partner Center", "url": "https://learn.microsoft.com/en-us/partner-center/enroll/verification-responses" },
-    { "id": "s10", "title": "Microsoft Learn: Refresh tokens in the Microsoft identity platform", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens" }
+    {
+      "id": "s1",
+      "title": "Microsoft Learn: Register an app with Microsoft Entra ID (Dataverse)",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/walkthrough-register-app-azure-active-directory"
+    },
+    {
+      "id": "s2",
+      "title": "Microsoft Learn: Use OAuth authentication with Dataverse",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth"
+    },
+    {
+      "id": "s3",
+      "title": "Microsoft Learn: Use multi-tenant server-to-server authentication (Dataverse)",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/use-multi-tenant-server-server-authentication"
+    },
+    {
+      "id": "s4",
+      "title": "Microsoft Learn: Service protection API limits (Dataverse)",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/api-limits"
+    },
+    {
+      "id": "s5",
+      "title": "Microsoft Learn: Discover user organizations (Global Discovery Service)",
+      "url": "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/discovery-service"
+    },
+    {
+      "id": "s6",
+      "title": "Microsoft Learn: Power Apps Developer Plan",
+      "url": "https://learn.microsoft.com/en-us/power-platform/developer/plan"
+    },
+    {
+      "id": "s7",
+      "title": "Microsoft Learn: Configure risk-based step-up consent",
+      "url": "https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/configure-risk-based-step-up-consent"
+    },
+    {
+      "id": "s8",
+      "title": "Microsoft Learn: Publisher verification overview",
+      "url": "https://learn.microsoft.com/en-us/entra/identity-platform/publisher-verification-overview"
+    },
+    {
+      "id": "s9",
+      "title": "Microsoft Learn: Understand the verification process in Partner Center",
+      "url": "https://learn.microsoft.com/en-us/partner-center/enroll/verification-responses"
+    },
+    {
+      "id": "s10",
+      "title": "Microsoft Learn: Refresh tokens in the Microsoft identity platform",
+      "url": "https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances without a token: HTTP 400 (endpoint resolves, needs auth)",
       "GET https://admin.powerplatform.microsoft.com: HTTP 200"

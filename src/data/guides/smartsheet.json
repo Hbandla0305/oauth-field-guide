@@ -7,31 +7,58 @@
     "category": "Work management"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth 2.0 guide", "url": "https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth" },
-    { "kind": "api", "label": "API introduction and plan requirements", "url": "https://developers.smartsheet.com/api/smartsheet/introduction" },
-    { "kind": "api", "label": "Regional base URLs", "url": "https://developers.smartsheet.com/api/smartsheet/guides/basics/base-url" },
-    { "kind": "api", "label": "Rate limits and retry guidance", "url": "https://www.smartsheet.com/content-center/managing-work/it-management/rate-limits-retry-logic-and-error-handling-with-smartsheet-api" }
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 guide",
+      "url": "https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth"
+    },
+    {
+      "kind": "api",
+      "label": "API introduction and plan requirements",
+      "url": "https://developers.smartsheet.com/api/smartsheet/introduction"
+    },
+    {
+      "kind": "api",
+      "label": "Regional base URLs",
+      "url": "https://developers.smartsheet.com/api/smartsheet/guides/basics/base-url"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits and retry guidance",
+      "url": "https://www.smartsheet.com/content-center/managing-work/it-management/rate-limits-retry-logic-and-error-handling-with-smartsheet-api"
+    }
   ],
   "verdict": {
     "difficulty": "gated",
     "summary": "Smartsheet lists the API as requiring a Business, Enterprise or Advanced Work Management plan, and app registration only opens after Smartsheet approves a Developer Tools request for your account. Once you're in, there's no app review: any Smartsheet user who consents can connect, though it's unclear whether customers on Pro plans can use API apps at all.",
     "timeToDev": {
       "range": "1 h–3 days",
-      "hours": { "min": 1, "max": 72 },
+      "hours": {
+        "min": 1,
+        "max": 72
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "The build itself takes about an hour. The unknown is how long Smartsheet takes to accept the Developer Tools registration; no turnaround is published."
       }
     },
     "timeToProd": {
       "range": "1–3 days",
-      "hours": { "min": 2, "max": 72 },
+      "hours": {
+        "min": 2,
+        "max": 72
+      },
       "assumes": "A Business-plan developer account with Developer Tools approved, and an app reading and writing sheets for customers on Business or higher plans.",
       "waitingOn": "Smartsheet accepting the Developer Tools registration. There is no app review after that.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "The OAuth guide describes no review or approval for apps. The Developer Tools approval time is not documented."
       }
     },
@@ -41,48 +68,108 @@
     {
       "item": "A Smartsheet account on a Business, Enterprise or Advanced Work Management plan",
       "why": "The API introduction lists these plans as required. Pro is not included.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A dedicated service account for owning the app (recommended)",
       "why": "Smartsheet says 'A best practice is to use an additional Smartsheet account' that you don't personally use.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Whether that extra account takes a paid seat is not stated in the OAuth guide." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Whether that extra account takes a paid seat is not stated in the OAuth guide."
+      }
     },
     {
       "item": "Developer Tools activated, plus a developer profile",
       "why": "You register through the Developer Tools Registration page; 'Upon accepting your request, Smartsheet activates the Developer Tools user interface.' A developer profile is a prerequisite for registering apps.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "An HTTPS redirect URL, app URL and support contact",
       "why": "App registration asks for a name, description, app URL, support contact and redirect URL, and the OAuth flow requires HTTPS.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Read access",
-      "examples": ["READ_SHEETS", "READ_SIGHTS", "READ_USERS", "READ_CONTACTS", "READ_EVENTS"],
+      "examples": [
+        "READ_SHEETS",
+        "READ_SIGHTS",
+        "READ_USERS",
+        "READ_CONTACTS",
+        "READ_EVENTS"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Enough for an agent that reads sheets, reports and dashboards. Scopes never override the user's own sharing permissions.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Create, write, share and delete",
-      "examples": ["WRITE_SHEETS", "CREATE_SHEETS", "SHARE_SHEETS", "DELETE_SHEETS", "CREATE_SIGHTS"],
+      "examples": [
+        "WRITE_SHEETS",
+        "CREATE_SHEETS",
+        "SHARE_SHEETS",
+        "DELETE_SHEETS",
+        "CREATE_SIGHTS"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Lets the agent update rows and create, share or delete sheets. Same self-serve consent; only request what you need.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Admin scopes",
-      "examples": ["ADMIN_SHEETS", "ADMIN_USERS", "ADMIN_WORKSPACES", "ADMIN_WEBHOOKS", "ADMIN_SIGHTS"],
+      "examples": [
+        "ADMIN_SHEETS",
+        "ADMIN_USERS",
+        "ADMIN_WORKSPACES",
+        "ADMIN_WEBHOOKS",
+        "ADMIN_SIGHTS"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Needed for webhooks and workspace/user administration. They only do anything when the consenting user already has those rights.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "'Only work for admins' is our reading of 'scopes don't override sharing permissions'." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "'Only work for admins' is our reading of 'scopes don't override sharing permissions'."
+      }
     }
   ],
   "steps": [
@@ -92,7 +179,14 @@
       "detail": "Set up (or designate) a Smartsheet service account on a Business, Enterprise or Advanced Work Management plan.",
       "url": "https://app.smartsheet.com",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Request Developer Tools",
@@ -100,7 +194,13 @@
       "detail": "Open the Developer Tools Registration page from the OAuth guide and click Register User Account.",
       "url": "https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Wait for Smartsheet to approve the request",
@@ -108,7 +208,13 @@
       "detail": "Smartsheet activates the Developer Tools UI once it accepts the request. If it's denied, Smartsheet says to consult your Customer Success Manager.",
       "url": null,
       "duration": "Unknown (hours to days)",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "No turnaround time is published; the duration is our estimate." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "No turnaround time is published; the duration is our estimate."
+      }
     },
     {
       "title": "Create a developer profile and app",
@@ -116,7 +222,13 @@
       "detail": "In Developer Tools, create the developer profile, then the app: name, description, app URL, support contact, HTTPS redirect URL and logo. Leave 'Publish App?' off unless you want a public profile page. Copy the client ID and secret.",
       "url": "https://app.smartsheet.com",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -124,7 +236,13 @@
       "detail": "Redirect to https://app.smartsheet.com/b/authorize with client_id, response_type=code, space-delimited scope and state. Exchange the code (valid about 10 minutes) at https://api.smartsheet.com/2.0/token with grant_type=authorization_code, sending either the secret or the documented hash parameter.",
       "url": "https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Add refresh and retry handling",
@@ -132,7 +250,14 @@
       "detail": "Refresh before the 7-day access token expires and store the new refresh token. On HTTP 429 with errorCode 4003, sleep 60 seconds and retry.",
       "url": "https://www.smartsheet.com/content-center/managing-work/it-management/rate-limits-retry-logic-and-error-handling-with-smartsheet-api",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Decide on regional support",
@@ -140,7 +265,13 @@
       "detail": "Smartsheet Gov, Regions Europe and Regions Australia each have their own API host. Plan per-region base URLs and confirm whether each region needs its own app.",
       "url": "https://developers.smartsheet.com/api/smartsheet/guides/basics/base-url",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "Whether apps and tokens are per region isn't stated on that page." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "Whether apps and tokens are per region isn't stated on that page."
+      }
     },
     {
       "title": "Test with a second Smartsheet user",
@@ -148,7 +279,13 @@
       "detail": "Authorize from another account, ideally one on the plan your customers use, and confirm reads and writes work.",
       "url": null,
       "duration": "15 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Launch",
@@ -156,7 +293,13 @@
       "detail": "Ship the Connect Smartsheet button. No app review is documented.",
       "url": null,
       "duration": "Same day",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -177,66 +320,155 @@
       "symptom": "Developer Tools request denied, or the Developer Tools UI never appears",
       "cause": "Smartsheet hasn't accepted the registration, possibly because the account isn't on an eligible plan.",
       "fix": "Upgrade the account to Business or higher and contact your Customer Success Manager.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "The link between plan and denial is our inference." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "The link between plan and denial is our inference."
+      }
     },
     {
       "symptom": "Token endpoint returns {\"errorCode\":1067,\"message\":\"Invalid client_id\",\"error\":\"invalid_client\"}",
       "cause": "Wrong client_id, or an app registered in a different Smartsheet region.",
       "fix": "Re-copy the client ID, and use the token host for the same region as the app.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed by POSTing dummy credentials to https://api.smartsheet.com/2.0/token on 2026-10-20. The region part is inferred." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed by POSTing dummy credentials to https://api.smartsheet.com/2.0/token on 2026-10-20. The region part is inferred."
+      }
     },
     {
       "symptom": "HTTP 429 with {\"errorCode\": 4003, \"message\": \"Rate limit exceeded.\"}",
       "cause": "More than 300 requests per minute on one access token. File attachments and cell history count as 10 requests each.",
       "fix": "Sleep 60 seconds and retry, and spread work across connections.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "API returns {\"errorCode\":1004,\"message\":\"You are not authorized to perform this action.\"}",
       "cause": "Missing or invalid token, or the user lacks sharing rights on the object.",
       "fix": "Check the Authorization header and scopes, and remember scopes don't override sharing permissions.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "Observed on GET https://api.smartsheet.com/2.0/users/me without a token on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Observed on GET https://api.smartsheet.com/2.0/users/me without a token on 2026-10-20."
+      }
     },
     {
       "symptom": "Some customers can't use the integration",
       "cause": "The API is listed as Business, Enterprise or Advanced Work Management only, so Pro-plan customers may be blocked.",
       "fix": "State the plan requirement on your Connect page and test with a Pro account.",
-      "evidence": { "label": "unverified", "sourceIds": ["s2", "s5"], "note": "Official docs state the plan requirement, but not clearly whether it applies to end users of third-party OAuth apps." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s2",
+          "s5"
+        ],
+        "note": "Official docs state the plan requirement, but not clearly whether it applies to end users of third-party OAuth apps."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens expire after 604,799 seconds (about 7 days). A refresh returns a new access and refresh token pair. The refresh token's lifetime isn't documented.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limit is 300 requests per minute per access token, and parallel workers sharing one token share that budget.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Smartsheet Gov (api.smartsheetgov.com), Regions Europe (api.smartsheet.eu) and Regions Australia (api.smartsheet.au) are separate hosts. A community thread says EU apps need an EU developer setup.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s6"], "note": "Hosts are official. The EU app requirement is from an undated community post." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": "Hosts are official. The EU app requirement is from an undated community post."
+      }
     },
     {
       "text": "'Publish App?' only makes your app's profile page public. It is not a marketplace listing or a review gate.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The token exchange can send a hash of the code and secret instead of the raw client secret.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Smartsheet developers: OAuth", "url": "https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth" },
-    { "id": "s2", "title": "Smartsheet developers: API introduction", "url": "https://developers.smartsheet.com/api/smartsheet/introduction" },
-    { "id": "s3", "title": "Smartsheet developers: Base URL", "url": "https://developers.smartsheet.com/api/smartsheet/guides/basics/base-url" },
-    { "id": "s4", "title": "Smartsheet: Rate limits, retry logic and error handling with the Smartsheet API", "url": "https://www.smartsheet.com/content-center/managing-work/it-management/rate-limits-retry-logic-and-error-handling-with-smartsheet-api" },
-    { "id": "s5", "title": "Smartsheet Community: Can you access the API when on Pro plan?", "url": "https://community.smartsheet.com/discussion/comment/308631" },
-    { "id": "s6", "title": "Smartsheet Community: I need to create an app in the EU region", "url": "https://community.smartsheet.com/discussion/comment/435476" }
+    {
+      "id": "s1",
+      "title": "Smartsheet developers: OAuth",
+      "url": "https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Smartsheet developers: API introduction",
+      "url": "https://developers.smartsheet.com/api/smartsheet/introduction"
+    },
+    {
+      "id": "s3",
+      "title": "Smartsheet developers: Base URL",
+      "url": "https://developers.smartsheet.com/api/smartsheet/guides/basics/base-url"
+    },
+    {
+      "id": "s4",
+      "title": "Smartsheet: Rate limits, retry logic and error handling with the Smartsheet API",
+      "url": "https://www.smartsheet.com/content-center/managing-work/it-management/rate-limits-retry-logic-and-error-handling-with-smartsheet-api"
+    },
+    {
+      "id": "s5",
+      "title": "Smartsheet Community: Can you access the API when on Pro plan?",
+      "url": "https://community.smartsheet.com/discussion/comment/308631"
+    },
+    {
+      "id": "s6",
+      "title": "Smartsheet Community: I need to create an app in the EU region",
+      "url": "https://community.smartsheet.com/discussion/comment/435476"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.smartsheet.com/b/authorize?client_id=x&response_type=code&scope=READ_SHEETS: 302 to app.smartsheet.com/b/",
       "POST https://api.smartsheet.com/2.0/token with dummy credentials: errorCode 1067 'Invalid client_id', error invalid_client",

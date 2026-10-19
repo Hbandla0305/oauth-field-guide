@@ -38,21 +38,33 @@
     "summary": "A CUSTOMER-domain app on a free developer account works against your own account within an hour, but an app that connects other companies' Acrobat Sign accounts has to be a PARTNER app, and Adobe says PARTNER apps must pass a security certification (recorded meeting plus security testing) before they get full access to other accounts. Until then, each customer's admin would have to tick 'Allow uncertified partner applications', which Adobe warns against.",
     "timeToDev": {
       "range": "30–90 min",
-      "hours": { "min": 0.5, "max": 1.5 },
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": "Sign up for the free Developer Edition, create an API application in the web app, enable scopes and a redirect URI, then run the code exchange. No review is involved for your own account."
       }
     },
     "timeToProd": {
       "range": "3–10 weeks",
-      "hours": { "min": 504, "max": 1680 },
+      "hours": {
+        "min": 504,
+        "max": 1680
+      },
       "assumes": "A PARTNER-domain app that reads and sends agreements in customers' own Acrobat Sign accounts; a CUSTOMER app used only inside your own account is ready the same day.",
       "waitingOn": "Adobe partner certification: a recorded process meeting with Adobe's partner manager, security team and a Solution Consultant, then security testing of your integration and fixes for any major issues.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s3", "s5"],
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
         "note": "Adobe doesn't publish a certification timeline. The range is our estimate based on the steps described (scheduling meetings with three Adobe roles, security testing, remediation)."
       }
     },
@@ -62,48 +74,111 @@
     {
       "item": "An Acrobat Sign account, such as the free Developer Edition",
       "why": "API applications are created inside the Acrobat Sign web app (API > API Applications, or Account for enterprise customers).",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s4"], "note": "Group and account scope modifiers need the Business or Enterprise edition, per the quickstart." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "Group and account scope modifiers need the Business or Enterprise edition, per the quickstart."
+      }
     },
     {
       "item": "An HTTPS redirect URI",
       "why": "The OAuth configuration accepts secure (https) redirect URIs, and the redirect_uri in each request has to match one on the list.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Encrypted storage for tokens and the app secret",
       "why": "Certification checks that all integration tokens and the partner app secret are stored encrypted, and that you follow the OWASP Top 10.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A nearly finished integration and a test instance Adobe reviewers can log into",
       "why": "Adobe's security team connects your platform to Acrobat Sign and runs agreement workflows during certification.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Self-modifier scopes in your own account (CUSTOMER app)",
-      "examples": ["user_read:self", "agreement_read:self", "agreement_write:self", "agreement_send:self", "library_read:self"],
+      "examples": [
+        "user_read:self",
+        "agreement_read:self",
+        "agreement_write:self",
+        "agreement_send:self",
+        "library_read:self"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Acts as the authorizing user. Fine for internal tools and development, but a CUSTOMER app is meant for your own account only.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Scope names come from the sample authorization URL in the quickstart." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Scope names come from the sample authorization URL in the quickstart."
+      }
     },
     {
       "tier": "Group/account-modifier scopes",
-      "examples": ["agreement_read:account", "user_read:account", "workflow_read:group", "library_write:account"],
+      "examples": [
+        "agreement_read:account",
+        "user_read:account",
+        "workflow_read:group",
+        "library_write:account"
+      ],
       "reviewRequired": false,
       "time": "Same day (needs an admin to consent)",
       "impact": "Lets the token act for other users in the group or account. Only group admins can grant :group and only account admins can grant :account, so a non-admin user's consent fails with ACCESS_DENIED.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "No extra review is attached to the modifier itself; the certification gate depends on the app domain." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "No extra review is attached to the modifier itself; the certification gate depends on the app domain."
+      }
     },
     {
       "tier": "Any scope on a PARTNER app used in other companies' accounts",
-      "examples": ["agreement_read:self", "agreement_send:account", "widget_write:account", "workflow_read:account"],
+      "examples": [
+        "agreement_read:self",
+        "agreement_send:account",
+        "widget_write:account",
+        "workflow_read:account"
+      ],
       "reviewRequired": true,
       "time": "3–10 weeks",
       "impact": "PARTNER apps need certification for full access to other accounts. Uncertified, they only work in accounts whose admin enabled 'Allow uncertified partner applications to access data from this account'. Changing permissions later triggers re-certification.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": "The time is our estimate." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": "The time is our estimate."
+      }
     }
   ],
   "steps": [
@@ -113,7 +188,13 @@
       "detail": "Fill in Adobe's developer form to get Acrobat Sign Developer Edition, then confirm the email and sign in.",
       "url": "https://www.adobe.com/acrobat/business/developer-form.html",
       "duration": "10–20 min",
-      "evidence": { "label": "tested", "sourceIds": ["s4"], "note": "www.adobe.com/sign/developer-form.html returned 301 to /acrobat/business/developer-form.html on 2026-10-20. We did not sign up." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "www.adobe.com/sign/developer-form.html returned 301 to /acrobat/business/developer-form.html on 2026-10-20. We did not sign up."
+      }
     },
     {
       "title": "Create the API application",
@@ -121,7 +202,13 @@
       "detail": "In the Acrobat Sign web app go to API (or Account for enterprise) > API Applications > Create (+). Pick domain PARTNER if other companies' accounts will connect, CUSTOMER if it's only for your own account.",
       "url": "https://developer.adobe.com/acrobat-sign/docs/overview/developer_guide/gstarted",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Choose least-privilege scopes and modifiers",
@@ -129,7 +216,13 @@
       "detail": "Map each API call your agent makes to its scope (for example GET /agreements needs agreement_read) and pick self vs group vs account modifiers. Prefer :self unless you really need admin-wide access.",
       "url": "https://developer.adobe.com/acrobat-sign/docs/overview/developer_guide/gstarted",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Configure OAuth for the application",
@@ -137,7 +230,13 @@
       "detail": "Click 'Configure OAuth for the Application', enter the HTTPS redirect URI(s) comma-separated, tick Enabled for each scope, set its modifier, and save. Copy the client ID and secret.",
       "url": null,
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -145,7 +244,14 @@
       "detail": "Send users to https://secure.adobesign.com/public/oauth/v2 (no shard such as na1 for partner apps) with client_id, redirect_uri, scope and state. Exchange the code within 5 minutes by POSTing form-body params to <api_access_point>/oauth/v2/token, and store the returned api_access_point per user.",
       "url": "https://developer.adobe.com/acrobat-sign/docs/overview/developer_guide/gstarted",
       "duration": "1–2 hours",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Add a scheduled refresh job",
@@ -153,7 +259,13 @@
       "detail": "Access tokens last 1 hour. Refresh tokens die after 60 days of inactivity, so refresh via /oauth/v2/refresh on a schedule (Adobe suggests every ~50 days) for users who rarely trigger the agent.",
       "url": "https://developer.adobe.com/acrobat-sign/docs/overview/developer_guide/oauth",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test against a simulated customer account",
@@ -161,7 +273,14 @@
       "detail": "In a second Acrobat Sign account go to Account > Account Settings > Security Settings and tick 'Allow Uncertified partner applications to access data from this account', then connect it through your app.",
       "url": "https://developer.adobe.com/acrobat-sign/docs/overview/embedpartner/gstarted",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Prepare the certification package",
@@ -169,7 +288,13 @@
       "detail": "Write the customer-facing connection instructions, document how tokens and the secret are encrypted, and gather any recent third-party OWASP test summaries (optional but said to speed things up).",
       "url": "https://developer.adobe.com/acrobat-sign/docs/overview/techblog/qa/partners/certification-process",
       "duration": "1–2 days",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Submit for certification",
@@ -177,7 +302,13 @@
       "detail": "Use the 'certify it' link on the partner certification page, and give reviewers a login to a test instance of your product.",
       "url": "https://developer.adobe.com/acrobat-sign/docs/overview/embedpartner/partnercertification",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Attend the process meeting",
@@ -185,7 +316,14 @@
       "detail": "Walk Adobe's partner manager, security team member and Solution Consultant through the OAuth flow and send/track/sign use cases. The meeting is typically recorded.",
       "url": null,
       "duration": "1 hour",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Security review and remediation",
@@ -193,7 +331,14 @@
       "detail": "Adobe's security team tests the integration and checks token encryption. Fix any major issues they report; the app is certified once concerns are resolved.",
       "url": null,
       "duration": "2–8 weeks",
-      "evidence": { "label": "inferred", "sourceIds": ["s3", "s5"], "note": "Duration is our estimate; Adobe doesn't publish one." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": "Duration is our estimate; Adobe doesn't publish one."
+      }
     }
   ],
   "agentCanDo": [
@@ -214,78 +359,188 @@
       "symptom": "Redirect back with error=access_denied&error_description=Scopes not enabled for this application",
       "cause": "The requested scope or modifier (for example agreement_read:account) isn't enabled with that modifier in the app's OAuth configuration.",
       "fix": "Make the requested scopes a subset of the enabled ones, or change the modifier (for example to :self) to match.",
-      "evidence": { "label": "unverified", "sourceIds": ["s7"], "note": "Error string from a community thread; the subset rule itself is in the official quickstart." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Error string from a community thread; the subset rule itself is in the official quickstart."
+      }
     },
     {
       "symptom": "error=unauthorized_client on the authorize redirect",
       "cause": "OAuth isn't enabled for the application, or the application isn't active.",
       "fix": "Open API Applications, configure OAuth for the app and make sure it's active.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "A customer's user consents but gets ACCESS_DENIED",
       "cause": "The request uses a :group or :account modifier and the user isn't a group or account admin, or they declined.",
       "fix": "Ask an admin to connect, or request :self scopes for per-user connections.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Customer accounts can't use your partner app unless their admin flips a security setting",
       "cause": "The PARTNER app isn't certified, so it only works where 'Allow Uncertified partner applications' is enabled.",
       "fix": "Complete partner certification. Don't make customers turn on the uncertified-access setting in production; Adobe warns against it.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Token call returns {\"error\":\"invalid_request\",\"error_description\":\"Missing grant_type parameter value\"}",
       "cause": "Parameters were sent in the query string or as JSON instead of the form body.",
       "fix": "POST application/x-www-form-urlencoded body params (grant_type, code, client_id, client_secret, redirect_uri).",
-      "evidence": { "label": "tested", "sourceIds": ["s8"], "note": "An empty POST to api.na1.adobesign.com/oauth/v2/token returned this error on 2026-10-20. The docs say to send params in the body." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s8"
+        ],
+        "note": "An empty POST to api.na1.adobesign.com/oauth/v2/token returned this error on 2026-10-20. The docs say to send params in the body."
+      }
     },
     {
       "symptom": "Refresh fails with EXPIRED_TOKEN / invalid token after a quiet period",
       "cause": "The refresh token wasn't used for 60 days, or the user revoked it.",
       "fix": "Run a scheduled refresh (around every 50 days) and send the user back through OAuth when a refresh token is dead.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens last 1 hour (expires_in: 3600). Refresh tokens expire after 60 days of inactivity, and each use resets the window, so a refresh token can live indefinitely if used at least every 60 days.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": "The quickstart describes expires_in as milliseconds, which conflicts with 3600 meaning one hour; the token guide says one hour." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "The quickstart describes expires_in as milliseconds, which conflicts with 3600 meaning one hour; the token guide says one hour."
+      }
     },
     {
       "text": "Acrobat Sign is sharded by region. Use the api_access_point returned with the token for that user's API calls, and don't put a shard like na1 in the authorize URL for partner apps.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The authorization code is valid for only 5 minutes, so exchange it right away.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Changing your integration's functionality or app permissions after certification requires re-certification, so request the scopes your agent will need up front.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "text": "After certification Adobe may list the integration on Adobe Exchange (Document Cloud) and customers can use it without changing their security settings.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Group and account scope modifiers need the Business or Enterprise edition on the customer's side, so admin-wide access won't work for individual-plan customers.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Acrobat Sign: Create an Application Quickstart", "url": "https://developer.adobe.com/acrobat-sign/docs/overview/developer_guide/gstarted" },
-    { "id": "s2", "title": "Acrobat Sign: Managing OAuth Tokens", "url": "https://developer.adobe.com/acrobat-sign/docs/overview/developer_guide/oauth" },
-    { "id": "s3", "title": "Acrobat Sign Embed: Certifying Your Partner App", "url": "https://developer.adobe.com/acrobat-sign/docs/overview/embedpartner/partnercertification" },
-    { "id": "s4", "title": "Adobe Acrobat Sign developer account form", "url": "https://www.adobe.com/acrobat/business/developer-form.html" },
-    { "id": "s5", "title": "Acrobat Sign tech blog: Partner Application Certification", "url": "https://developer.adobe.com/acrobat-sign/docs/overview/techblog/qa/partners/certification-process" },
-    { "id": "s6", "title": "Acrobat Sign Embed: Partner Application Quickstart", "url": "https://developer.adobe.com/acrobat-sign/docs/overview/embedpartner/gstarted" },
-    { "id": "s7", "title": "Adobe Community: access_denied 'Scopes not enabled for this application'", "url": "https://community.adobe.com/t5/adobe-acrobat-sign-discussions/oauth-redirect-uri-error-access-denied-error-description-scopes-not-enabled-for-this-application/td-p/12997612" },
-    { "id": "s8", "title": "Live check: Acrobat Sign token endpoint (api.na1.adobesign.com)", "url": "https://api.na1.adobesign.com/oauth/v2/token" }
+    {
+      "id": "s1",
+      "title": "Acrobat Sign: Create an Application Quickstart",
+      "url": "https://developer.adobe.com/acrobat-sign/docs/overview/developer_guide/gstarted"
+    },
+    {
+      "id": "s2",
+      "title": "Acrobat Sign: Managing OAuth Tokens",
+      "url": "https://developer.adobe.com/acrobat-sign/docs/overview/developer_guide/oauth"
+    },
+    {
+      "id": "s3",
+      "title": "Acrobat Sign Embed: Certifying Your Partner App",
+      "url": "https://developer.adobe.com/acrobat-sign/docs/overview/embedpartner/partnercertification"
+    },
+    {
+      "id": "s4",
+      "title": "Adobe Acrobat Sign developer account form",
+      "url": "https://www.adobe.com/acrobat/business/developer-form.html"
+    },
+    {
+      "id": "s5",
+      "title": "Acrobat Sign tech blog: Partner Application Certification",
+      "url": "https://developer.adobe.com/acrobat-sign/docs/overview/techblog/qa/partners/certification-process"
+    },
+    {
+      "id": "s6",
+      "title": "Acrobat Sign Embed: Partner Application Quickstart",
+      "url": "https://developer.adobe.com/acrobat-sign/docs/overview/embedpartner/gstarted"
+    },
+    {
+      "id": "s7",
+      "title": "Adobe Community: access_denied 'Scopes not enabled for this application'",
+      "url": "https://community.adobe.com/t5/adobe-acrobat-sign-discussions/oauth-redirect-uri-error-access-denied-error-description-scopes-not-enabled-for-this-application/td-p/12997612"
+    },
+    {
+      "id": "s8",
+      "title": "Live check: Acrobat Sign token endpoint (api.na1.adobesign.com)",
+      "url": "https://api.na1.adobesign.com/oauth/v2/token"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://secure.adobesign.com/public/oauth/v2 with no params: 302 to /public/userMessage (endpoint live, rejects empty request)",
       "POST https://api.na1.adobesign.com/oauth/v2/token with no body: {\"error_description\":\"Missing grant_type parameter value\",\"error\":\"invalid_request\"}",

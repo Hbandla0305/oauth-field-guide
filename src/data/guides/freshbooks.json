@@ -493,6 +493,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://my.freshbooks.com/#/developer: HTTP 200 (did not sign in)",
       "GET https://auth.freshbooks.com/oauth/authorize/: 302 to https://auth.freshbooks.com/service/auth/integrations/sign_in",

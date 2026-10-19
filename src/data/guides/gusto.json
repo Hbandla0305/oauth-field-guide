@@ -546,6 +546,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://api.gusto.com/oauth/authorize returns 302 to https://app.gusto.com/login?return_to=%2Foauth%2Fauthorize.",
       "https://dev.gusto.com/accounts/sign_in returned 403 to an automated request (likely bot protection), so the portal wasn't confirmed live."

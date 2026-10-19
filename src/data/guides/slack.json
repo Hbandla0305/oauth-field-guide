@@ -726,6 +726,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://slack.com/.well-known/openid-configuration: issuer https://slack.com, authorize https://slack.com/openid/connect/authorize, token https://slack.com/api/openid.connect.token, scopes openid/profile/email, RS256",
       "GET https://api.slack.com/apps and https://api.slack.com/apps?new_app=1: HTTP 200",

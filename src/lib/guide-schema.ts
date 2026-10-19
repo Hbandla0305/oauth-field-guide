@@ -91,6 +91,9 @@ export const Guide = z.object({
     // agents and link-checked. agent-generated: written live by the in-app agent.
     status: z.enum(["human-verified", "agent-researched", "agent-generated"]),
     lastChecked: z.string(),
+    // Set when a person has checked the guide; corrections record what that check changed.
+    reviewedOn: z.string().nullable(),
+    corrections: z.array(z.object({ claim: z.string(), before: z.string(), after: z.string(), source: z.string() })),
     tested: z.array(z.string()),
     openQuestions: z.array(z.string()),
   }),

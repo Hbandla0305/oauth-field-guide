@@ -7,31 +7,59 @@
     "category": "Sales intelligence"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "OAuth 2.0 guide for partners", "url": "https://docs.apollo.io/docs/use-oauth-20-authorization-flow-to-access-apollo-user-information-partners" },
-    { "kind": "api", "label": "Authentication (API keys vs OAuth)", "url": "https://docs.apollo.io/reference/authentication" },
-    { "kind": "api", "label": "Rate limits", "url": "https://docs.apollo.io/docs/rate-limits" },
-    { "kind": "review", "label": "Marketplace listing requirements", "url": "https://docs.apollo.io/docs/add-your-integration-to-apollos-marketplace" }
+    {
+      "kind": "oauth",
+      "label": "OAuth 2.0 guide for partners",
+      "url": "https://docs.apollo.io/docs/use-oauth-20-authorization-flow-to-access-apollo-user-information-partners"
+    },
+    {
+      "kind": "api",
+      "label": "Authentication (API keys vs OAuth)",
+      "url": "https://docs.apollo.io/reference/authentication"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://docs.apollo.io/docs/rate-limits"
+    },
+    {
+      "kind": "review",
+      "label": "Marketplace listing requirements",
+      "url": "https://docs.apollo.io/docs/add-your-integration-to-apollos-marketplace"
+    }
   ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "You register an OAuth app from your own Apollo settings, and Apollo has to approve the registration, but no further app review is needed before other Apollo users can connect; the Marketplace listing is optional and needs 3+ connected teams. The catches are that on many plans only Admins or Billing and Seat Managers can authorize third-party apps, and rate limits and enrichment credits are shared per customer team.",
     "timeToDev": {
       "range": "1 h–3 days",
-      "hours": { "min": 1, "max": 72 },
+      "hours": {
+        "min": 1,
+        "max": 72
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "Apollo says you can test in the playground once registration is approved, but doesn't publish how long approval takes. The range is our estimate."
       }
     },
     "timeToProd": {
       "range": "Same day–1 week",
-      "hours": { "min": 4, "max": 168 },
+      "hours": {
+        "min": 4,
+        "max": 168
+      },
       "assumes": "An agent that searches and reads contacts and writes records on behalf of users from any Apollo team, without a Marketplace listing; listing adds 3+ connected teams and a Partner review that answers within 5 business days.",
       "waitingOn": "Apollo approving the OAuth registration (no published SLA). No separate app review for non-listed use.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4", "s6"],
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s6"
+        ],
         "note": "The docs mention only registration approval. That no other review is needed comes from Nango's guide, so we label the range inferred."
       }
     },
@@ -41,43 +69,90 @@
     {
       "item": "An Apollo account with access to Settings > Integrations > API",
       "why": "OAuth registration lives in your Apollo settings, under API Keys > OAuth registration.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The docs don't state a plan requirement for registering." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The docs don't state a plan requirement for registering."
+      }
     },
     {
       "item": "HTTPS redirect URLs (up to 4), an app name, a logo, scopes and a description of your organization's purpose",
       "why": "These are the registration fields. Registration requires Apollo's approval.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "End users with permission to authorize third-party apps",
       "why": "On plans with custom permission profiles, users need 'Can authorize third-party apps/integrations via OAuth'. On other plans, they need the Admin or Billing and Seat Manager profile.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Profile and read scopes",
-      "examples": ["read_user_profile", "app_scopes", "person_read", "contacts_search"],
+      "examples": [
+        "read_user_profile",
+        "app_scopes",
+        "person_read",
+        "contacts_search"
+      ],
       "reviewRequired": true,
       "time": "Registration approval only",
       "impact": "Covers identity plus searching and reading people and contacts. It needs only the one-time registration approval. Each scope maps to specific public API endpoints.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "reviewRequired=true reflects the registration approval, which applies to all scopes." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "reviewRequired=true reflects the registration approval, which applies to all scopes."
+      }
     },
     {
       "tier": "Write scopes",
-      "examples": ["opportunity_write"],
+      "examples": [
+        "opportunity_write"
+      ],
       "reviewRequired": true,
       "time": "Registration approval only",
       "impact": "Lets the agent create and update records as the authorizing user. Requests act as the user who granted the token, so Apollo permissions and ownership apply.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": "Only opportunity_write appears verbatim. Other write scopes weren't listed on the page we read." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Only opportunity_write appears verbatim. Other write scopes weren't listed on the page we read."
+      }
     },
     {
       "tier": "Marketplace-listed integration",
-      "examples": ["OAuth 2.0 as sole auth method", "3+ connected Apollo teams"],
+      "examples": [
+        "OAuth 2.0 as sole auth method",
+        "3+ connected Apollo teams"
+      ],
       "reviewRequired": true,
       "time": "1–3 weeks after reaching 3 teams",
       "impact": "Optional. It gives visibility in Apollo's marketplace and referral commissions. The Partner team replies within 5 business days, then reviews your listing before publishing.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "The 1–3 week figure is our estimate. The 5 business days is Apollo's." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "The 1–3 week figure is our estimate. The 5 business days is Apollo's."
+      }
     }
   ],
   "steps": [
@@ -87,7 +162,13 @@
       "detail": "Sign in to Apollo and go to Settings > Integrations > API, then click OAuth registration.",
       "url": "https://app.apollo.io/#/settings/integrations/api",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The console URL is our best guess at the SPA route. The docs give only the menu path." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The console URL is our best guess at the SPA route. The docs give only the menu path."
+      }
     },
     {
       "title": "Draft the registration details",
@@ -95,7 +176,13 @@
       "detail": "Write the app description and organization purpose, choose least-privilege scopes (for example read_user_profile, contacts_search, person_read), and list up to 4 HTTPS redirect URLs.",
       "url": "https://docs.apollo.io/docs/use-oauth-20-authorization-flow-to-access-apollo-user-information-partners",
       "duration": "20 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Submit the registration and copy credentials",
@@ -103,7 +190,13 @@
       "detail": "Enter the name, logo, redirect URLs and scopes, then submit. Copy the client secret immediately, because it's shown only when generated.",
       "url": "https://app.apollo.io/#/settings/integrations/api",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Wait for registration approval",
@@ -111,7 +204,13 @@
       "detail": "Apollo approves the registration before you can test it in the playground.",
       "url": null,
       "duration": "unknown (est. hours–days)",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "Approval is sourced. No duration is published." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Approval is sourced. No duration is published."
+      }
     },
     {
       "title": "Implement the authorization code flow",
@@ -119,7 +218,13 @@
       "detail": "Redirect to https://app.apollo.io/#/oauth/authorize?client_id=...&redirect_uri=...&response_type=code&scope=...&state=... and exchange the code at POST https://app.apollo.io/api/v1/oauth/token.",
       "url": "https://docs.apollo.io/docs/use-oauth-20-authorization-flow-to-access-apollo-user-information-partners",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Handle the 30-day token and refresh",
@@ -127,7 +232,13 @@
       "detail": "Access tokens expire after 30 days. Refreshing revokes the existing pair automatically, so store the new tokens atomically and avoid concurrent refreshes.",
       "url": "https://docs.apollo.io/docs/use-oauth-20-authorization-flow-to-access-apollo-user-information-partners",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Build rate-limit and credit handling",
@@ -135,7 +246,13 @@
       "detail": "Limits are per team, in fixed windows per endpoint, with minute, hour and day caps. On 429, honour retry-after, or wait 60s for PLATFORM_RATE_LIMIT. Warn users that enrichment calls spend their credits.",
       "url": "https://docs.apollo.io/docs/rate-limits",
       "duration": "2–4 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Explain the authorizing-user requirement",
@@ -143,7 +260,13 @@
       "detail": "Add a pre-connect note telling users that an Apollo Admin, a Billing and Seat Manager, or a user with the OAuth-authorize permission must click Connect.",
       "url": null,
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Launch to customers",
@@ -151,7 +274,13 @@
       "detail": "Enable the Connect Apollo button. No further Apollo review is documented for non-listed apps.",
       "url": null,
       "duration": "minutes",
-      "evidence": { "label": "unverified", "sourceIds": ["s6"], "note": "That review is only needed for Marketplace listing comes from Nango's guide." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "That review is only needed for Marketplace listing comes from Nango's guide."
+      }
     },
     {
       "title": "Apply for a Marketplace listing (optional)",
@@ -159,7 +288,14 @@
       "detail": "Once 3+ separate Apollo teams use the integration via OAuth only, submit the partner application form. Apollo replies within 5 business days, then reviews your listing before publishing.",
       "url": "https://docs.apollo.io/docs/add-your-integration-to-apollos-marketplace",
       "duration": "1–3 weeks",
-      "evidence": { "label": "sourced", "sourceIds": ["s4", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4",
+          "s5"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -180,76 +316,175 @@
       "symptom": "A customer's regular user can't complete the connection",
       "cause": "Only users with the 'Can authorize third-party apps/integrations via OAuth' permission, or the Admin or Billing and Seat Manager profile, can authorize.",
       "fix": "Ask an Apollo admin to connect, or to grant the permission on plans with custom profiles.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact error shown to the user isn't documented." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The exact error shown to the user isn't documented."
+      }
     },
     {
       "symptom": "Can't test in the playground right after registering",
       "cause": "The registration hasn't been approved yet.",
       "fix": "Wait for Apollo's approval, and contact Apollo support if it stalls.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "HTTP 429 with no retry-after header",
       "cause": "A PLATFORM_RATE_LIMIT response, rather than an endpoint quota.",
       "fix": "Wait the 60 seconds given in suggestions, then retry.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Agent hits rate limits quickly for a free-plan customer",
       "cause": "Free plans allow as little as 50 requests/min, 200/hour and 600/day, shared across the whole team.",
       "fix": "Batch, cache and spread work across windows, and check limits via the usage stats endpoint.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "New scopes don't appear in existing tokens",
       "cause": "Editing scopes requires repeating the whole authorization flow.",
       "fix": "Prompt every connected user to reconnect after a scope change.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Endpoint returns unauthorized with an OAuth token but works with an API key",
       "cause": "OAuth supports only the endpoints in Apollo's public API docs, and some endpoints need a master API key.",
       "fix": "Stick to public endpoints with matching scopes. Master-key-only endpoints aren't available to OAuth apps.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s2"], "note": "Whether master-key endpoints are blocked for OAuth is our inference." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": "Whether master-key endpoints are blocked for OAuth is our inference."
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens last 30 days, which is unusually long. Refreshing revokes the existing tokens.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "OAuth requests act as the user who granted the token, while API-key requests act differently. Data visibility follows that user's Apollo permissions.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limits are per team, not per user or token, use fixed windows per endpoint, and child workspaces share the parent's limits. Your agent competes with the customer's other tools.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Enrichment endpoints consume the customer's credits, so an agent that enriches aggressively costs the customer money.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The Marketplace accepts integrations built on Apollo's MCP Server as well as the REST API, and pays listed partners 15–20% referral commission.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The authorize URL is a hash route in Apollo's web app (/#/oauth/authorize), so it always returns HTTP 200 and errors render client-side rather than as HTTP redirects.",
-      "evidence": { "label": "tested", "sourceIds": ["s1"], "note": "GET https://app.apollo.io/#/oauth/authorize?client_id=test returned 200 on 2026-10-20 (the fragment isn't sent to the server)." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "GET https://app.apollo.io/#/oauth/authorize?client_id=test returned 200 on 2026-10-20 (the fragment isn't sent to the server)."
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Apollo docs: OAuth 2.0 (Partners)", "url": "https://docs.apollo.io/docs/use-oauth-20-authorization-flow-to-access-apollo-user-information-partners" },
-    { "id": "s2", "title": "Apollo API reference: Authentication", "url": "https://docs.apollo.io/reference/authentication" },
-    { "id": "s3", "title": "Apollo docs: Rate limits", "url": "https://docs.apollo.io/docs/rate-limits" },
-    { "id": "s4", "title": "Apollo docs: Feature your integration (Marketplace)", "url": "https://docs.apollo.io/docs/add-your-integration-to-apollos-marketplace" },
-    { "id": "s5", "title": "Apollo docs: Set up your Marketplace listing", "url": "https://docs.apollo.io/docs/set-up-your-marketplace-listing" },
-    { "id": "s6", "title": "Third-party: Nango Apollo OAuth integration guide", "url": "https://nango.dev/docs/integrations/all/apollo-oauth" }
+    {
+      "id": "s1",
+      "title": "Apollo docs: OAuth 2.0 (Partners)",
+      "url": "https://docs.apollo.io/docs/use-oauth-20-authorization-flow-to-access-apollo-user-information-partners"
+    },
+    {
+      "id": "s2",
+      "title": "Apollo API reference: Authentication",
+      "url": "https://docs.apollo.io/reference/authentication"
+    },
+    {
+      "id": "s3",
+      "title": "Apollo docs: Rate limits",
+      "url": "https://docs.apollo.io/docs/rate-limits"
+    },
+    {
+      "id": "s4",
+      "title": "Apollo docs: Feature your integration (Marketplace)",
+      "url": "https://docs.apollo.io/docs/add-your-integration-to-apollos-marketplace"
+    },
+    {
+      "id": "s5",
+      "title": "Apollo docs: Set up your Marketplace listing",
+      "url": "https://docs.apollo.io/docs/set-up-your-marketplace-listing"
+    },
+    {
+      "id": "s6",
+      "title": "Third-party: Nango Apollo OAuth integration guide",
+      "url": "https://nango.dev/docs/integrations/all/apollo-oauth"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.apollo.io/#/oauth/authorize?client_id=test&...: 200 (SPA hash route)",
       "POST https://app.apollo.io/api/v1/oauth/token with only grant_type: 400 {\"error\":\"invalid_request\",\"error_description\":\"Missing required parameter: code.\"}",

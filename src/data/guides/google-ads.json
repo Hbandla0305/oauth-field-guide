@@ -565,6 +565,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://console.cloud.google.com/google/ads-apis/overview: 302 to Google sign-in",
       "GET https://accounts.google.com/.well-known/openid-configuration: HTTP 200, authorize https://accounts.google.com/o/oauth2/v2/auth"

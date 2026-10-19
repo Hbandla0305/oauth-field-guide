@@ -490,6 +490,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://connect.squareup.com/oauth2/authorize?client_id=sq0idp-invalid&...: 302 to https://squareup.com/oauth2/authorize",
       "POST https://connect.squareup.com/oauth2/token with only grant_type: {\"message\":\"missing required parameter 'client_id'\",\"type\":\"bad_request.missing_parameter\"}",

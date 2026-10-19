@@ -517,6 +517,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://marketplace.zoom.us/develop/create: HTTP 200",
       "GET https://zoom.us/oauth/authorize?response_type=code&client_id=x: HTTP 200",

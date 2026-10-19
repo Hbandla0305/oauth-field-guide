@@ -38,21 +38,34 @@
     "summary": "There's no app review: create an app in the Developer Console, set callback URLs and go, and any X user can authorize the same day. But since February 2026 the API is pay-per-use only (the free tier and fixed Basic/Pro plans are gone), so every post or user your agent reads and every post it writes draws down prepaid credits. Following, liking and quote-posting via the API were removed from self-serve plans in April 2026.",
     "timeToDev": {
       "range": "30–60 min",
-      "hours": { "min": 0.5, "max": 1 },
+      "hours": {
+        "min": 0.5,
+        "max": 1
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["x3", "x1", "x2"],
+        "sourceIds": [
+          "x3",
+          "x1",
+          "x2"
+        ],
         "note": "Create the app, set OAuth 2.0 settings, buy credits, then run the PKCE flow. No approval step is described."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 2, "max": 24 },
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
       "assumes": "An OAuth 2.0 user-context app on pay-per-use credits that reads and writes the connected user's posts. There's no review on any path. Volumes above 3M post reads a month need Enterprise.",
       "waitingOn": "No review needed. You need a funded credit balance, or requests are blocked.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["x3", "x2"],
+        "sourceIds": [
+          "x3",
+          "x2"
+        ],
         "note": "X's developer-app docs describe no review or approval process. The pricing page says requests are blocked when the balance runs out."
       }
     },
@@ -62,57 +75,116 @@
     {
       "item": "An X account signed in to the Developer Console (console.x.com)",
       "why": "Apps, keys and credits are managed there. developer.x.com/en/portal now redirects to an X login.",
-      "evidence": { "label": "sourced", "sourceIds": ["x3", "x5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x3",
+          "x5"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A saved payment method and a credit balance",
       "why": "Pay-per-use draws down prepaid credits, and requests are blocked when the balance hits zero or the spending limit is reached.",
-      "evidence": { "label": "sourced", "sourceIds": ["x2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x2"
+        ],
+        "note": null
+      }
     },
     {
       "item": "HTTPS callback URLs (http://127.0.0.1 for local dev)",
       "why": "Callbacks must exactly match the allowlist (up to 10 per app), including trailing slashes. 'localhost' isn't the recommended host.",
-      "evidence": { "label": "sourced", "sourceIds": ["x3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x3"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Identity",
-      "examples": ["users.read", "tweet.read", "users.email", "offline.access"],
+      "examples": [
+        "users.read",
+        "tweet.read",
+        "users.email",
+        "offline.access"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Sign in and read the user's profile. The token lasts 2 hours unless you add offline.access for a refresh token. X staff have said login endpoints are free under pay-per-use, but we couldn't confirm that.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["x1"],
+        "sourceIds": [
+          "x1"
+        ],
         "note": "The 'login is free' claim comes from a forum reply that returned 403 to our fetch, so it's unverified."
       }
     },
     {
       "tier": "Read the user's data (billed per resource)",
-      "examples": ["tweet.read", "follows.read", "like.read", "bookmark.read", "list.read", "dm.read"],
+      "examples": [
+        "tweet.read",
+        "follows.read",
+        "like.read",
+        "bookmark.read",
+        "list.read",
+        "dm.read"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Read timelines, mentions, bookmarks, followers and DMs. Each returned resource costs credits ($0.005 per post, $0.010 per user or DM event). Owned reads cost $0.001, but only when the user owns the developer app.",
-      "evidence": { "label": "sourced", "sourceIds": ["x1", "x2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x1",
+          "x2"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Write actions (billed per request)",
-      "examples": ["tweet.write", "dm.write", "media.write", "bookmark.write", "list.write"],
+      "examples": [
+        "tweet.write",
+        "dm.write",
+        "media.write",
+        "bookmark.write",
+        "list.write"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Post ($0.015, or $0.20 with a URL), send DMs ($0.015) and upload media. The OAuth 1.0a app permission has to include write or DMs. Changing it forces users to re-authorize.",
-      "evidence": { "label": "sourced", "sourceIds": ["x1", "x2", "x3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x1",
+          "x2",
+          "x3"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Removed from self-serve",
-      "examples": ["follows.write", "like.write"],
+      "examples": [
+        "follows.write",
+        "like.write"
+      ],
       "reviewRequired": false,
       "time": "Not available",
       "impact": "Following, liking and quote-posting via the API were removed from all self-serve tiers as of April 2026, even though the scopes still appear in the scope table.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["x4"],
+        "sourceIds": [
+          "x4"
+        ],
         "note": "Whether Enterprise customers keep these actions wasn't stated."
       }
     }
@@ -126,7 +198,9 @@
       "duration": "5 min",
       "evidence": {
         "label": "tested",
-        "sourceIds": ["x5"],
+        "sourceIds": [
+          "x5"
+        ],
         "note": "console.x.com returned HTTP 200. developer.x.com/en/portal/dashboard returned 307 to an X login. We did not sign in."
       }
     },
@@ -136,7 +210,13 @@
       "detail": "Click Create App and enter a name, description and use case. Save the generated keys right away, since they're shown once. Consider separate apps for dev and prod.",
       "url": "https://console.x.com",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["x3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Configure user authentication settings",
@@ -144,7 +224,13 @@
       "detail": "Set the app type to Web App (confidential, gets a client secret), set the OAuth 1.0a permission level (Read / Read+Write / Read+Write+DMs), and add exact callback URLs.",
       "url": "https://docs.x.com/fundamentals/developer-apps",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["x3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Fund credits and set spend controls",
@@ -152,7 +238,14 @@
       "detail": "Save a card, buy credits, and set auto-recharge and a per-cycle spending limit. New accounts can earn one-time promo credits ($20 for a first card plus a match of the first auto-recharge up to $50), which expire after 3 months.",
       "url": "https://docs.x.com/x-api/getting-started/pricing",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["x2", "x4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x2",
+          "x4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Pick minimal scopes and estimate cost",
@@ -160,7 +253,14 @@
       "detail": "Map each agent feature to scopes and to per-resource prices. Model monthly cost per active user, keeping in mind the 24 h UTC dedup window and the 3M post-read cap.",
       "url": "https://docs.x.com/x-api/getting-started/pricing",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["x1", "x2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x1",
+          "x2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement OAuth 2.0 with PKCE",
@@ -168,7 +268,13 @@
       "detail": "Redirect to https://x.com/i/oauth2/authorize with response_type=code, client_id, redirect_uri, scope, state and code_challenge (S256). Exchange the code within 30 seconds at POST https://api.x.com/2/oauth2/token using Basic auth.",
       "url": "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code",
       "duration": "1-2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["x1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Handle token refresh",
@@ -178,7 +284,9 @@
       "duration": "30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["x1"],
+        "sourceIds": [
+          "x1"
+        ],
         "note": "Whether refresh tokens rotate or expire wasn't stated on the page."
       }
     },
@@ -188,7 +296,14 @@
       "detail": "Read the x-rate-limit-* headers, back off on 429 (code 88), and surface balance-depleted errors. Track usage via GET /2/usage/tweets.",
       "url": "https://docs.x.com/x-api/fundamentals/rate-limits",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["x6", "x2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x6",
+          "x2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optional: migrate stored OAuth 1.0a tokens",
@@ -196,7 +311,13 @@
       "detail": "Since September 2026, POST /2/oauth2/token supports a token-exchange grant that turns OAuth 1.0a user tokens into OAuth 2.0 access and refresh tokens without re-authorization.",
       "url": "https://docs.x.com/changelog",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["x4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x4"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -216,37 +337,73 @@
       "symptom": "Requests blocked even though tokens are valid",
       "cause": "The credit balance is zero or negative, or the per-cycle spending limit has been hit.",
       "fix": "Add credits or raise the limit. Enable auto-recharge, which fires at most every 5 minutes and needs a default payment method.",
-      "evidence": { "label": "sourced", "sourceIds": ["x2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Token exchange fails with an invalid code",
       "cause": "The authorization code expires 30 seconds after your app receives it.",
       "fix": "Exchange the code immediately in the callback handler.",
-      "evidence": { "label": "sourced", "sourceIds": ["x1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Callback rejected or redirect mismatch",
       "cause": "The redirect_uri doesn't exactly match the allowlist (trailing slash, localhost vs 127.0.0.1).",
       "fix": "Register the exact URL, using http://127.0.0.1 for local dev.",
-      "evidence": { "label": "sourced", "sourceIds": ["x3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x3"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Follow, like or quote-post calls fail",
       "cause": "These actions were removed from all self-serve tiers in April 2026.",
       "fix": "Remove the features, or ask about Enterprise access.",
-      "evidence": { "label": "sourced", "sourceIds": ["x4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "429 'Rate limit exceeded' (code 88)",
       "cause": "Per-user 15-minute limits (for example 75 for /2/users/me, 100 posts per 15 min, 300 for recent search).",
       "fix": "Wait until x-rate-limit-reset and spread calls out per user.",
-      "evidence": { "label": "sourced", "sourceIds": ["x6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x6"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Users lose write or DM access after you change app permissions",
       "cause": "Changing the app permission level requires users to re-authorize to get new tokens.",
       "fix": "Pick the final permission level before launch, or prompt users to reconnect.",
-      "evidence": { "label": "sourced", "sourceIds": ["x3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x3"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
@@ -254,39 +411,96 @@
       "text": "X's Developer Agreement (June 2025) bars using the X API or X Content 'to fine-tune or train a foundation or frontier model'. Using data at inference time isn't covered by that clause, but check the full agreement.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["x7"],
+        "sourceIds": [
+          "x7"
+        ],
         "note": "Quoted via TechCrunch. The agreement page returned HTTP 402 to our fetch."
       }
     },
     {
       "text": "Access tokens last 2 hours. Refresh tokens are only issued with offline.access, and the user stays connected until they revoke access.",
-      "evidence": { "label": "sourced", "sourceIds": ["x1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Billing is per returned resource, with a soft 24-hour UTC dedup (a resource isn't charged twice in the same UTC day). Rate limits are separate from billing.",
-      "evidence": { "label": "sourced", "sourceIds": ["x2", "x6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x2",
+          "x6"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The cheap 'owned reads' price ($0.001) only applies when the authenticated user owns the developer app, so it doesn't help a multi-user agent reading its customers' data.",
-      "evidence": { "label": "inferred", "sourceIds": ["x2"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "x2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Spending through pay-per-use earns 10–20% back as xAI API credits if you link an xAI team.",
-      "evidence": { "label": "sourced", "sourceIds": ["x2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "x2"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "x1", "title": "X docs: OAuth 2.0 authorization code flow with PKCE", "url": "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code" },
-    { "id": "x2", "title": "X docs: Pricing (pay-per-usage)", "url": "https://docs.x.com/x-api/getting-started/pricing" },
-    { "id": "x3", "title": "X docs: Developer apps", "url": "https://docs.x.com/fundamentals/developer-apps" },
-    { "id": "x4", "title": "X API changelog", "url": "https://docs.x.com/changelog" },
-    { "id": "x5", "title": "X Developer Console", "url": "https://console.x.com" },
-    { "id": "x6", "title": "X docs: Rate limits", "url": "https://docs.x.com/x-api/fundamentals/rate-limits" },
-    { "id": "x7", "title": "TechCrunch: X changes its terms to bar training of AI models using its content (2025-06-05)", "url": "https://techcrunch.com/2025/06/05/x-changes-its-terms-to-bar-training-of-ai-models-using-its-content" }
+    {
+      "id": "x1",
+      "title": "X docs: OAuth 2.0 authorization code flow with PKCE",
+      "url": "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code"
+    },
+    {
+      "id": "x2",
+      "title": "X docs: Pricing (pay-per-usage)",
+      "url": "https://docs.x.com/x-api/getting-started/pricing"
+    },
+    {
+      "id": "x3",
+      "title": "X docs: Developer apps",
+      "url": "https://docs.x.com/fundamentals/developer-apps"
+    },
+    {
+      "id": "x4",
+      "title": "X API changelog",
+      "url": "https://docs.x.com/changelog"
+    },
+    {
+      "id": "x5",
+      "title": "X Developer Console",
+      "url": "https://console.x.com"
+    },
+    {
+      "id": "x6",
+      "title": "X docs: Rate limits",
+      "url": "https://docs.x.com/x-api/fundamentals/rate-limits"
+    },
+    {
+      "id": "x7",
+      "title": "TechCrunch: X changes its terms to bar training of AI models using its content (2025-06-05)",
+      "url": "https://techcrunch.com/2025/06/05/x-changes-its-terms-to-bar-training-of-ai-models-using-its-content"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "POST https://api.x.com/2/oauth2/token with no body: {\"error\":\"invalid_request\",\"error_description\":\"Missing required parameter [grant_type].\"}",
       "GET https://x.com/i/oauth2/authorize: HTTP 200",

@@ -550,6 +550,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://developer.rippling.com/llms.txt is live and states App Shop partner apps authenticate with OAuth 2.0 and that customer API keys can't be used on behalf of another organization.",
       "https://app.rippling.com/apps/PLATFORM/authorize returns HTTP 200.",

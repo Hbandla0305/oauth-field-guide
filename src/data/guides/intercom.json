@@ -7,33 +7,68 @@
     "category": "Customer support"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "Setting up OAuth", "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth" },
-    { "kind": "scopes", "label": "OAuth scopes reference", "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/oauth-scopes" },
-    { "kind": "review", "label": "Publishing your app (review)", "url": "https://developers.intercom.com/docs/publish-to-the-app-store/review-publish-your-app" },
-    { "kind": "review", "label": "Listing your app", "url": "https://developers.intercom.com/docs/publish-to-the-app-store/listing-your-app" },
-    { "kind": "api", "label": "API rate limits", "url": "https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting" },
-    { "kind": "console", "label": "Developer workspace sign-up", "url": "https://app.intercom.com/a/developer-signup" }
+    {
+      "kind": "oauth",
+      "label": "Setting up OAuth",
+      "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth"
+    },
+    {
+      "kind": "scopes",
+      "label": "OAuth scopes reference",
+      "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/oauth-scopes"
+    },
+    {
+      "kind": "review",
+      "label": "Publishing your app (review)",
+      "url": "https://developers.intercom.com/docs/publish-to-the-app-store/review-publish-your-app"
+    },
+    {
+      "kind": "review",
+      "label": "Listing your app",
+      "url": "https://developers.intercom.com/docs/publish-to-the-app-store/listing-your-app"
+    },
+    {
+      "kind": "api",
+      "label": "API rate limits",
+      "url": "https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting"
+    },
+    {
+      "kind": "console",
+      "label": "Developer workspace sign-up",
+      "url": "https://app.intercom.com/a/developer-signup"
+    }
   ],
   "verdict": {
     "difficulty": "hard",
     "summary": "Building and testing OAuth in a free development workspace is quick, but a public app stays private to your own team until Intercom reviews it, so no customer can connect before approval. Review is a light, single pass (up to seven business days) that needs an end-to-end OAuth video and tight scopes, after which the app goes live as public-unlisted.",
     "timeToDev": {
       "range": "30–60 min",
-      "hours": { "min": 0.5, "max": 1 },
+      "hours": {
+        "min": 0.5,
+        "max": 1
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "Create a development workspace, create an app in the Developer Hub, turn on 'Use OAuth', add an HTTPS redirect URL. Development workspaces get OAuth automatically."
       }
     },
     "timeToProd": {
       "range": "1–3 weeks",
-      "hours": { "min": 168, "max": 504 },
+      "hours": {
+        "min": 168,
+        "max": 504
+      },
       "assumes": "A public unlisted app that reads and writes conversations, tickets and contacts in customers' workspaces; App Store listing is a separate optional step after approval.",
       "waitingOn": "Intercom app review (stated as up to seven business days), plus resubmission time if scopes or the video are rejected.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": "The seven-business-day figure is Intercom's stated review window. The upper end allows one rejection and resubmission, which is our estimate."
       }
     },
@@ -43,56 +78,125 @@
     {
       "item": "An Intercom development workspace",
       "why": "Apps are created in the Developer Hub of a workspace; development workspaces come with OAuth enabled.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "We confirmed the developer sign-up page loads; its pricing wasn't stated in the docs we read." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "We confirmed the developer sign-up page loads; its pricing wasn't stated in the docs we read."
+      }
     },
     {
       "item": "HTTPS redirect URLs (test and production can both be registered)",
       "why": "Intercom requires HTTPS redirect URLs; the first is the default and others are chosen with redirect_uri.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Test credentials or setup instructions for your own service",
       "why": "Reviewers need to exercise the full app if it requires an account with you.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Privacy policy URL and support email (for an App Store listing)",
       "why": "Both are required listing fields.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Private app on your own workspace (access token)",
-      "examples": ["Access Token from Configure > Authentication"],
+      "examples": [
+        "Access Token from Configure > Authentication"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "No OAuth or review, but it only reaches your own workspace. Useful for prototyping the agent against real data.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Standard scopes (people and conversation data)",
-      "examples": ["Read conversations", "Write conversations", "Read tickets", "Write tickets", "Read and list users and companies", "Read tags"],
+      "examples": [
+        "Read conversations",
+        "Write conversations",
+        "Read tickets",
+        "Write tickets",
+        "Read and list users and companies",
+        "Read tags"
+      ],
       "reviewRequired": true,
       "time": "1–3 weeks",
       "impact": "What a support agent needs. Goes through the normal app review; over-broad scopes are the most common reason for initial rejection.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5", "s3"], "note": "Intercom shows scopes as labels in the Developer Hub rather than machine strings." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5",
+          "s3"
+        ],
+        "note": "Intercom shows scopes as labels in the Developer Hub rather than machine strings."
+      }
     },
     {
       "tier": "Extended scopes (workspace data)",
-      "examples": ["Read admins", "Read and List articles", "Read and write AI content", "Read data connectors"],
+      "examples": [
+        "Read admins",
+        "Read and List articles",
+        "Read and write AI content",
+        "Read data connectors"
+      ],
       "reviewRequired": true,
       "time": "1–3 weeks",
       "impact": "Same review, but each needs a clear reason visible in your video. Article and AI-content scopes matter for agents that use or update the help center and Fin content.",
-      "evidence": { "label": "inferred", "sourceIds": ["s5", "s3"], "note": "Intercom doesn't document a separate approval track for extended scopes." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5",
+          "s3"
+        ],
+        "note": "Intercom doesn't document a separate approval track for extended scopes."
+      }
     },
     {
       "tier": "Destructive or admin-changing scopes",
-      "examples": ["Delete conversations and metrics", "Update admins", "Read admin activity logs"],
+      "examples": [
+        "Delete conversations and metrics",
+        "Update admins",
+        "Read admin activity logs"
+      ],
       "reviewRequired": true,
       "time": "Likely extra back-and-forth",
       "impact": "Deleted data can't be recovered. Expect reviewers to question these unless the use case clearly needs them.",
-      "evidence": { "label": "inferred", "sourceIds": ["s5"], "note": "Our reading; Intercom doesn't state approval rates." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Our reading; Intercom doesn't state approval rates."
+      }
     }
   ],
   "steps": [
@@ -102,7 +206,13 @@
       "detail": "Sign up for an Intercom developer workspace.",
       "url": "https://app.intercom.com/a/developer-signup",
       "duration": "10 min",
-      "evidence": { "label": "tested", "sourceIds": ["s9"], "note": "The sign-up page returned HTTP 200 on 2026-10-20. We did not sign up." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s9"
+        ],
+        "note": "The sign-up page returned HTTP 200 on 2026-10-20. We did not sign up."
+      }
     },
     {
       "title": "Create separate dev and production apps",
@@ -110,7 +220,13 @@
       "detail": "In the Developer Hub, create a development app and a production app. After approval the production app is labelled Public and the dev app stays Private.",
       "url": "https://app.intercom.com/a/apps/_/developer-hub",
       "duration": "10 min",
-      "evidence": { "label": "unverified", "sourceIds": ["s3"], "note": "The dev/production split and Public/Private labels appeared in a search summary of Intercom's publishing docs but weren't in the page text we read. The Developer Hub URL pattern is our inference; we didn't sign in." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The dev/production split and Public/Private labels appeared in a search summary of Intercom's publishing docs but weren't in the page text we read. The Developer Hub URL pattern is our inference; we didn't sign in."
+      }
     },
     {
       "title": "Turn on OAuth and add redirect URLs",
@@ -118,7 +234,13 @@
       "detail": "On the app's Authentication page, enable 'Use OAuth', add HTTPS redirect URLs (the first is the default), and select the minimum scopes.",
       "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the OAuth flow",
@@ -126,7 +248,13 @@
       "detail": "Redirect to https://app.intercom.com/oauth?client_id=...&state=... (app.eu.intercom.com or app.au.intercom.com for EU/AU customers). Verify state on callback, then POST code, client_id and client_secret to https://api.intercom.io/auth/eagle/token. Keep any trailing '=' in the code. Store the token per workspace.",
       "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth",
       "duration": "1–3 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Handle region-specific API hosts and uninstall",
@@ -134,7 +262,14 @@
       "detail": "Route API calls to the customer's region and handle deauthorization by deleting stored tokens; the review video has to show uninstall.",
       "url": "https://developers.intercom.com/docs/publish-to-the-app-store/review-publish-your-app",
       "duration": "1–2 h",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s3"], "note": "Regional API host details weren't on the pages we read; check the API reference." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "Regional API host details weren't on the pages we read; check the API reference."
+      }
     },
     {
       "title": "Trim scopes and draft the review submission",
@@ -142,7 +277,14 @@
       "detail": "Map every selected scope to a feature, write the app description, install instructions and reviewer test-account instructions.",
       "url": "https://developers.intercom.com/docs/publish-to-the-app-store/review-publish-your-app",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Record the end-to-end video",
@@ -150,7 +292,13 @@
       "detail": "Show OAuth install with the full client_id and state visible in the URL, the app's full functionality, and OAuth uninstall.",
       "url": null,
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Submit for review",
@@ -158,7 +306,13 @@
       "detail": "Submit the app review form in the Developer Hub (description, test access, installation settings).",
       "url": "https://developers.intercom.com/docs/publish-to-the-app-store/review-publish-your-app",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Intercom review",
@@ -166,7 +320,13 @@
       "detail": "Review can take up to seven business days. Feedback appears under 'Feedback from Intercom'; fix and resubmit if rejected.",
       "url": null,
       "duration": "up to 7 business days",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Go live as public unlisted",
@@ -174,7 +334,13 @@
       "detail": "Approved apps become public unlisted, installable from your own site. Provide clear install instructions to customers.",
       "url": null,
       "duration": "minutes",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optionally list in the App Store",
@@ -182,7 +348,14 @@
       "detail": "Complete the App Listing (privacy policy, support email, pricing URL if paid) and App Partner Program pages, then choose 'List in App store' and submit the listing review.",
       "url": "https://developers.intercom.com/docs/publish-to-the-app-store/listing-your-app",
       "duration": "1–2 h plus review",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -204,79 +377,192 @@
       "symptom": "Other workspaces can't install the app",
       "cause": "Until approved, a public app stays private and can only be used by you and your team.",
       "fix": "Submit the app for review and wait for approval.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "The exact error shown to an outside installer wasn't documented." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "The exact error shown to an outside installer wasn't documented."
+      }
     },
     {
       "symptom": "Review rejected for over-privileged scopes",
       "cause": "Selected scopes don't match what the video shows the app doing.",
       "fix": "Remove unused scopes and resubmit with a video that exercises every remaining scope.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "401 'Unauthorized Code' from /auth/eagle/token",
       "cause": "The code value is wrong, often because a trailing '=' was dropped.",
       "fix": "Pass the code exactly as received, URL-decoded once.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Google sign-in fails on the Intercom consent screen for EU/AU customers",
       "cause": "The authorize URL host doesn't match the customer's region.",
       "fix": "Use app.eu.intercom.com or app.au.intercom.com for those customers, or let them pick their region before connecting.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Users suddenly need to reconnect with no way to refresh",
       "cause": "Intercom has no refresh tokens; once a token is revoked or the app deauthorized it can't be renewed silently.",
       "fix": "Detect 401s, mark the connection broken and prompt the customer to reauthorize.",
-      "evidence": { "label": "unverified", "sourceIds": ["s7", "s8"], "note": "Stated by Intercom engineering support in a July 2025 community answer, not in the official docs." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7",
+          "s8"
+        ],
+        "note": "Stated by Intercom engineering support in a July 2025 community answer, not in the official docs."
+      }
     },
     {
       "symptom": "HTTP 429 bursts even under the per-minute limit",
       "cause": "Limits are enforced in 10-second windows (one sixth of the per-minute limit).",
       "fix": "Smooth request rate and back off using the rate-limit headers.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "Access tokens are long-lived and Intercom doesn't issue refresh tokens; tokens stay valid until the user revokes access or the app is deauthorized.",
-      "evidence": { "label": "unverified", "sourceIds": ["s7"], "note": "Intercom staff answer in the community forum (July 2025); the official OAuth page doesn't state token lifetime." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "Intercom staff answer in the community forum (July 2025); the official OAuth page doesn't state token lifetime."
+      }
     },
     {
       "text": "Public apps get 10,000 API calls per minute per app, and the workspace has 25,000 per minute; each public app's limit is separate from other public apps, while private apps share the workspace pool.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Customers in EU and AU regions use regional hosts, so store the region with each connection.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Webhook topics depend on scopes, so pick scopes that cover the events your agent subscribes to.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Approved apps start as public unlisted; App Store listing is a separate step and enrolls you in the App Partner Program.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Never ask customers for their own Access Token; use OAuth for any other workspace's data.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Intercom developer docs: Setting up OAuth", "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth" },
-    { "id": "s2", "title": "Intercom developer docs: Authentication", "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication" },
-    { "id": "s3", "title": "Intercom developer docs: Publishing your app", "url": "https://developers.intercom.com/docs/publish-to-the-app-store/review-publish-your-app" },
-    { "id": "s4", "title": "Intercom developer docs: Listing your app", "url": "https://developers.intercom.com/docs/publish-to-the-app-store/listing-your-app" },
-    { "id": "s5", "title": "Intercom developer docs: OAuth scopes", "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/oauth-scopes" },
-    { "id": "s6", "title": "Intercom API reference: Rate limiting", "url": "https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting" },
-    { "id": "s7", "title": "Intercom Community: OAuth access token and refresh token for multitenant apps (staff answer, July 2025)", "url": "https://community.intercom.com/apps-integrations-25/clarification-needed-on-intercom-oauth-access-token-and-refresh-token-for-multitenant-apps-11092" },
-    { "id": "s8", "title": "Intercom Community: Why are my users having to reauthenticate?", "url": "https://community.intercom.com/api-webhooks-23/why-are-my-users-having-to-reauthenticate-1201" },
-    { "id": "s9", "title": "Intercom developer workspace sign-up", "url": "https://app.intercom.com/a/developer-signup" }
+    {
+      "id": "s1",
+      "title": "Intercom developer docs: Setting up OAuth",
+      "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Intercom developer docs: Authentication",
+      "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication"
+    },
+    {
+      "id": "s3",
+      "title": "Intercom developer docs: Publishing your app",
+      "url": "https://developers.intercom.com/docs/publish-to-the-app-store/review-publish-your-app"
+    },
+    {
+      "id": "s4",
+      "title": "Intercom developer docs: Listing your app",
+      "url": "https://developers.intercom.com/docs/publish-to-the-app-store/listing-your-app"
+    },
+    {
+      "id": "s5",
+      "title": "Intercom developer docs: OAuth scopes",
+      "url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/oauth-scopes"
+    },
+    {
+      "id": "s6",
+      "title": "Intercom API reference: Rate limiting",
+      "url": "https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting"
+    },
+    {
+      "id": "s7",
+      "title": "Intercom Community: OAuth access token and refresh token for multitenant apps (staff answer, July 2025)",
+      "url": "https://community.intercom.com/apps-integrations-25/clarification-needed-on-intercom-oauth-access-token-and-refresh-token-for-multitenant-apps-11092"
+    },
+    {
+      "id": "s8",
+      "title": "Intercom Community: Why are my users having to reauthenticate?",
+      "url": "https://community.intercom.com/api-webhooks-23/why-are-my-users-having-to-reauthenticate-1201"
+    },
+    {
+      "id": "s9",
+      "title": "Intercom developer workspace sign-up",
+      "url": "https://app.intercom.com/a/developer-signup"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.intercom.com/a/developer-signup: HTTP 200",
       "GET https://app.intercom.com/oauth?client_id=x&state=y: 302 to /a/oauth/connect (authorize endpoint live)",

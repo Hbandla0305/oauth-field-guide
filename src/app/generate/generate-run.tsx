@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { AgentEvent, StageId } from "@/lib/agent/pipeline";
+import { DotLoader } from "@/components/dot-loader";
+import { TIPS } from "@/lib/tips";
 
 const STAGES: { id: StageId; label: string }[] = [
   { id: "screen", label: "Identify the app" },
@@ -114,7 +116,10 @@ export function GenerateRun() {
         </>
       ) : (
         <>
-          <h1 className="mt-6 font-display text-4xl font-semibold tracking-tight">{researching ? `Researching ${app}` : `Looking up ${app}`}</h1>
+          <div className="mt-6 flex items-center gap-4">
+            <DotLoader />
+            <h1 className="font-display text-4xl font-semibold tracking-tight">{researching ? `Researching ${app}` : `Looking up ${app}`}</h1>
+          </div>
           <p className="mt-3 text-muted">
             {researching
               ? `An agent is investigating how to get an OAuth app approved for ${app}. This usually takes one to three minutes. The guide opens here when it's ready.`
@@ -150,9 +155,40 @@ export function GenerateRun() {
             })}
           </ol>
           {researching && <p className="mt-8 text-sm text-muted">{finished ? "Opening the guide…" : `${elapsed}s elapsed`}</p>}
+          {researching && !finished && <TipCarousel />}
         </>
       )}
     </div>
+  );
+}
+
+// Rotates through Composio facts and OAuth tips while the agent works.
+function TipCarousel() {
+  const [i, setI] = useState(() => Math.floor(Math.random() * TIPS.length));
+  useEffect(() => {
+    const id = setInterval(() => setI((n) => (n + 1) % TIPS.length), 7000);
+    return () => clearInterval(id);
+  }, []);
+  const tip = TIPS[i];
+  return (
+    <aside aria-live="polite" className="mt-10 rounded-xl border border-line bg-surface p-5">
+      <p className="text-sm font-medium text-muted">{tip.kind === "composio" ? "Did you know? About Composio" : "OAuth tip"}</p>
+      <p key={i} className="mt-2 animate-[fadein_400ms_ease-out] leading-relaxed">
+        {tip.text}
+      </p>
+      <div className="mt-3 flex items-center justify-between text-sm">
+        {tip.href ? (
+          <a href={tip.href} target="_blank" rel="noreferrer" className="text-cobalt underline underline-offset-2">
+            Source: composio.dev
+          </a>
+        ) : (
+          <span className="text-muted">From the guides in this library</span>
+        )}
+        <button type="button" onClick={() => setI((n) => (n + 1) % TIPS.length)} className="font-medium underline underline-offset-2">
+          Next tip
+        </button>
+      </div>
+    </aside>
   );
 }
 

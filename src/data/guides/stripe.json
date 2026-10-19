@@ -49,7 +49,10 @@
       },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": "stripe apps create, set stripe_api_access_type=oauth and distribution_type=public, upload, then use the External test tab's Test OAuth links."
       }
     },
@@ -63,7 +66,10 @@
       "waitingOn": "App Marketplace review: an approval or feedback email within 4 business days per submission, plus any resubmissions.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s3", "s4"],
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
         "note": "The 4-business-day figure is Stripe's. The 1–3 weeks adds listing prep (screenshots, test credentials) and one possible resubmission."
       }
     },
@@ -75,7 +81,10 @@
       "why": "Publishing requires an activated account, and live OAuth external tests need an app uploaded from a live account.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3", "s4"],
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
         "note": null
       }
     },
@@ -84,7 +93,10 @@
       "why": "Apps are created and uploaded with stripe apps create / stripe apps upload.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": null
       }
     },
@@ -93,7 +105,10 @@
       "why": "The listing requires a privacy policy and support channel; allowed_redirect_uris must not contain localhost or dummy URLs at submission; live redirects must be HTTPS.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3", "s1"],
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
         "note": null
       }
     },
@@ -102,7 +117,10 @@
       "why": "Listed as a publishing requirement and a legal review requirement.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3", "s5"],
+        "sourceIds": [
+          "s3",
+          "s5"
+        ],
         "note": null
       }
     }
@@ -110,49 +128,80 @@
   "scopeTiers": [
     {
       "tier": "Read permissions (typical agent)",
-      "examples": ["customer_read", "charge_read", "invoice_read", "subscription_read", "payment_intent_read", "balance_read", "event_read"],
+      "examples": [
+        "customer_read",
+        "charge_read",
+        "invoice_read",
+        "subscription_read",
+        "payment_intent_read",
+        "balance_read",
+        "event_read"
+      ],
       "reviewRequired": true,
       "time": "1–3 weeks",
       "impact": "Each permission needs a purpose string that installers see. Public install needs Marketplace review regardless of which permissions you pick.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2", "s3"],
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
         "note": null
       }
     },
     {
       "tier": "Write permissions (money movement and edits)",
-      "examples": ["customer_write", "invoice_write", "charge_write", "payout_write", "transfer_write"],
+      "examples": [
+        "customer_write",
+        "invoice_write",
+        "charge_write",
+        "payout_write",
+        "transfer_write"
+      ],
       "reviewRequired": true,
       "time": "1–3 weeks",
       "impact": "Same review path. Reviewers check for thorough descriptions and justifications for each permission, and the guide says apps can only use data needed for clearly communicated functionality.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2", "s3", "s5"],
+        "sourceIds": [
+          "s2",
+          "s3",
+          "s5"
+        ],
         "note": "Whether money-moving permissions get extra scrutiny isn't stated."
       }
     },
     {
       "tier": "Sensitive account-wide permissions",
-      "examples": ["webhook_read", "webhook_write", "user_email_read"],
+      "examples": [
+        "webhook_read",
+        "webhook_write",
+        "user_email_read"
+      ],
       "reviewRequired": true,
       "time": "1–3 weeks",
       "impact": "Stripe calls webhook permissions sensitive because they allow subscribing to events across the whole account. Expect to justify them.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": "'Expect to justify' is inferred."
       }
     },
     {
       "tier": "External test only (no review)",
-      "examples": ["any permission in the manifest"],
+      "examples": [
+        "any permission in the manifest"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Up to 25 testers per app via External test links, meant for testing only. Testers need Apps administrator rights.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s4"],
+        "sourceIds": [
+          "s4"
+        ],
         "note": null
       }
     }
@@ -166,7 +215,11 @@
       "duration": "15 min",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s6", "s7", "s3"],
+        "sourceIds": [
+          "s6",
+          "s7",
+          "s3"
+        ],
         "note": null
       }
     },
@@ -178,7 +231,9 @@
       "duration": "15–30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     },
@@ -190,7 +245,10 @@
       "duration": "30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": null
       }
     },
@@ -202,7 +260,9 @@
       "duration": "15–30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": null
       }
     },
@@ -214,7 +274,10 @@
       "duration": "5 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": null
       }
     },
@@ -226,7 +289,9 @@
       "duration": "1–2 hours",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -238,7 +303,10 @@
       "duration": "30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s4", "s1"],
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
         "note": null
       }
     },
@@ -250,7 +318,9 @@
       "duration": "1–2 hours",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     },
@@ -262,7 +332,10 @@
       "duration": "1–3 hours",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3", "s1"],
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
         "note": null
       }
     },
@@ -274,7 +347,9 @@
       "duration": "15 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     },
@@ -286,7 +361,9 @@
       "duration": "4 business days per round",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     },
@@ -298,7 +375,9 @@
       "duration": "5 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     }
@@ -323,7 +402,10 @@
       "fix": "Use External test links (up to 25 testers) until Marketplace approval, then publish.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": null
       }
     },
@@ -333,7 +415,10 @@
       "fix": "Point the install page at the public link from the Settings tab.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3", "s1"],
+        "sourceIds": [
+          "s3",
+          "s1"
+        ],
         "note": null
       }
     },
@@ -343,7 +428,10 @@
       "fix": "Exchange immediately, once, using the developer account's key for that mode; pass the link type in state.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s7"],
+        "sourceIds": [
+          "s1",
+          "s7"
+        ],
         "note": "invalid_grant is documented for Connect's token endpoint; we assume the same code for Stripe Apps."
       }
     },
@@ -353,7 +441,9 @@
       "fix": "Authorize the refresh with your own secret key.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -363,7 +453,9 @@
       "fix": "Build a Stripe App instead, or contact Stripe to register as an Extension if you're on Connect.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s6"],
+        "sourceIds": [
+          "s6"
+        ],
         "note": null
       }
     },
@@ -373,7 +465,10 @@
       "fix": "Add the matching permission, upload a new version, and get it reviewed if published.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2", "s3"],
+        "sourceIds": [
+          "s2",
+          "s3"
+        ],
         "note": null
       }
     }
@@ -383,7 +478,9 @@
       "text": "Access tokens expire in 1 hour and refresh tokens after 1 year. Refresh tokens roll on every exchange, so refreshing within a year keeps access indefinitely.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -391,7 +488,9 @@
       "text": "You can publish only one app per Stripe account, and listings must be in English.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     },
@@ -399,7 +498,10 @@
       "text": "Connect OAuth's access_token and refresh_token response fields are marked deprecated; platforms should use the Stripe-Account header with their own secret key. read_only scope is limited to Extensions.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s7", "s6"],
+        "sourceIds": [
+          "s7",
+          "s6"
+        ],
         "note": null
       }
     },
@@ -407,7 +509,9 @@
       "text": "Any change to the app or listing needs another review round before it reaches published users.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     },
@@ -415,7 +519,9 @@
       "text": "The review guide says apps can only use user data and endpoints needed for clearly communicated functionality, and can't resell or publish data obtained from Stripe users, relevant if you send Stripe data to an LLM provider.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s5"],
+        "sourceIds": [
+          "s5"
+        ],
         "note": "The LLM implication is our reading; there's no AI-specific policy on the page."
       }
     },
@@ -423,23 +529,55 @@
       "text": "Live OAuth links, test-mode sandbox links and sandbox links each need the matching API key for the code exchange (live key, test key, or managed sandbox key).",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Stripe docs: OAuth 2.0 for Stripe Apps", "url": "https://docs.stripe.com/stripe-apps/api-authentication/oauth" },
-    { "id": "s2", "title": "Stripe docs: Stripe Apps permissions reference", "url": "https://docs.stripe.com/stripe-apps/reference/permissions" },
-    { "id": "s3", "title": "Stripe docs: Publish an app to the Stripe App Marketplace", "url": "https://docs.stripe.com/stripe-apps/publish-app" },
-    { "id": "s4", "title": "Stripe docs: Test your app externally", "url": "https://docs.stripe.com/stripe-apps/test-app" },
-    { "id": "s5", "title": "Stripe docs: Stripe Apps quality requirements", "url": "https://docs.stripe.com/stripe-apps/review-requirements" },
-    { "id": "s6", "title": "Stripe docs: OAuth changes for platform-controlled Standard accounts", "url": "https://docs.stripe.com/connect/oauth-changes-for-standard-platforms" },
-    { "id": "s7", "title": "Stripe docs: Connect OAuth reference", "url": "https://docs.stripe.com/connect/oauth-reference" }
+    {
+      "id": "s1",
+      "title": "Stripe docs: OAuth 2.0 for Stripe Apps",
+      "url": "https://docs.stripe.com/stripe-apps/api-authentication/oauth"
+    },
+    {
+      "id": "s2",
+      "title": "Stripe docs: Stripe Apps permissions reference",
+      "url": "https://docs.stripe.com/stripe-apps/reference/permissions"
+    },
+    {
+      "id": "s3",
+      "title": "Stripe docs: Publish an app to the Stripe App Marketplace",
+      "url": "https://docs.stripe.com/stripe-apps/publish-app"
+    },
+    {
+      "id": "s4",
+      "title": "Stripe docs: Test your app externally",
+      "url": "https://docs.stripe.com/stripe-apps/test-app"
+    },
+    {
+      "id": "s5",
+      "title": "Stripe docs: Stripe Apps quality requirements",
+      "url": "https://docs.stripe.com/stripe-apps/review-requirements"
+    },
+    {
+      "id": "s6",
+      "title": "Stripe docs: OAuth changes for platform-controlled Standard accounts",
+      "url": "https://docs.stripe.com/connect/oauth-changes-for-standard-platforms"
+    },
+    {
+      "id": "s7",
+      "title": "Stripe docs: Connect OAuth reference",
+      "url": "https://docs.stripe.com/connect/oauth-reference"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://marketplace.stripe.com/oauth/v2/authorize?client_id=ca_test&...: HTTP 200 (page renders without login)",
       "GET https://connect.stripe.com/oauth/authorize?...: 302 to https://connect.stripe.com/oauth/v2/authorize",

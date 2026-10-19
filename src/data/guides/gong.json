@@ -39,7 +39,9 @@
       },
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "'This can take up to five working days' for the developer instance; creating the integration itself takes under an hour. A tech admin at an existing Gong customer could create a private app in their own instance sooner."
       }
     },
@@ -53,7 +55,10 @@
       "waitingOn": "Gong partner review after the Technology Partner Integration Review & Enablement form (Gong says it contacts you within five business days to finalize the release), plus Collective listing setup.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "Only the five-day developer instance and the five-day first-contact figures are published. The full range is our estimate."
       }
     },
@@ -65,7 +70,9 @@
       "why": "Integrations are created in Admin center > Settings > Ecosystem > API. Developers without Gong get an instance through Gong's form.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -74,7 +81,9 @@
       "why": "Publishing to the Gong Collective is described as a process for Partners and goes through a Technology Partner review form.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": "Partner program terms or fees aren't described on the pages we read."
       }
     },
@@ -83,7 +92,10 @@
       "why": "You must provide the IP addresses that can access the integration; the app can't be published without them.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2", "s1"],
+        "sourceIds": [
+          "s2",
+          "s1"
+        ],
         "note": null
       }
     },
@@ -92,7 +104,9 @@
       "why": "These are required fields when registering the integration.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     }
@@ -100,49 +114,81 @@
   "scopeTiers": [
     {
       "tier": "Basic call and user metadata",
-      "examples": ["api:users:read", "api:calls:read:basic", "api:workspaces:read", "api:stats:interaction"],
+      "examples": [
+        "api:users:read",
+        "api:calls:read:basic",
+        "api:workspaces:read",
+        "api:stats:interaction"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "Lists calls, users and activity stats. Shared (company-wide) access. Usable by outside customers only after Collective publication.",
       "evidence": {
         "label": "tested",
-        "sourceIds": ["s4", "s2"],
+        "sourceIds": [
+          "s4",
+          "s2"
+        ],
         "note": "Scope strings found in the public API spec on 2026-10-20."
       }
     },
     {
       "tier": "Conversation content (typical agent)",
-      "examples": ["api:calls:read:transcript", "api:calls:read:extensive", "api:calls:read:media-url", "api:library:read"],
+      "examples": [
+        "api:calls:read:transcript",
+        "api:calls:read:extensive",
+        "api:calls:read:media-url",
+        "api:library:read"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "Transcripts, topics, trackers and recording URLs. Same publication path; the tech admin sees these scopes when approving.",
       "evidence": {
         "label": "tested",
-        "sourceIds": ["s4", "s1"],
+        "sourceIds": [
+          "s4",
+          "s1"
+        ],
         "note": "Whether Gong scrutinizes transcript scopes more closely isn't documented."
       }
     },
     {
       "tier": "Personal-access AI and MCP scopes",
-      "examples": ["api:ai-ask:read", "api:ai-briefer:read", "mcp:read", "mcp:write"],
+      "examples": [
+        "api:ai-ask:read",
+        "api:ai-briefer:read",
+        "mcp:read",
+        "mcp:write"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "The only scopes that support Personal access (per-user) instead of Shared access. The authorization context can't be changed after setup, so decide up front.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
     {
       "tier": "Write and CRM scopes",
-      "examples": ["api:calls:create", "api:crm:upload", "api:tasks:write", "api:flows:write", "api:data-privacy:delete"],
+      "examples": [
+        "api:calls:create",
+        "api:crm:upload",
+        "api:tasks:write",
+        "api:flows:write",
+        "api:data-privacy:delete"
+      ],
       "reviewRequired": true,
       "time": "2–6 weeks",
       "impact": "Upload calls, push CRM data, manage tasks and flows, or delete data. Changing scopes after publication requires a support ticket.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s4", "s2"],
+        "sourceIds": [
+          "s4",
+          "s2"
+        ],
         "note": null
       }
     }
@@ -156,7 +202,9 @@
       "duration": "10 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -168,7 +216,9 @@
       "duration": "Up to 5 working days",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -180,7 +230,10 @@
       "duration": "30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": null
       }
     },
@@ -192,7 +245,9 @@
       "duration": "1–3 hours",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -204,7 +259,9 @@
       "duration": "20–30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -216,7 +273,9 @@
       "duration": "2–4 hours",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -228,7 +287,10 @@
       "duration": "1–2 hours",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": null
       }
     },
@@ -240,7 +302,9 @@
       "duration": "30 min",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": null
       }
     },
@@ -252,7 +316,9 @@
       "duration": "1–4 weeks",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": "Five business days to first contact is sourced; the rest is our estimate."
       }
     }
@@ -277,7 +343,9 @@
       "fix": "Submit the Technology Partner Integration Review & Enablement form and publish.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": null
       }
     },
@@ -287,7 +355,9 @@
       "fix": "Add your static egress IPs (e.g. via a NAT gateway or proxy if you're on serverless).",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": "The NAT/proxy suggestion is ours."
       }
     },
@@ -297,7 +367,9 @@
       "fix": "Save api_base_url_for_customer per customer and send all API calls there.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": "The symptom is inferred; the per-customer URL requirement is sourced."
       }
     },
@@ -307,7 +379,9 @@
       "fix": "Ask customers to have a Gong tech admin run the install, or use Personal access for AI/MCP-only scopes.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -317,7 +391,9 @@
       "fix": "Honour Retry-After, spread backfills over days, or ask Gong for higher limits.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     },
@@ -327,7 +403,9 @@
       "fix": "Open a support ticket, then have customers re-authorize.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s2"],
+        "sourceIds": [
+          "s2"
+        ],
         "note": "Re-authorization is our assumption."
       }
     }
@@ -337,7 +415,9 @@
       "text": "Access tokens are valid for 1 day by default and can be changed with validity_duration; refreshing returns a new refresh token. The docs' example shows expires_in 525600, which doesn't match the 1-day default.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -345,7 +425,9 @@
       "text": "Each customer has its own API host (e.g. https://company-17.api.gong.io), returned as api_base_url_for_customer.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -353,7 +435,9 @@
       "text": "Rate limits default to 3 calls/sec and 10,000 calls/day, with 429 and Retry-After when exceeded.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     },
@@ -361,7 +445,9 @@
       "text": "Shared access is company-wide: one tech admin's approval exposes all calls the scopes cover. Per-user Personal access is limited to ai-ask, ai-briefer and MCP scopes.",
       "evidence": {
         "label": "sourced",
-        "sourceIds": ["s1"],
+        "sourceIds": [
+          "s1"
+        ],
         "note": null
       }
     },
@@ -369,20 +455,40 @@
       "text": "For a single company, an API access key from the tech admin is an alternative to OAuth; the help center links to Manage API keys.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s3"],
+        "sourceIds": [
+          "s3"
+        ],
         "note": null
       }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Gong Help: Create an app for Gong", "url": "https://help.gong.io/docs/create-an-app-for-gong" },
-    { "id": "s2", "title": "Gong Help: List your app in the Gong Collective", "url": "https://help.gong.io/docs/list-your-app-in-the-gong-collective" },
-    { "id": "s3", "title": "Gong Help: What the Gong API provides", "url": "https://help.gong.io/docs/what-the-gong-api-provides" },
-    { "id": "s4", "title": "Gong API documentation", "url": "https://gong.app.gong.io/settings/api/documentation" }
+    {
+      "id": "s1",
+      "title": "Gong Help: Create an app for Gong",
+      "url": "https://help.gong.io/docs/create-an-app-for-gong"
+    },
+    {
+      "id": "s2",
+      "title": "Gong Help: List your app in the Gong Collective",
+      "url": "https://help.gong.io/docs/list-your-app-in-the-gong-collective"
+    },
+    {
+      "id": "s3",
+      "title": "Gong Help: What the Gong API provides",
+      "url": "https://help.gong.io/docs/what-the-gong-api-provides"
+    },
+    {
+      "id": "s4",
+      "title": "Gong API documentation",
+      "url": "https://gong.app.gong.io/settings/api/documentation"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.gong.io/oauth2/authorize?client_id=x&...: 302 to /welcome/sign-in (needs login)",
       "POST https://app.gong.io/oauth2/generate-customer-token with only grant_type: {\"error\":\"invalid_request\",\"error_description\":\"Token request is malformed.\"}",

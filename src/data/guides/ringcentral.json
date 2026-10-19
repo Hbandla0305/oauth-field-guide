@@ -7,32 +7,65 @@
     "category": "Business phone"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "Auth code flow (3-legged OAuth)", "url": "https://developers.ringcentral.com/guide/authentication/auth-code-flow" },
-    { "kind": "scopes", "label": "App permissions (scopes) reference", "url": "https://developers.ringcentral.com/guide/basics/permissions" },
-    { "kind": "console", "label": "Register an app", "url": "https://developers.ringcentral.com/guide/getting-started/register-app" },
-    { "kind": "review", "label": "Promote your app (App Gallery)", "url": "https://developers.ringcentral.com/guide/getting-started/promote-app" },
-    { "kind": "api", "label": "Rate limits", "url": "https://developers.ringcentral.com/guide/basics/rate-limits" }
+    {
+      "kind": "oauth",
+      "label": "Auth code flow (3-legged OAuth)",
+      "url": "https://developers.ringcentral.com/guide/authentication/auth-code-flow"
+    },
+    {
+      "kind": "scopes",
+      "label": "App permissions (scopes) reference",
+      "url": "https://developers.ringcentral.com/guide/basics/permissions"
+    },
+    {
+      "kind": "console",
+      "label": "Register an app",
+      "url": "https://developers.ringcentral.com/guide/getting-started/register-app"
+    },
+    {
+      "kind": "review",
+      "label": "Promote your app (App Gallery)",
+      "url": "https://developers.ringcentral.com/guide/getting-started/promote-app"
+    },
+    {
+      "kind": "api",
+      "label": "Rate limits",
+      "url": "https://developers.ringcentral.com/guide/basics/rate-limits"
+    }
   ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "Register a Public app with 3-legged OAuth in the Developer Console and any RingCentral customer can log in to it. The current official guides describe no graduation or review step for this, and most scopes (call log, messages, recordings, SMS, AI) are self-serve. The friction is around the edges: a few scopes need a justification ticket, the App Gallery listing is reviewed, and the per-user rate limits are tight (Heavy group: 10 requests/min).",
     "timeToDev": {
       "range": "30–90 min",
-      "hours": { "min": 0.5, "max": 1.5 },
+      "hours": {
+        "min": 0.5,
+        "max": 1.5
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s2"],
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
         "note": "Sign in to the console, register an app with 3-legged OAuth, and run the code flow against platform.ringcentral.com. Extra time if your account admin hasn't granted app-creation permission."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 2, "max": 24 },
+      "hours": {
+        "min": 2,
+        "max": 24
+      },
       "assumes": "A Public app reading call logs, messages and recordings (ReadCallLog, ReadMessages, ReadCallRecording), with no 'available on request' scopes and no App Gallery listing; a gallery listing adds a review of unknown length.",
       "waitingOn": "No review needed for standard scopes. Restricted scopes wait on a support ticket; an App Gallery listing waits on RingCentral review.",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4", "s5"],
+        "sourceIds": [
+          "s1",
+          "s4",
+          "s5"
+        ],
         "note": "The registration and promotion guides describe no approval before other accounts can authorize a Public app; older graduation/sandbox rules are no longer in the official guides."
       }
     },
@@ -42,48 +75,113 @@
     {
       "item": "A RingCentral account with permission to create apps",
       "why": "You sign in to the Developer Console with a RingCentral login; if Create App is disabled, your account administrator has to grant the permission.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "App type set to Public (any RingCentral credential can log in)",
       "why": "Private apps only accept credentials from your own account, so customers couldn't connect.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "An exact OAuth redirect URI and a server-side token store",
       "why": "redirect_uri must exactly match a URI registered on the app; tokens are per user and need refreshing.",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "item": "Website, terms of service, privacy policy, support link, screenshots (only for an App Gallery listing)",
       "why": "A gallery profile can't be submitted until all required fields are filled.",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Standard read scopes",
-      "examples": ["ReadAccounts", "ReadCallLog", "ReadMessages", "ReadCallRecording", "ReadContacts", "ReadPresence", "AI", "Analytics"],
+      "examples": [
+        "ReadAccounts",
+        "ReadCallLog",
+        "ReadMessages",
+        "ReadCallRecording",
+        "ReadContacts",
+        "ReadPresence",
+        "AI",
+        "Analytics"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Enough for an agent that summarizes calls, voicemails, SMS and recordings for the authorizing user.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": "None of these is marked 'Available on request' in the permissions table." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": "None of these is marked 'Available on request' in the permissions table."
+      }
     },
     {
       "tier": "Standard write / action scopes",
-      "examples": ["SMS", "RingOut", "CallControl", "TeamMessaging", "Meetings", "EditCallLog", "SubscriptionWebhook"],
+      "examples": [
+        "SMS",
+        "RingOut",
+        "CallControl",
+        "TeamMessaging",
+        "Meetings",
+        "EditCallLog",
+        "SubscriptionWebhook"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Send SMS, place and control calls, post to team messaging, create meetings, and subscribe to webhooks. What a user can do also depends on their role and account features.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "tier": "Restricted scopes (justification + support ticket)",
-      "examples": ["DirectRingOut", "EditReportingSettings", "EditUserCredentials", "RoleManagement"],
+      "examples": [
+        "DirectRingOut",
+        "EditReportingSettings",
+        "EditUserCredentials",
+        "RoleManagement"
+      ],
       "reviewRequired": true,
       "time": "Unknown (support ticket)",
       "impact": "Adding one files a support ticket automatically; RingCentral approves or rejects based on your written justification.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": "No approval timing is published." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": "No approval timing is published."
+      }
     }
   ],
   "steps": [
@@ -93,7 +191,13 @@
       "detail": "Sign in to the Developer Console with a RingCentral login (sign up if you don't have one). If Create App is greyed out, ask your account admin for the permission.",
       "url": "https://developers.ringcentral.com/console",
       "duration": "10–30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Choose scopes and auth type",
@@ -101,7 +205,14 @@
       "detail": "Pick 3-legged OAuth (auth code, ideally with PKCE) for per-user access; JWT is for headless scripts on your own account. List the minimal scopes, avoiding 'available on request' ones if possible.",
       "url": "https://developers.ringcentral.com/guide/basics/permissions",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Register the app as Public",
@@ -109,7 +220,14 @@
       "detail": "Create App > REST API App, select 3-legged OAuth, set the app to Public with access for all RingCentral customers (recommended), add redirect URIs and scopes, and copy the client ID and secret.",
       "url": "https://developers.ringcentral.com/console",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s6"], "note": "Exact console labels not observed; we did not sign in." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s6"
+        ],
+        "note": "Exact console labels not observed; we did not sign in."
+      }
     },
     {
       "title": "Write restricted-scope justifications (if any)",
@@ -117,7 +235,13 @@
       "detail": "Draft a detailed, specific justification for each 'available on request' scope; registration files a ticket for review.",
       "url": "https://developers.ringcentral.com/guide/basics/permissions",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the auth code flow",
@@ -125,7 +249,13 @@
       "detail": "Redirect to https://platform.ringcentral.com/restapi/oauth/authorize?response_type=code&client_id=...&redirect_uri=...&state=...; exchange at POST https://platform.ringcentral.com/restapi/oauth/token with client authentication (Basic). Store tokens per user.",
       "url": "https://developers.ringcentral.com/guide/authentication/auth-code-flow",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Add refresh handling",
@@ -133,7 +263,14 @@
       "detail": "Access tokens last 10–60 min (default 3600 s); refresh tokens usually 7 days. Run a background job that refreshes at least daily so idle users don't drop off.",
       "url": "https://developers.ringcentral.com/guide/authentication/auth-code-flow",
       "duration": "1 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Build rate-limit handling",
@@ -141,7 +278,13 @@
       "detail": "Read X-Rate-Limit-* headers, stop all requests during the 60 s penalty after a 429 (each request resets it), and don't hardcode group names.",
       "url": "https://developers.ringcentral.com/guide/basics/rate-limits",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test with a second RingCentral account",
@@ -149,7 +292,13 @@
       "detail": "Authorize with a login from a different RingCentral account to confirm the Public setting works.",
       "url": null,
       "duration": "30 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Optional: submit an App Gallery profile",
@@ -157,7 +306,13 @@
       "detail": "Fill in website, docs, ToS, privacy, support, screenshots and description, then Submit for approval. Choose which brand partners' galleries may show the app.",
       "url": "https://developers.ringcentral.com/guide/getting-started/promote-app",
       "duration": "1–2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Wait for App Gallery review",
@@ -165,7 +320,13 @@
       "detail": "RingCentral reviews the profile and may recommend improvements before listing.",
       "url": null,
       "duration": "Unknown",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": "No timeframe published." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": "No timeframe published."
+      }
     }
   ],
   "agentCanDo": [
@@ -186,77 +347,180 @@
       "symptom": "Create App button is disabled in the Developer Console",
       "cause": "Your RingCentral user lacks the app-creation permission.",
       "fix": "Ask your account administrator to grant it.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Customers from other companies can't log in to your app",
       "cause": "The app was registered as Private, which only accepts credentials from your own account.",
       "fix": "Change the app to Public.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": "The exact error customers see isn't documented in pages we read." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The exact error customers see isn't documented in pages we read."
+      }
     },
     {
       "symptom": "HTTP 429, and further requests keep getting 429",
       "cause": "Per-user rate limit exceeded (e.g. Heavy 10/min, Auth 5/min); every request during the penalty window restarts it.",
       "fix": "Stop calling until the 60 s penalty elapses; queue per user and watch X-Rate-Limit-Remaining.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Users have to log in again after a week of inactivity",
       "cause": "Refresh tokens usually expire after about 7 days.",
       "fix": "Refresh tokens on a daily background schedule.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Token call returns invalid_client / OAU-123 'Client authentication is required'",
       "cause": "Client ID/secret weren't sent (Basic auth) on the token request.",
       "fix": "Send Authorization: Basic base64(client_id:client_secret), or use PKCE for public clients.",
-      "evidence": { "label": "tested", "sourceIds": ["s2"], "note": "Observed with an unauthenticated POST to /restapi/oauth/token on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": "Observed with an unauthenticated POST to /restapi/oauth/token on 2026-10-20."
+      }
     },
     {
       "symptom": "Calls fail for AT&T Office@Hand or Verizon customers",
       "cause": "Those brands run in segregated environments with additional technical requirements.",
       "fix": "Follow the segregated-environments guide, or limit the app to RingCentral-brand customers.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": "The specific requirements weren't in the content we read." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": "The specific requirements weren't in the content we read."
+      }
     }
   ],
   "nuances": [
     {
       "text": "access_token_ttl can be 600–3600 s (default 3600); refresh_token_ttl defaults depend on the app but are usually 7 days (sample refresh_token_expires_in 604799).",
-      "evidence": { "label": "sourced", "sourceIds": ["s2"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s2"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Rate limits are per user per app: Light 50, Medium 40, Heavy 10, Auth 5 requests/min by default, with a 60 s penalty; RingCentral says values can be customized per app.",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The password grant is deprecated; JWT is the replacement for headless use, but JWT credentials belong to your own account, so per-customer agents need 3-legged OAuth.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "That JWT doesn't fit multi-customer access is our reading." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "That JWT doesn't fit multi-customer access is our reading."
+      }
     },
     {
       "text": "The official guides no longer describe a sandbox or an app 'graduation' step; community posts say graduation was retired in March 2024 and the sandbox shut on January 1, 2025, so development happens against production (platform.ringcentral.com).",
-      "evidence": { "label": "unverified", "sourceIds": ["s1"], "note": "Dates come from RingCentral community posts we couldn't open (HTTP 403); the official guide simply omits these steps." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "Dates come from RingCentral community posts we couldn't open (HTTP 403); the official guide simply omits these steps."
+      }
     },
     {
       "text": "What a token can do depends on the authorizing user's role and the customer's RingCentral plan, not only on scopes (for example admin-level account data or AI features).",
-      "evidence": { "label": "inferred", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "RingCentral publishes an OIDC discovery document at platform.ringcentral.com.",
-      "evidence": { "label": "tested", "sourceIds": ["s7"], "note": "GET returned HTTP 200 on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s7"
+        ],
+        "note": "GET returned HTTP 200 on 2026-10-20."
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "RingCentral Developer Guide: Registering an application", "url": "https://developers.ringcentral.com/guide/getting-started/register-app" },
-    { "id": "s2", "title": "RingCentral Developer Guide: Auth code flow", "url": "https://developers.ringcentral.com/guide/authentication/auth-code-flow" },
-    { "id": "s3", "title": "RingCentral Developer Guide: App permissions", "url": "https://developers.ringcentral.com/guide/basics/permissions" },
-    { "id": "s4", "title": "RingCentral Developer Guide: Promote your app", "url": "https://developers.ringcentral.com/guide/getting-started/promote-app" },
-    { "id": "s5", "title": "RingCentral Developer Guide: Rate limits", "url": "https://developers.ringcentral.com/guide/basics/rate-limits" },
-    { "id": "s6", "title": "RingCentral Developer Guide: Partners (app access and segregated environments)", "url": "https://developers.ringcentral.com/guide/basics/partners" },
-    { "id": "s7", "title": "RingCentral OIDC discovery document", "url": "https://platform.ringcentral.com/.well-known/openid-configuration" }
+    {
+      "id": "s1",
+      "title": "RingCentral Developer Guide: Registering an application",
+      "url": "https://developers.ringcentral.com/guide/getting-started/register-app"
+    },
+    {
+      "id": "s2",
+      "title": "RingCentral Developer Guide: Auth code flow",
+      "url": "https://developers.ringcentral.com/guide/authentication/auth-code-flow"
+    },
+    {
+      "id": "s3",
+      "title": "RingCentral Developer Guide: App permissions",
+      "url": "https://developers.ringcentral.com/guide/basics/permissions"
+    },
+    {
+      "id": "s4",
+      "title": "RingCentral Developer Guide: Promote your app",
+      "url": "https://developers.ringcentral.com/guide/getting-started/promote-app"
+    },
+    {
+      "id": "s5",
+      "title": "RingCentral Developer Guide: Rate limits",
+      "url": "https://developers.ringcentral.com/guide/basics/rate-limits"
+    },
+    {
+      "id": "s6",
+      "title": "RingCentral Developer Guide: Partners (app access and segregated environments)",
+      "url": "https://developers.ringcentral.com/guide/basics/partners"
+    },
+    {
+      "id": "s7",
+      "title": "RingCentral OIDC discovery document",
+      "url": "https://platform.ringcentral.com/.well-known/openid-configuration"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://developers.ringcentral.com/console: HTTP 200",
       "GET https://platform.ringcentral.com/restapi/oauth/authorize?response_type=code&client_id=x: HTTP 400 (unknown client)",

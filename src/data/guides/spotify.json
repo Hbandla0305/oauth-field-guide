@@ -545,6 +545,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://accounts.spotify.com/.well-known/openid-configuration: 200, issuer https://accounts.spotify.com, token https://accounts.spotify.com/api/token, scopes_supported email/openid/profile",
       "GET https://accounts.spotify.com/authorize?client_id=x...: 303 to accounts.spotify.com/en/login",

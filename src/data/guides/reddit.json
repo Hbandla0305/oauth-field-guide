@@ -513,6 +513,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://www.reddit.com/api/v1/scopes: HTTP 200, JSON with 30 scopes incl. identity, read, history, submit, privatemessages, mod*",
       "GET https://www.reddit.com/.well-known/openid-configuration: HTTP 404",

@@ -537,6 +537,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.deel.com/oauth2/authorize?client_id=x...: 200 (serves the Deel web app shell; no server-side error page)",
       "POST https://app.deel.com/oauth2/tokens with no credentials: 401 {\"error\":\"access_denied\",\"error_description\":\"Invalid basic authorization credentials\"}",

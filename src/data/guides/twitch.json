@@ -531,6 +531,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://id.twitch.tv/oauth2/.well-known/openid-configuration: issuer https://id.twitch.tv/oauth2, token auth client_secret_post, PKCE S256, scopes_supported [openid]",
       "GET https://dev.twitch.tv/console: HTTP 200",

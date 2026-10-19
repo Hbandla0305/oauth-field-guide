@@ -517,6 +517,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://accounts.zoho.com/.well-known/openid-configuration: issuer https://accounts.zoho.com, authorize /oauth/v2/auth, scopes email/profile/openid/phone, device_code and jwt-bearer grants",
       "GET https://accounts.zoho.com/oauth/serverinfo: 11 locations (us, eu, in, inec, au, jp, ca, sa, uk, ae, sg)",

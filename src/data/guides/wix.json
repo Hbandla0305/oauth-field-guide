@@ -522,6 +522,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "POST https://www.wixapis.com/oauth2/token with dummy client_credentials: {\"error\":\"invalid_request\"}",
       "GET https://manage.wix.com/account/custom-apps: 302 to users.wix.com/signin (needs login)",

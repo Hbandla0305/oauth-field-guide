@@ -544,6 +544,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "https://devtools.bigcommerce.com/my/apps returned HTTP 301 (redirect to login; not followed)",
       "https://login.bigcommerce.com/.well-known/openid-configuration returned 404, no OIDC discovery document",

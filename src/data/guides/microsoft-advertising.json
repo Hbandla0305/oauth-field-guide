@@ -511,6 +511,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "Fetched https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration; token endpoint is https://login.microsoftonline.com/common/oauth2/v2.0/token.",
       "https://developers.ads.microsoft.com/Account returns 301 to https://ads.microsoft.com/cc/settings/devsettings, confirming the old Developer Portal moved.",

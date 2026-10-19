@@ -7,31 +7,59 @@
     "category": "Developer platform"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "API get started (OAuth2 section)", "url": "https://docs.netlify.com/api-and-cli-guides/api-guides/get-started-with-api/" },
-    { "kind": "console", "label": "OAuth applications (user settings)", "url": "https://app.netlify.com/applications" },
-    { "kind": "api", "label": "Netlify API reference (OpenAPI)", "url": "https://open-api.netlify.com" },
-    { "kind": "oauth", "label": "Integrating with Netlify OAuth2 (blog)", "url": "https://www.netlify.com/blog/2016/10/10/integrating-with-netlify-oauth2/" }
+    {
+      "kind": "oauth",
+      "label": "API get started (OAuth2 section)",
+      "url": "https://docs.netlify.com/api-and-cli-guides/api-guides/get-started-with-api/"
+    },
+    {
+      "kind": "console",
+      "label": "OAuth applications (user settings)",
+      "url": "https://app.netlify.com/applications"
+    },
+    {
+      "kind": "api",
+      "label": "Netlify API reference (OpenAPI)",
+      "url": "https://open-api.netlify.com"
+    },
+    {
+      "kind": "oauth",
+      "label": "Integrating with Netlify OAuth2 (blog)",
+      "url": "https://www.netlify.com/blog/2016/10/10/integrating-with-netlify-oauth2/"
+    }
   ],
   "verdict": {
     "difficulty": "trivial",
     "summary": "Register an OAuth application in your Netlify user settings (name plus redirect URI), and any Netlify user can authorize it right away with no review. The catch is that there are no scopes: the token appears to act as the user across their whole account, and the OAuth docs are thin and mostly from 2016.",
     "timeToDev": {
       "range": "15–45 min",
-      "hours": { "min": 0.25, "max": 0.75 },
+      "hours": {
+        "min": 0.25,
+        "max": 0.75
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s4"],
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
         "note": "Registration is a short form; the official example app is a few dozen lines using simple-oauth2."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 1, "max": 24 },
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
       "assumes": "A standard authorization-code OAuth app reading or writing sites, deploys and forms through the REST API; there is no separate path for sensitive data.",
       "waitingOn": "No review needed",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["s1", "s3"],
+        "sourceIds": [
+          "s1",
+          "s3"
+        ],
         "note": "Netlify's docs describe registering an app and using it for 'a public integration with Netlify for others to enjoy' and mention no review or verification step."
       }
     },
@@ -41,35 +69,73 @@
     {
       "item": "A Netlify account",
       "why": "OAuth applications are registered under a user's settings.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A redirect (callback) URL for your app",
       "why": "The registered redirect URI is the main security control, and the code is sent there after consent.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3", "s4"], "note": "The example app uses http://localhost:3000 in development; whether Netlify enforces HTTPS for production redirect URIs wasn't documented." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3",
+          "s4"
+        ],
+        "note": "The example app uses http://localhost:3000 in development; whether Netlify enforces HTTPS for production redirect URIs wasn't documented."
+      }
     },
     {
       "item": "A server-side place to keep the client secret and tokens",
       "why": "Netlify recommends the authorization code grant for apps with server code so tokens aren't exposed to the browser.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "Full account access (no scopes)",
-      "examples": ["(none, Netlify OAuth has no scope parameter)"],
+      "examples": [
+        "(none, Netlify OAuth has no scope parameter)"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "The token can call the same API endpoints the user could: list and create sites, trigger deploys, read form submissions, manage DNS and env vars. You can't ask for read-only access, which may worry security-conscious users.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s3", "s4"], "note": "No scopes appear in the official docs, the OAuth blog post or the official example code. We infer full account access from that absence." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s3",
+          "s4"
+        ],
+        "note": "No scopes appear in the official docs, the OAuth blog post or the official example code. We infer full account access from that absence."
+      }
     },
     {
       "tier": "Rate-limited write operations",
-      "examples": ["POST /api/v1/sites/{site_id}/deploys", "POST /api/v1/sites"],
+      "examples": [
+        "POST /api/v1/sites/{site_id}/deploys",
+        "POST /api/v1/sites"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Same token, but deploys through the API are limited to 3 per minute and 100 per day; higher limits need a request to support.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -79,7 +145,13 @@
       "detail": "Log in with the account (ideally a shared team account, not a personal one) that should own the OAuth application.",
       "url": "https://app.netlify.com",
       "duration": "2 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Create a new OAuth application",
@@ -87,7 +159,14 @@
       "detail": "In user settings, open OAuth applications and create a new app with a name, redirect URI and optional description. The redirect URI can be changed later.",
       "url": "https://app.netlify.com/applications",
       "duration": "5 min",
-      "evidence": { "label": "tested", "sourceIds": ["s1", "s4"], "note": "app.netlify.com/applications returned HTTP 200 on 2026-10-20 (not signed in). Form fields come from Netlify's example repo and a third-party guide." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": "app.netlify.com/applications returned HTTP 200 on 2026-10-20 (not signed in). Form fields come from Netlify's example repo and a third-party guide."
+      }
     },
     {
       "title": "Store the client ID and secret",
@@ -95,7 +174,13 @@
       "detail": "Copy the client ID and secret into your secret manager or environment (the example uses NETLIFY_OAUTH_CLIENT_ID and NETLIFY_OAUTH_CLIENT_SECRET).",
       "url": null,
       "duration": "2 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the authorize redirect",
@@ -103,7 +188,14 @@
       "detail": "Send users to https://app.netlify.com/authorize with client_id, response_type=code, redirect_uri and a random state.",
       "url": "https://docs.netlify.com/api-and-cli-guides/api-guides/get-started-with-api/",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1", "s5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Implement the code exchange",
@@ -111,7 +203,13 @@
       "detail": "In your callback, verify state, then POST grant_type=authorization_code, code, client_id, client_secret and redirect_uri to https://api.netlify.com/oauth/token and store access_token server-side.",
       "url": null,
       "duration": "20 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s5"], "note": "Endpoint taken from Netlify's official example code; confirmed live with a dummy request." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Endpoint taken from Netlify's official example code; confirmed live with a dummy request."
+      }
     },
     {
       "title": "Call the API with a User-Agent",
@@ -119,7 +217,13 @@
       "detail": "Send Authorization: Bearer <token> and a descriptive User-Agent (for example 'MyApp (you@example.com)') to https://api.netlify.com/api/v1/user and /api/v1/sites. Watch X-RateLimit-* headers.",
       "url": "https://open-api.netlify.com",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Test with a second Netlify account",
@@ -127,7 +231,13 @@
       "detail": "Authorize the app from an account that doesn't own it to confirm any user can connect, then check the token works across that user's teams.",
       "url": null,
       "duration": "10 min",
-      "evidence": { "label": "inferred", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Handle token loss",
@@ -135,7 +245,13 @@
       "detail": "Treat 401 responses as 'reconnect needed': a user's password reset permanently invalidates all their OAuth tokens.",
       "url": null,
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     }
   ],
   "agentCanDo": [
@@ -156,64 +272,152 @@
       "symptom": "Token exchange returns {\"error\":\"invalid_client\",\"error_description\":\"Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.\"}",
       "cause": "Wrong or missing client_id/client_secret in the POST to /oauth/token.",
       "fix": "Send client_id and client_secret in the form body exactly as shown in the OAuth applications page.",
-      "evidence": { "label": "tested", "sourceIds": ["s5"], "note": "Observed with a dummy client on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "Observed with a dummy client on 2026-10-20."
+      }
     },
     {
       "symptom": "Previously working tokens suddenly return 401",
       "cause": "The user reset their Netlify password, which permanently invalidates all OAuth tokens created before the reset.",
       "fix": "Prompt the user to reconnect; there's no refresh flow to recover.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "HTTP 429 or deploy calls rejected after a few deploys",
       "cause": "API limit of 500 requests/min, and deploys capped at 3/min and 100/day.",
       "fix": "Back off using X-RateLimit-Reset; batch deploys; ask Netlify support for higher limits.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": "The exact status code for rate limiting wasn't stated on the page." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": "The exact status code for rate limiting wasn't stated on the page."
+      }
     },
     {
       "symptom": "Security reviewers at customer companies object to connecting",
       "cause": "Netlify OAuth has no scopes, so the app can't request least-privilege or read-only access.",
       "fix": "Document exactly which endpoints you call, and offer a personal access token option for cautious users.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s4"], "note": null }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s4"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "No refresh token or expiry is documented for Netlify OAuth access tokens, and the official example stores only access_token. Plan for long-lived tokens that die on password reset.",
-      "evidence": { "label": "inferred", "sourceIds": ["s1", "s5"], "note": "Absence of documentation, not an explicit statement." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "s1",
+          "s5"
+        ],
+        "note": "Absence of documentation, not an explicit statement."
+      }
     },
     {
       "text": "The API allows up to 500 requests per minute for most requests, with stricter limits on some operations (deploys 3/min, 100/day).",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Netlify asks API clients to send a User-Agent identifying the app and a contact email.",
-      "evidence": { "label": "sourced", "sourceIds": ["s1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s1"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The 2016 blog post shows the implicit grant (token in the browser); for an AI agent backend, use the authorization code grant so the token stays server-side.",
-      "evidence": { "label": "sourced", "sourceIds": ["s3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Netlify publishes no /.well-known/openid-configuration on api.netlify.com, so this is plain OAuth 2.0, not OIDC; get identity from GET /api/v1/user.",
-      "evidence": { "label": "tested", "sourceIds": ["s5"], "note": "https://api.netlify.com/.well-known/openid-configuration returned 404 on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "s5"
+        ],
+        "note": "https://api.netlify.com/.well-known/openid-configuration returned 404 on 2026-10-20."
+      }
     },
     {
       "text": "Netlify's 'OAuth provider tokens' and Netlify Identity docs are about logging visitors into your site with GitHub/GitLab, not about third-party access to Netlify accounts. Don't confuse them.",
-      "evidence": { "label": "sourced", "sourceIds": ["s6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "s6"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "s1", "title": "Netlify docs: Get started with the Netlify API", "url": "https://docs.netlify.com/api-and-cli-guides/api-guides/get-started-with-api/" },
-    { "id": "s2", "title": "Netlify OpenAPI reference", "url": "https://open-api.netlify.com" },
-    { "id": "s3", "title": "Netlify blog: Integrating with Netlify OAuth2 (2016)", "url": "https://www.netlify.com/blog/2016/10/10/integrating-with-netlify-oauth2/" },
-    { "id": "s4", "title": "netlify-labs/oauth-example README", "url": "https://github.com/netlify-labs/oauth-example" },
-    { "id": "s5", "title": "netlify-labs/oauth-example functions/utils/auth.js", "url": "https://raw.githubusercontent.com/netlify-labs/oauth-example/master/functions/utils/auth.js" },
-    { "id": "s6", "title": "Netlify docs: OAuth provider tokens", "url": "https://docs.netlify.com/manage/security/secure-access-to-sites/oauth-provider-tokens/" }
+    {
+      "id": "s1",
+      "title": "Netlify docs: Get started with the Netlify API",
+      "url": "https://docs.netlify.com/api-and-cli-guides/api-guides/get-started-with-api/"
+    },
+    {
+      "id": "s2",
+      "title": "Netlify OpenAPI reference",
+      "url": "https://open-api.netlify.com"
+    },
+    {
+      "id": "s3",
+      "title": "Netlify blog: Integrating with Netlify OAuth2 (2016)",
+      "url": "https://www.netlify.com/blog/2016/10/10/integrating-with-netlify-oauth2/"
+    },
+    {
+      "id": "s4",
+      "title": "netlify-labs/oauth-example README",
+      "url": "https://github.com/netlify-labs/oauth-example"
+    },
+    {
+      "id": "s5",
+      "title": "netlify-labs/oauth-example functions/utils/auth.js",
+      "url": "https://raw.githubusercontent.com/netlify-labs/oauth-example/master/functions/utils/auth.js"
+    },
+    {
+      "id": "s6",
+      "title": "Netlify docs: OAuth provider tokens",
+      "url": "https://docs.netlify.com/manage/security/secure-access-to-sites/oauth-provider-tokens/"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://app.netlify.com/applications: HTTP 200 (not signed in)",
       "GET https://app.netlify.com/authorize?client_id=x&response_type=code&redirect_uri=https://example.com: HTTP 200",

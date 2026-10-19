@@ -7,32 +7,65 @@
     "category": "Notes"
   },
   "officialDocs": [
-    { "kind": "oauth", "label": "MCP server authentication (OAuth 2.0)", "url": "https://dev.evernote.com/mcp/authentication" },
-    { "kind": "api", "label": "Evernote MCP server overview", "url": "https://dev.evernote.com/mcp" },
-    { "kind": "review", "label": "MCP FAQ (plans, limits)", "url": "https://dev.evernote.com/mcp/faq" },
-    { "kind": "oauth", "label": "Legacy OAuth 1.0a guide (deprecated)", "url": "https://dev.evernote.com/legacy/doc/articles/authentication" },
-    { "kind": "scopes", "label": "Legacy API key permissions (deprecated)", "url": "https://dev.evernote.com/legacy/doc/articles/permissions" }
+    {
+      "kind": "oauth",
+      "label": "MCP server authentication (OAuth 2.0)",
+      "url": "https://dev.evernote.com/mcp/authentication"
+    },
+    {
+      "kind": "api",
+      "label": "Evernote MCP server overview",
+      "url": "https://dev.evernote.com/mcp"
+    },
+    {
+      "kind": "review",
+      "label": "MCP FAQ (plans, limits)",
+      "url": "https://dev.evernote.com/mcp/faq"
+    },
+    {
+      "kind": "oauth",
+      "label": "Legacy OAuth 1.0a guide (deprecated)",
+      "url": "https://dev.evernote.com/legacy/doc/articles/authentication"
+    },
+    {
+      "kind": "scopes",
+      "label": "Legacy API key permissions (deprecated)",
+      "url": "https://dev.evernote.com/legacy/doc/articles/permissions"
+    }
   ],
   "verdict": {
     "difficulty": "moderate",
     "summary": "Evernote has deprecated its classic EDAM API (OAuth 1.0a, manually reviewed API keys, sandbox shut down in Nov 2023) and now points developers at a beta remote MCP server whose OAuth 2.0 authorization server supports Dynamic Client Registration with PKCE, so there is no developer console or key request on that path. The catch is that only paid Evernote plans can connect, the interface is MCP tools rather than a REST API, and it is still in beta.",
     "timeToDev": {
       "range": "15–60 min",
-      "hours": { "min": 0.25, "max": 1 },
+      "hours": {
+        "min": 0.25,
+        "max": 1
+      },
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["e3", "e12"],
+        "sourceIds": [
+          "e3",
+          "e12"
+        ],
         "note": "Based on the live OAuth metadata (DCR endpoint, S256 PKCE, public clients). We did not complete a registration or sign-in, so whether arbitrary redirect URIs are accepted is unconfirmed."
       }
     },
     "timeToProd": {
       "range": "Same day",
-      "hours": { "min": 1, "max": 24 },
+      "hours": {
+        "min": 1,
+        "max": 24
+      },
       "assumes": "Your agent acts as an MCP client against https://mcp.evernote.com/mcp and registers itself via Dynamic Client Registration; the legacy EDAM API instead needs a manually reviewed API key plus production activation.",
       "waitingOn": "No review needed on the MCP/DCR path (end users need a paid Evernote plan; Business/Teams admins can restrict MCP access).",
       "evidence": {
         "label": "inferred",
-        "sourceIds": ["e3", "e4", "e12"],
+        "sourceIds": [
+          "e3",
+          "e4",
+          "e12"
+        ],
         "note": "Evernote's docs describe automatic client registration for MCP clients and no API keys. They don't say explicitly that commercial third-party agents may use it at scale, so 'same day' is our reading."
       }
     },
@@ -42,51 +75,108 @@
     {
       "item": "An MCP client that supports Streamable HTTP transport with OAuth (Dynamic Client Registration)",
       "why": "The MCP server has no API keys; clients that support DCR register themselves during the OAuth flow.",
-      "evidence": { "label": "sourced", "sourceIds": ["e3", "e4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e3",
+          "e4"
+        ],
+        "note": null
+      }
     },
     {
       "item": "A paid Evernote account (personal, Business or Teams) for testing, and paid accounts for your end users",
       "why": "Free (Basic) accounts are excluded from MCP access and see an ineligibility message when they try to connect.",
-      "evidence": { "label": "sourced", "sourceIds": ["e4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e4"
+        ],
+        "note": null
+      }
     },
     {
       "item": "For the legacy EDAM API only: an approved API key with the right permission level (Basic, Full access or App Notebook) activated for production",
       "why": "The key starts out non-production and Full access / App Notebook keys need a justification at activation. The sandbox it used to target was decommissioned on 2023-11-15.",
-      "evidence": { "label": "sourced", "sourceIds": ["e7", "e8"], "note": "The legacy docs no longer show a working key request form: the 'Get an API Key' button links to the deprecated /legacy landing page." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e7",
+          "e8"
+        ],
+        "note": "The legacy docs no longer show a working key request form: the 'Get an API Key' button links to the deprecated /legacy landing page."
+      }
     }
   ],
   "scopeTiers": [
     {
       "tier": "MCP read access",
-      "examples": ["read"],
+      "examples": [
+        "read"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Search and read notes, notebooks, tags and tasks through MCP tools, within what the user's own account can see.",
-      "evidence": { "label": "tested", "sourceIds": ["e11"], "note": "scopes_supported read/create/write/delete observed in the protected-resource metadata on 2026-10-20. How each scope maps to tools isn't documented." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "e11"
+        ],
+        "note": "scopes_supported read/create/write/delete observed in the protected-resource metadata on 2026-10-20. How each scope maps to tools isn't documented."
+      }
     },
     {
       "tier": "MCP create / write / delete",
-      "examples": ["create", "write", "delete"],
+      "examples": [
+        "create",
+        "write",
+        "delete"
+      ],
       "reviewRequired": false,
       "time": "Same day",
       "impact": "Create, edit, organise and delete content. Evernote's docs ask users to review write actions before confirming; Business/Teams admins can manage MCP access org-wide.",
-      "evidence": { "label": "inferred", "sourceIds": ["e11", "e5", "e4"], "note": "No review is mentioned for any MCP scope; scope names come from live metadata." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "e11",
+          "e5",
+          "e4"
+        ],
+        "note": "No review is mentioned for any MCP scope; scope names come from live metadata."
+      }
     },
     {
       "tier": "Legacy API: Basic access key",
-      "examples": ["Basic access (create notes/notebooks/tags, read notebooks and tags)"],
+      "examples": [
+        "Basic access (create notes/notebooks/tags, read notebooks and tags)"
+      ],
       "reviewRequired": true,
       "time": "~1 week (unconfirmed)",
       "impact": "Can create content but can't read or update existing notes, so it's not enough for an agent that reads data.",
-      "evidence": { "label": "sourced", "sourceIds": ["e7"], "note": "Time is unverified: a mirror of older Evernote docs mentions up to 5 business days of manual review." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e7"
+        ],
+        "note": "Time is unverified: a mirror of older Evernote docs mentions up to 5 business days of manual review."
+      }
     },
     {
       "tier": "Legacy API: Full access or App Notebook key",
-      "examples": ["Full access", "App Notebook (single notebook)"],
+      "examples": [
+        "Full access",
+        "App Notebook (single notebook)"
+      ],
       "reviewRequired": true,
       "time": "Unclear; deprecated",
       "impact": "Reads and updates notes. Needs a justification at production activation, and Evernote removes permissions it judges unnecessary. Some functions are reserved for official apps and return PERMISSION_DENIED.",
-      "evidence": { "label": "sourced", "sourceIds": ["e7"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e7"
+        ],
+        "note": null
+      }
     }
   ],
   "steps": [
@@ -96,7 +186,13 @@
       "detail": "Read the developer overview: EDAM and its SDKs are deprecated and kept only to maintain existing integrations. For a new agent, plan on the MCP server unless you already hold an activated EDAM key.",
       "url": "https://dev.evernote.com/doc/",
       "duration": "15 min",
-      "evidence": { "label": "sourced", "sourceIds": ["e1"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e1"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Get a paid Evernote account for testing",
@@ -104,7 +200,13 @@
       "detail": "Sign up for or upgrade to a paid personal, Business or Teams plan. Free accounts can't connect to the MCP server.",
       "url": "https://evernote.com",
       "duration": "10 min",
-      "evidence": { "label": "sourced", "sourceIds": ["e4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e4"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Discover the OAuth endpoints",
@@ -112,7 +214,14 @@
       "detail": "Read https://mcp.evernote.com/.well-known/oauth-protected-resource (authorization server https://accounts.evernote.com) and the AS metadata: authorize /auth/authorize, token /auth/token, registration /auth/register, revoke /auth/revoke, PKCE S256, token_endpoint_auth_methods 'none' (public clients).",
       "url": "https://accounts.evernote.com/.well-known/oauth-authorization-server",
       "duration": "5 min",
-      "evidence": { "label": "tested", "sourceIds": ["e11", "e12"], "note": "Fetched on 2026-10-20; an unauthenticated POST to the MCP URL returned 401 with a WWW-Authenticate resource_metadata pointer." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "e11",
+          "e12"
+        ],
+        "note": "Fetched on 2026-10-20; an unauthenticated POST to the MCP URL returned 401 with a WWW-Authenticate resource_metadata pointer."
+      }
     },
     {
       "title": "Register your client dynamically",
@@ -120,7 +229,14 @@
       "detail": "POST client metadata (client_name, redirect_uris, grant_types authorization_code + refresh_token, token_endpoint_auth_method none) to https://accounts.evernote.com/auth/register and store the returned client_id. Most MCP SDKs do this automatically.",
       "url": "https://dev.evernote.com/mcp/authentication",
       "duration": "15 min",
-      "evidence": { "label": "inferred", "sourceIds": ["e3", "e12"], "note": "An empty POST returned 400 invalid_client_metadata, so the endpoint is live; we didn't register a real client." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "e3",
+          "e12"
+        ],
+        "note": "An empty POST returned 400 invalid_client_metadata, so the endpoint is live; we didn't register a real client."
+      }
     },
     {
       "title": "Implement the authorization code + PKCE flow",
@@ -128,7 +244,14 @@
       "detail": "Send users to /auth/authorize with client_id, redirect_uri, S256 code_challenge, state and scope (read/create/write/delete). Exchange the code at /auth/token, persist the refresh token, and send the bearer token to https://mcp.evernote.com/mcp.",
       "url": "https://dev.evernote.com/mcp/authentication",
       "duration": "1-3 h",
-      "evidence": { "label": "inferred", "sourceIds": ["e12", "e3"], "note": "Flow assembled from live metadata; Evernote's page describes it only at a high level." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "e12",
+          "e3"
+        ],
+        "note": "Flow assembled from live metadata; Evernote's page describes it only at a high level."
+      }
     },
     {
       "title": "Sign in and approve on Evernote's consent screen",
@@ -136,7 +259,13 @@
       "detail": "Complete the first OAuth consent with your paid test account to confirm the client works end to end.",
       "url": "https://accounts.evernote.com/auth/authorize",
       "duration": "5 min",
-      "evidence": { "label": "sourced", "sourceIds": ["e3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e3"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Map MCP tools and handle rate limits",
@@ -144,7 +273,14 @@
       "detail": "List tools via MCP, wire search/read/create calls, and back off on per-minute limits (per tool and across all tools). Confirm write actions with the user.",
       "url": "https://dev.evernote.com/mcp/faq",
       "duration": "1-2 h",
-      "evidence": { "label": "sourced", "sourceIds": ["e4", "e5"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e4",
+          "e5"
+        ],
+        "note": null
+      }
     },
     {
       "title": "Handle ineligible and admin-restricted accounts",
@@ -152,7 +288,13 @@
       "detail": "Detect and explain the Free-plan ineligibility message and Business/Teams admin blocks in your UI.",
       "url": "https://dev.evernote.com/mcp/faq",
       "duration": "30 min",
-      "evidence": { "label": "sourced", "sourceIds": ["e4"], "note": "The exact error payload isn't documented." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e4"
+        ],
+        "note": "The exact error payload isn't documented."
+      }
     },
     {
       "title": "(Legacy only) Request and activate an EDAM API key",
@@ -160,7 +302,14 @@
       "detail": "If you must use EDAM, request a key with the needed permission level, then request production activation with a justification for Full access. There's no sandbox to test against since 2023-11-15.",
       "url": "https://dev.evernote.com/legacy/doc/articles/permissions",
       "duration": "days to weeks (unconfirmed)",
-      "evidence": { "label": "unverified", "sourceIds": ["e7", "e8"], "note": "The current site shows no key request form; whether new keys are still issued is unknown." }
+      "evidence": {
+        "label": "unverified",
+        "sourceIds": [
+          "e7",
+          "e8"
+        ],
+        "note": "The current site shows no key request form; whether new keys are still issued is unknown."
+      }
     }
   ],
   "agentCanDo": [
@@ -181,82 +330,207 @@
       "symptom": "User sees a message that their account isn't eligible when connecting",
       "cause": "Free (Basic) accounts aren't included in MCP access.",
       "fix": "The user upgrades to a paid personal, Business or Teams plan.",
-      "evidence": { "label": "sourced", "sourceIds": ["e4"], "note": "Exact message text isn't documented." }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e4"
+        ],
+        "note": "Exact message text isn't documented."
+      }
     },
     {
       "symptom": "400 invalid_client_metadata from /auth/register",
       "cause": "The DCR request body is missing or has invalid client metadata.",
       "fix": "Send a full RFC 7591 body (redirect_uris, grant_types, response_types, token_endpoint_auth_method none).",
-      "evidence": { "label": "tested", "sourceIds": ["e12"], "note": "Observed with an empty JSON body on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "e12"
+        ],
+        "note": "Observed with an empty JSON body on 2026-10-20."
+      }
     },
     {
       "symptom": "Legacy app can't reach sandbox.evernote.com",
       "cause": "The Sandbox environment was decommissioned on 2023-11-15.",
       "fix": "Test against production with an activated key, or move to the MCP server.",
-      "evidence": { "label": "sourced", "sourceIds": ["e8"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e8"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "EDAMUserException PERMISSION_DENIED on certain legacy calls",
       "cause": "The key's permission level is too low, or the function is reserved for official Evernote apps.",
       "fix": "Request Full access with a justification, or contact developer support for reserved functions.",
-      "evidence": { "label": "sourced", "sourceIds": ["e7"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e7"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "EDAMSystemException RATE_LIMIT_REACHED (legacy) or throttled MCP tool calls",
       "cause": "Legacy limits are per key per user per hour; MCP limits are per minute, per tool and overall.",
       "fix": "Wait rateLimitDuration seconds (legacy) or back off and retry (MCP). Request the Initial Sync Boost when activating a legacy key.",
-      "evidence": { "label": "sourced", "sourceIds": ["e9", "e4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e9",
+          "e4"
+        ],
+        "note": null
+      }
     },
     {
       "symptom": "Can't create a developer token for quick testing",
       "cause": "Developer tokens are 'currently unavailable except for proven necessity'.",
       "fix": "Use OAuth (MCP or legacy) instead.",
-      "evidence": { "label": "sourced", "sourceIds": ["e10"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e10"
+        ],
+        "note": null
+      }
     }
   ],
   "nuances": [
     {
       "text": "The MCP server is in beta and 'rolling out gradually'; tools, behaviour and supported clients may change. Evernote actively tests Claude, ChatGPT, Cursor and Codex.",
-      "evidence": { "label": "sourced", "sourceIds": ["e2", "e5", "e4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e2",
+          "e5",
+          "e4"
+        ],
+        "note": null
+      }
     },
     {
       "text": "The authorization server only advertises token_endpoint_auth_method 'none', so clients are public and rely on PKCE (S256); there's no client secret.",
-      "evidence": { "label": "tested", "sourceIds": ["e12"], "note": "Observed in live metadata on 2026-10-20." }
+      "evidence": {
+        "label": "tested",
+        "sourceIds": [
+          "e12"
+        ],
+        "note": "Observed in live metadata on 2026-10-20."
+      }
     },
     {
       "text": "Access is bounded by the user's own account permissions; the agent can't see more than the user can.",
-      "evidence": { "label": "sourced", "sourceIds": ["e3"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e3"
+        ],
+        "note": null
+      }
     },
     {
       "text": "Legacy OAuth 1.0a access tokens expire after one year by default, and users can shorten this to a day, week or month (edam_expires in the callback).",
-      "evidence": { "label": "sourced", "sourceIds": ["e6"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e6"
+        ],
+        "note": null
+      }
     },
     {
       "text": "MCP access token and refresh token lifetimes aren't documented.",
-      "evidence": { "label": "inferred", "sourceIds": ["e3"], "note": "Not stated on the authentication page." }
+      "evidence": {
+        "label": "inferred",
+        "sourceIds": [
+          "e3"
+        ],
+        "note": "Not stated on the authentication page."
+      }
     },
     {
       "text": "Business and Teams admins can manage MCP access for their organisation, so enterprise users may be blocked until an admin allows it.",
-      "evidence": { "label": "sourced", "sourceIds": ["e4"], "note": null }
+      "evidence": {
+        "label": "sourced",
+        "sourceIds": [
+          "e4"
+        ],
+        "note": null
+      }
     }
   ],
   "sources": [
-    { "id": "e1", "title": "Evernote Developers: overview (legacy API deprecated)", "url": "https://dev.evernote.com/doc/" },
-    { "id": "e2", "title": "Evernote Developers: MCP server", "url": "https://dev.evernote.com/mcp" },
-    { "id": "e3", "title": "Evernote Developers: MCP authentication", "url": "https://dev.evernote.com/mcp/authentication" },
-    { "id": "e4", "title": "Evernote Developers: MCP FAQ", "url": "https://dev.evernote.com/mcp/faq" },
-    { "id": "e5", "title": "Evernote Developers: MCP known limitations", "url": "https://dev.evernote.com/mcp/limitations" },
-    { "id": "e6", "title": "Evernote legacy docs: OAuth (deprecated)", "url": "https://dev.evernote.com/legacy/doc/articles/authentication" },
-    { "id": "e7", "title": "Evernote legacy docs: API key permissions (deprecated)", "url": "https://dev.evernote.com/legacy/doc/articles/permissions" },
-    { "id": "e8", "title": "Evernote legacy docs: Sandbox environment (decommissioned 2023-11-15)", "url": "https://dev.evernote.com/legacy/doc/articles/testing" },
-    { "id": "e9", "title": "Evernote legacy docs: Rate limits", "url": "https://dev.evernote.com/legacy/doc/articles/rate_limits" },
-    { "id": "e10", "title": "Evernote legacy docs: Developer tokens", "url": "https://dev.evernote.com/legacy/doc/articles/dev_tokens" },
-    { "id": "e11", "title": "Evernote MCP protected-resource metadata", "url": "https://mcp.evernote.com/.well-known/oauth-protected-resource" },
-    { "id": "e12", "title": "Evernote accounts OAuth/OIDC metadata", "url": "https://accounts.evernote.com/.well-known/openid-configuration" }
+    {
+      "id": "e1",
+      "title": "Evernote Developers: overview (legacy API deprecated)",
+      "url": "https://dev.evernote.com/doc/"
+    },
+    {
+      "id": "e2",
+      "title": "Evernote Developers: MCP server",
+      "url": "https://dev.evernote.com/mcp"
+    },
+    {
+      "id": "e3",
+      "title": "Evernote Developers: MCP authentication",
+      "url": "https://dev.evernote.com/mcp/authentication"
+    },
+    {
+      "id": "e4",
+      "title": "Evernote Developers: MCP FAQ",
+      "url": "https://dev.evernote.com/mcp/faq"
+    },
+    {
+      "id": "e5",
+      "title": "Evernote Developers: MCP known limitations",
+      "url": "https://dev.evernote.com/mcp/limitations"
+    },
+    {
+      "id": "e6",
+      "title": "Evernote legacy docs: OAuth (deprecated)",
+      "url": "https://dev.evernote.com/legacy/doc/articles/authentication"
+    },
+    {
+      "id": "e7",
+      "title": "Evernote legacy docs: API key permissions (deprecated)",
+      "url": "https://dev.evernote.com/legacy/doc/articles/permissions"
+    },
+    {
+      "id": "e8",
+      "title": "Evernote legacy docs: Sandbox environment (decommissioned 2023-11-15)",
+      "url": "https://dev.evernote.com/legacy/doc/articles/testing"
+    },
+    {
+      "id": "e9",
+      "title": "Evernote legacy docs: Rate limits",
+      "url": "https://dev.evernote.com/legacy/doc/articles/rate_limits"
+    },
+    {
+      "id": "e10",
+      "title": "Evernote legacy docs: Developer tokens",
+      "url": "https://dev.evernote.com/legacy/doc/articles/dev_tokens"
+    },
+    {
+      "id": "e11",
+      "title": "Evernote MCP protected-resource metadata",
+      "url": "https://mcp.evernote.com/.well-known/oauth-protected-resource"
+    },
+    {
+      "id": "e12",
+      "title": "Evernote accounts OAuth/OIDC metadata",
+      "url": "https://accounts.evernote.com/.well-known/openid-configuration"
+    }
   ],
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://mcp.evernote.com/.well-known/oauth-protected-resource: authorization_servers https://accounts.evernote.com, scopes read/create/write/delete",
       "GET https://accounts.evernote.com/.well-known/openid-configuration: registration_endpoint /auth/register, PKCE S256, auth method none, refresh_token grant",

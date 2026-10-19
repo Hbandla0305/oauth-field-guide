@@ -503,6 +503,8 @@
   "verification": {
     "status": "agent-researched",
     "lastChecked": "2026-10-20",
+    "reviewedOn": null,
+    "corrections": [],
     "tested": [
       "GET https://developer.api.intuit.com/.well-known/openid_configuration: issuer https://oauth.platform.intuit.com/op/v1, authorize https://appcenter.intuit.com/connect/oauth2, token https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer, revoke https://developer.api.intuit.com/v2/oauth2/tokens/revoke, scopes openid/email/profile/address/phone, claim realmid",
       "GET https://developer.intuit.com/app/developer/dashboard: HTTP 200 (client-rendered; did not sign in)",

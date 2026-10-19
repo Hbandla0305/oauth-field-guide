@@ -31,7 +31,11 @@ export function ChatPanel({ open, onClose, guide }: { open: boolean; onClose: ()
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [messages]);
+  // Block body on purpose: newer browsers return a Promise from scrollIntoView, and an effect
+  // that returns anything but a cleanup function crashes React.
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "end" });
+  }, [messages]);
 
   const full = messages.length >= MAX_MESSAGES;
 
@@ -140,7 +144,7 @@ export function ChatPanel({ open, onClose, guide }: { open: boolean; onClose: ()
             className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm focus:border-ink focus:outline-none disabled:bg-faint"
           />
           <div className="mt-2 flex items-center justify-between text-xs text-muted">
-            <span>Sources are numbered as on the Sources tab.</span>
+            <span>Sources are numbered as on the Resources tab.</span>
             <button type="submit" disabled={busy || full || !input.trim()} className="rounded-md bg-ink px-3 py-1.5 text-sm font-medium text-surface disabled:opacity-40">
               {busy ? "Answering…" : "Ask"}
             </button>

@@ -26,6 +26,14 @@ export const Guide = z.object({
     developerPortal: z.string(),
     category: z.string(),
   }),
+  // Direct links to the provider's own pages, shown as quick links at the top of a guide.
+  officialDocs: z.array(
+    z.object({
+      kind: z.enum(["oauth", "scopes", "review", "console", "api", "changelog"]),
+      label: z.string(),
+      url: z.string(),
+    }),
+  ),
   verdict: z.object({
     difficulty: Difficulty,
     summary: z.string(),
@@ -79,7 +87,9 @@ export const Guide = z.object({
     z.object({ id: z.string(), title: z.string(), url: z.string() }),
   ),
   verification: z.object({
-    status: z.enum(["human-verified", "agent-generated"]),
+    // human-verified: checked by a person. agent-researched: built offline by research
+    // agents and link-checked. agent-generated: written live by the in-app agent.
+    status: z.enum(["human-verified", "agent-researched", "agent-generated"]),
     lastChecked: z.string(),
     tested: z.array(z.string()),
     openQuestions: z.array(z.string()),

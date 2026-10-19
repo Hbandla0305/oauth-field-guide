@@ -2,7 +2,7 @@
 // sources don't resolve. Writes a report to docs/link-check.md. Usage: npm run check-links
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { Guide, type Evidence } from "../src/lib/guide-schema";
+import { StoredGuide, type Evidence } from "../src/lib/guide-schema";
 import { checkLinks } from "../src/lib/agent/probes";
 
 const dir = join(__dirname, "../src/data/guides");
@@ -14,7 +14,7 @@ async function main() {
   let totalDowngraded = 0;
   for (const file of readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
     const path = join(dir, file);
-    const parsed = Guide.safeParse(JSON.parse(readFileSync(path, "utf8")));
+    const parsed = StoredGuide.safeParse(JSON.parse(readFileSync(path, "utf8")));
     if (!parsed.success || parsed.data.verification.status !== "agent-researched") continue;
     const g = parsed.data;
     const results = await checkLinks(g.sources.map((s) => s.url).slice(0, 40));

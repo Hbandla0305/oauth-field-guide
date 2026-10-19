@@ -99,6 +99,20 @@ export const Guide = z.object({
   }),
 });
 
-export type Guide = z.infer<typeof Guide>;
+// What the agent actually did, recorded by our code during a live run (never written by the
+// model). Kept out of the model's output schema; stored alongside the guide.
+export const LogStep = z.enum(["identify", "probe", "read", "attempt", "dig", "links", "audit"]);
+export const ResearchLog = z.array(
+  z.object({
+    step: LogStep,
+    title: z.string(),
+    details: z.array(z.string()),
+  }),
+);
+
+export const StoredGuide = Guide.extend({ researchLog: ResearchLog.optional() });
+
+export type Guide = z.infer<typeof StoredGuide>;
+export type ResearchLog = z.infer<typeof ResearchLog>;
 export type Evidence = z.infer<typeof Evidence>;
 export type Difficulty = z.infer<typeof Difficulty>;

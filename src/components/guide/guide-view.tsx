@@ -8,6 +8,7 @@ import { InfoTip } from "../info-tip";
 import { TimelineBand, TimelineTicks } from "../timeline";
 import { ShareBar } from "../share-bar";
 import { ChatPanel } from "./chat-panel";
+import { ResearchTrail } from "./research-trail";
 import { ErrorBoundary } from "../error-boundary";
 import { CopyPrompt, buildPrompt } from "./copy-prompt";
 
@@ -86,9 +87,9 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
               Researched {guide.verification.lastChecked}
               {guide.verification.reviewedOn && ` · reviewed by a person ${guide.verification.reviewedOn}`}
             </span>
-            <InfoTip label="How this guide was checked" align="start">
-              Every claim carries an evidence label. Hover a label to see what backs it. Open questions are listed under Resources.
-            </InfoTip>
+            <button type="button" onClick={() => select("resources")} className="font-medium text-ink underline underline-offset-2 hover:text-cobalt">
+              How it was made
+            </button>
           </p>
         </div>
         <button type="button" onClick={() => setChatOpen(true)} className="rounded-lg bg-ink px-4 py-2.5 font-medium text-surface hover:bg-ink/90">
@@ -569,6 +570,13 @@ function ResourcesPanel({ guide }: { guide: Guide }) {
   return (
     <div className="space-y-10">
       <section>
+        <PanelTitle tip="The agent's own trail: what it read, what it tried, what it decided to dig into and why, and what its audit changed.">How this guide was made</PanelTitle>
+        <div className="mt-3">
+          <ResearchTrail guide={guide} />
+        </div>
+      </section>
+
+      <section>
         <PanelTitle>Official docs</PanelTitle>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {guide.officialDocs.map((d) => (
@@ -602,13 +610,7 @@ function ResourcesPanel({ guide }: { guide: Guide }) {
         </section>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-line bg-surface p-5">
-          <h3 className="font-medium">What was tested</h3>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink/85">
-            {guide.verification.tested.length ? guide.verification.tested.map((x) => <li key={x}>{x}</li>) : <li>No live checks recorded.</li>}
-          </ul>
-        </div>
+      <section>
         <div className="rounded-xl border border-moderate/30 bg-moderate-bg/50 p-5">
           <h3 className="font-medium">Still uncertain</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink/85">

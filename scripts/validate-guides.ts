@@ -2,7 +2,7 @@
 // evidence.sourceIds entry points at a real source. Usage: npm run validate [file...]
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { Guide } from "../src/lib/guide-schema";
+import { StoredGuide } from "../src/lib/guide-schema";
 
 const dir = join(__dirname, "../src/data/guides");
 const files = process.argv.slice(2).length
@@ -11,7 +11,7 @@ const files = process.argv.slice(2).length
 
 let failed = false;
 for (const file of files) {
-  const parsed = Guide.safeParse(JSON.parse(readFileSync(file, "utf8")));
+  const parsed = StoredGuide.safeParse(JSON.parse(readFileSync(file, "utf8")));
   if (!parsed.success) {
     failed = true;
     console.error(`✗ ${file}\n${parsed.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n")}`);

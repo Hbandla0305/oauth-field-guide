@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
-import { Guide, type Evidence } from "../guide-schema";
+import { Guide, type Evidence, type ResearchLog } from "../guide-schema";
 import { MODELS, LIMITS, costOf } from "./config";
 import { probeDiscovery, checkLinks, attemptSetup, type Attempt, type DiscoveryProbe } from "./probes";
 import { firecrawlConfigured, readOfficialDocs, readMore, type Page } from "./firecrawl";
@@ -51,6 +51,38 @@ const Audit = z.object({
 
 export class NoThirdPartyOAuth extends Error {}
 
+// Records what the agent did, from the same events the live UI shows plus its decisions, so
+// the reasoning is saved with the guide instead of vanishing when the run ends.
+const LOG_TITLES: Partial<Record<StageId, [ResearchLog[number]["step"], string]>> = {
+  probe: ["probe", "Checked for live OAuth metadata"],
+  research: ["read", "Read the official docs"],
+  attempt: ["attempt", "Tried the first setup steps, logged out"],
+  gaps: ["dig", "Looked into what was still unclear"],
+  links: ["links", "Checked every cited link"],
+  audit: ["audit", "Audited claims against the sources"],
+};
+
+class Recorder {
+  log: ResearchLog = [];
+  private current: ResearchLog[number] | null = null;
+
+  start(step: ResearchLog[number]["step"], title: string) {
+    this.current = { step, title, details: [] };
+    this.log.push(this.current);
+  }
+
+  add(detail: string) {
+    this.current?.details.push(detail.length > 400 ? `${detail.slice(0, 399)}…` : detail);
+  }
+
+  observe(e: AgentEvent) {
+    if (e.type === "stage" && e.status === "active" && LOG_TITLES[e.stage]) this.start(...LOG_TITLES[e.stage]!);
+    else if (e.type === "stage" && e.status === "done" && e.detail && LOG_TITLES[e.stage]) this.add(e.detail);
+    else if (e.type === "search") this.add(`Searched “${e.query}”`);
+    else if (e.type === "read") this.add(`Read “${e.title}” (${new URL(e.url).hostname.replace(/^www\./, "")})`);
+  }
+}
+
 export class RunCost {
   usd = 0;
   firecrawlCredits = 0;
@@ -93,7 +125,16 @@ function probeSummary(probe: DiscoveryProbe): string {
   return `Discovery document fetched live from ${probe.found.url}:\n${JSON.stringify(probe.found, null, 2)}\nClaims backed by this may use label "tested" with sourceIds ["probe"].`;
 }
 
-export async function runAgent(input: string, screen: Screen, cost: RunCost, emit: Emit, signal: AbortSignal): Promise<Guide> {
+export async function runAgent(input: string, screen: Screen, cost: RunCost, rawEmit: Emit, signal: AbortSignal): Promise<Guide> {
+  const rec = new Recorder();
+  const emit: Emit = (e) => {
+    rec.observe(e);
+    rawEmit(e);
+  };
+  rec.start("identify", `Identified the app as ${screen.name}`);
+  rec.add(`Website: ${screen.website}`);
+  if (screen.reason) rec.add(screen.reason);
+
   // Step 2: live probe of the provider's OAuth metadata.
   emit({ type: "stage", stage: "probe", status: "active" });
   const probe = await probeDiscovery(screen.website).catch((): DiscoveryProbe => ({ checkedUrls: [], found: null }));
@@ -117,6 +158,7 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, emi
     tokenUrl: probe.found?.token_endpoint ?? findEndpoint(draft.guide, "token"),
     portalUrl: /^https:\/\//.test(draft.guide.app.developerPortal) ? draft.guide.app.developerPortal : undefined,
   }).catch((): Attempt[] => []);
+  for (const a of attempts) rec.add(`${a.title.replace("Live check: ", "")}: ${a.observed}`);
   emit({
     type: "stage",
     stage: "attempt",
@@ -153,6 +195,10 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, emi
     );
     cost.add(costOf(MODELS.fast, decision.usage));
     const plan = decision.output_parsed;
+    if (plan) {
+      rec.add(plan.needMore && plan.questions.length ? `Decided to dig deeper: ${plan.why}` : `Decided no more searching was needed: ${plan.why}`);
+      if (plan.needMore && plan.questions.length) rec.add(`Questions it chose: ${plan.questions.slice(0, LIMITS.agent.maxGapSearches).join("; ")}`);
+    }
     if (plan?.needMore && plan.questions.length && (await firecrawlCreditsCommitted()) <= LIMITS.firecrawl.totalCredits) {
       const more = await readMore(screen.name, screen.website, plan.questions, draft.pages.map((p) => p.url), draft.pages.length + 1, signal, (query) =>
         emit({ type: "search", query }),
@@ -183,6 +229,7 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, emi
   const links = await checkLinks(unread.map((s) => s.url));
   const dead = new Set(links.filter((l) => !l.ok).map((l) => l.url));
   guide = enforceEvidence(guide, dead);
+  for (const url of dead) rec.add(`Couldn't reach ${url}; claims relying only on it were marked unverified`);
   const total = guide.sources.filter((s) => s.id !== "probe" && !s.id.startsWith("attempt")).length;
   emit({ type: "stage", stage: "links", status: "done", detail: `${total - dead.size} of ${total} cited sources resolve` });
 
@@ -200,20 +247,25 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, emi
     { signal },
   );
   cost.add(costOf(MODELS.fast, audit.usage));
+  if (audit.output_parsed) rec.add(`Direction check: ${audit.output_parsed.inboundReason}`);
   if (audit.output_parsed && !audit.output_parsed.inboundOAuth) {
     throw new NoThirdPartyOAuth(audit.output_parsed.inboundReason);
   }
   let applied = 0;
   if (audit.output_parsed) {
     for (const d of audit.output_parsed.downgrades) {
-      if (applyDowngrade(guide, d.path, d.label, d.reason)) applied++;
+      if (applyDowngrade(guide, d.path, d.label, d.reason)) {
+        applied++;
+        rec.add(`Downgraded ${d.path.replace(/\./g, " ")} to ${d.label}: ${d.reason}`);
+      }
     }
     guide.verification.openQuestions = [...new Set([...guide.verification.openQuestions, ...audit.output_parsed.openQuestions])].slice(0, 8);
   }
   emit({ type: "stage", stage: "audit", status: "done", detail: applied ? `Downgraded ${applied} claim${applied === 1 ? "" : "s"}` : "No claims downgraded" });
 
   // House style: no em dashes, even if the model ignores the instruction.
-  return Guide.parse(JSON.parse(JSON.stringify(guide).replace(/\s*—\s*/g, ", ")));
+  const clean = <T,>(x: T): T => JSON.parse(JSON.stringify(x).replace(/\s*—\s*/g, ", "));
+  return { ...Guide.parse(clean(guide)), researchLog: clean(rec.log) };
 }
 
 type Draft = { guide: Guide; pages: Page[] | null };

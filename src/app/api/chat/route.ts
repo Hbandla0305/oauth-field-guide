@@ -6,7 +6,7 @@ import { CHAT_INSTRUCTIONS } from "@/lib/agent/prompts";
 import { findGuide } from "@/lib/guides";
 import { hashIp, reserveChat, settleRun } from "@/lib/db";
 import { clientIp } from "@/lib/generation";
-import type { Guide } from "@/lib/guide-schema";
+import { guideContext } from "@/lib/guide-text";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -24,36 +24,6 @@ const REFUSALS = {
   ip_rate: `You can ask ${LIMITS.chat.perIpPerHour} questions an hour. Try again later.`,
   daily_rate: "Today's chat limit has been reached. Try again tomorrow.",
 } as const;
-
-// The guide as numbered plain text: compact, and the numbers match the citations on the page.
-function guideContext(g: Guide): string {
-  const idx = new Map(g.sources.map((s, i) => [s.id, i + 1]));
-  const cite = (ids: string[]) => ids.filter((id) => idx.has(id)).map((id) => `[${idx.get(id)}]`).join("");
-  const v = g.verdict;
-  return [
-    `GUIDE: ${g.app.name} (${v.difficulty}). Status: ${g.verification.status}, last checked ${g.verification.lastChecked}.`,
-    `Summary: ${v.summary}`,
-    `Working in dev: ${v.timeToDev.range} (${v.timeToDev.evidence.label}). Any user can connect: ${v.timeToProd.range} (${v.timeToProd.evidence.label}). Assumes: ${v.timeToProd.assumes} Waiting on: ${v.timeToProd.waitingOn}. Cost: ${v.cost ?? "none"}.`,
-    `Developer portal: ${g.app.developerPortal}`,
-    "OFFICIAL DOCS:",
-    ...g.officialDocs.map((d) => `- ${d.label}: ${d.url}`),
-    "PREREQUISITES:",
-    ...g.prerequisites.map((p) => `- ${p.item}: ${p.why} (${p.evidence.label}) ${cite(p.evidence.sourceIds)}`),
-    "PERMISSION TIERS:",
-    ...g.scopeTiers.map((t) => `- ${t.tier} | review ${t.reviewRequired ? "required" : "none"} | ${t.time} | e.g. ${t.examples.join(", ")} | ${t.impact} (${t.evidence.label}) ${cite(t.evidence.sourceIds)}`),
-    "STEPS:",
-    ...g.steps.map((s, i) => `${i + 1}. ${s.title} [${s.owner}${s.duration ? `, ${s.duration}` : ""}] ${s.detail}${s.url ? ` (${s.url})` : ""} (${s.evidence.label}) ${cite(s.evidence.sourceIds)}`),
-    `AGENT CAN DO: ${g.agentCanDo.join("; ")}`,
-    `HUMAN MUST DO: ${g.humanMustDo.join("; ")}`,
-    "BLOCKERS:",
-    ...g.blockers.map((b) => `- ${b.symptom} | cause: ${b.cause} | fix: ${b.fix} (${b.evidence.label}) ${cite(b.evidence.sourceIds)}`),
-    "GOOD TO KNOW:",
-    ...g.nuances.map((n) => `- ${n.text} (${n.evidence.label}) ${cite(n.evidence.sourceIds)}`),
-    `OPEN QUESTIONS: ${g.verification.openQuestions.join("; ") || "none"}`,
-    "SOURCES:",
-    ...g.sources.map((s, i) => `[${i + 1}] ${s.title} ${s.url}`),
-  ].join("\n");
-}
 
 export async function POST(req: NextRequest) {
   const parsed = Body.safeParse(await req.json().catch(() => null));

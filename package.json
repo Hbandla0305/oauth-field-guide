@@ -18,7 +18,8 @@
     "generated": "tsx --env-file=.env.local scripts/list-generated.ts",
     "delete-generated": "tsx --env-file=.env.local scripts/delete-generated.ts",
     "runs": "tsx --env-file=.env.local scripts/runs.ts",
-    "try-attempts": "tsx scripts/try-attempts.ts"
+    "try-attempts": "tsx scripts/try-attempts.ts",
+    "slack-test": "tsx --env-file=.env.local scripts/slack-test.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

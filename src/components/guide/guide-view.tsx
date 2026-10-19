@@ -8,14 +8,15 @@ import { InfoTip } from "../info-tip";
 import { TimelineBand, TimelineTicks } from "../timeline";
 import { ShareBar } from "../share-bar";
 import { ChatPanel } from "./chat-panel";
+import { CopyPrompt, buildPrompt } from "./copy-prompt";
 
 const TABS = [
-  { id: "steps", label: "Steps" },
+  { id: "intro", label: "Intro" },
+  { id: "steps", label: "Steps involved" },
   { id: "permissions", label: "Permissions" },
-  { id: "troubleshooting", label: "Troubleshooting" },
-  { id: "before", label: "Before you start" },
   { id: "know", label: "Good to know" },
-  { id: "sources", label: "Sources" },
+  { id: "troubleshoot", label: "Troubleshoot" },
+  { id: "resources", label: "Resources" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -25,19 +26,24 @@ const BANNER = {
   "agent-generated": { cls: "bg-moderate-bg text-moderate", text: "Written live by an agent, not reviewed by a person" },
 } as const;
 
-const OWNER = {
-  agent: { label: "Agent can do", short: "Agent", cls: "bg-faint text-ink" },
-  human: { label: "You", short: "You", cls: "bg-ink text-surface" },
-  wait: { label: "Waiting on provider", short: "Wait", cls: "border border-dashed border-muted text-muted" },
+// "AI can do" means an AI coding assistant can do the step for you; not the agent you're building.
+export const OWNER = {
+  agent: {
+    label: "AI can do",
+    cls: "bg-trivial-bg text-trivial",
+    hint: "An AI assistant (ChatGPT, Claude, Copilot) can do this for you: drafting a privacy policy or scope justification, generating config, or checking endpoints. Use Copy prompt to get a ready-made prompt.",
+  },
+  human: { label: "You", cls: "bg-ink text-surface", hint: "Needs you: signing in, clicking through a console, a decision, verification or payment." },
+  wait: { label: "Provider review", cls: "border border-dashed border-muted text-muted", hint: "Nothing to do but wait for the provider." },
 } as const;
 
 export function GuideView({ guide, markdown }: { guide: Guide; markdown: string }) {
-  const [tab, setTab] = useState<TabId>("steps");
+  const [tab, setTab] = useState<TabId>("intro");
   const [chatOpen, setChatOpen] = useState(false);
   const sources: SourceIndex = useMemo(() => new Map(guide.sources.map((s, i) => [s.id, { n: i + 1, title: s.title, url: s.url }])), [guide]);
   const v = guide.verdict;
 
-  // Sections are linkable (/guides/slack#troubleshooting) so a teammate can be sent straight there.
+  // Sections are linkable (/guides/slack#troubleshoot) so a teammate can be sent straight there.
   useEffect(() => {
     const fromHash = () => {
       const h = window.location.hash.slice(1);
@@ -53,13 +59,11 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
     history.replaceState(null, "", `#${id}`);
   }
 
-  const counts: Record<TabId, number> = {
+  const counts: Partial<Record<TabId, number>> = {
     steps: guide.steps.length,
     permissions: guide.scopeTiers.length,
-    troubleshooting: guide.blockers.length,
-    before: guide.prerequisites.length,
     know: guide.nuances.length,
-    sources: guide.sources.length,
+    troubleshoot: guide.blockers.length,
   };
 
   return (
@@ -71,7 +75,7 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
             <DifficultyBadge difficulty={v.difficulty} />
             <InfoTip label="What the difficulty rating means" align="start">
               <span className="block font-medium">{DIFFICULTY[v.difficulty].label}</span>
-              {DIFFICULTY[v.difficulty].meaning}. Ratings use the same rubric for every app: trivial, moderate, hard or gated.
+              {DIFFICULTY[v.difficulty].meaning}. Every app is rated on the same scale: trivial, moderate, hard or gated.
             </InfoTip>
           </div>
           <Summary text={v.summary} />
@@ -79,12 +83,12 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
             <span className={`rounded px-2 py-0.5 ${BANNER[guide.verification.status].cls}`}>{BANNER[guide.verification.status].text}</span>
             <span className="text-muted">Last checked {guide.verification.lastChecked}</span>
             <InfoTip label="How this guide was checked" align="start">
-              Every claim carries an evidence label. Hover a label to see what backs it. Open questions are listed under Sources.
+              Every claim carries an evidence label. Hover a label to see what backs it. Open questions are listed under Resources.
             </InfoTip>
           </p>
         </div>
         <button type="button" onClick={() => setChatOpen(true)} className="rounded-lg bg-ink px-4 py-2.5 font-medium text-surface hover:bg-ink/90">
-          Ask this guide
+          Chat about this guide
         </button>
       </header>
 
@@ -120,13 +124,13 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
         <dl className="mt-5 grid gap-4 border-t border-line pt-4 text-sm sm:grid-cols-[1fr_1fr_auto] sm:items-start">
           <div>
             <dt className="text-muted">Waiting on</dt>
-            <dd className="mt-0.5 line-clamp-2" title={v.timeToProd.waitingOn}>
+            <dd className="mt-0.5">
               {v.timeToProd.waitingOn}
             </dd>
           </div>
           <div>
             <dt className="text-muted">Cost</dt>
-            <dd className="mt-0.5 line-clamp-2" title={v.cost ?? undefined}>
+            <dd className="mt-0.5">
               {v.cost ?? "None"}
             </dd>
           </div>
@@ -134,55 +138,37 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
         </dl>
       </section>
 
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_17rem]">
-        <div className="min-w-0">
-          <div className="sticky top-0 z-30 -mx-4 border-b border-line bg-paper/95 px-4 backdrop-blur sm:mx-0 sm:px-0">
-            <div role="tablist" aria-label="Guide sections" className="-mb-px flex gap-1 overflow-x-auto">
-              {TABS.map((t) => (
-                <button
-                  key={t.id}
-                  role="tab"
-                  id={`tab-${t.id}`}
-                  aria-selected={tab === t.id}
-                  aria-controls={`panel-${t.id}`}
-                  onClick={() => select(t.id)}
-                  className={`shrink-0 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap ${tab === t.id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"}`}
-                >
-                  {t.label} <span className="font-normal text-muted">{counts[t.id]}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="pt-6">
-            {tab === "steps" && <StepsPanel guide={guide} sources={sources} />}
-            {tab === "permissions" && <PermissionsPanel guide={guide} sources={sources} />}
-            {tab === "troubleshooting" && <TroubleshootingPanel guide={guide} sources={sources} />}
-            {tab === "before" && <BeforePanel guide={guide} sources={sources} />}
-            {tab === "know" && <KnowPanel guide={guide} sources={sources} />}
-            {tab === "sources" && <SourcesPanel guide={guide} />}
+      <div className="mt-8">
+        <div className="sticky top-0 z-30 -mx-4 border-b border-line bg-paper/95 px-4 backdrop-blur sm:mx-0 sm:px-0">
+          <div role="tablist" aria-label="Guide sections" className="-mb-px flex gap-1 overflow-x-auto">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                role="tab"
+                id={`tab-${t.id}`}
+                aria-selected={tab === t.id}
+                aria-controls={`panel-${t.id}`}
+                onClick={() => select(t.id)}
+                className={`shrink-0 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap ${tab === t.id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"}`}
+              >
+                {t.label}
+                {counts[t.id] !== undefined && <span className="font-normal text-muted"> {counts[t.id]}</span>}
+              </button>
+            ))}
           </div>
         </div>
 
-        <aside className="space-y-6 lg:sticky lg:top-4 lg:self-start">
-          <div>
-            <h2 className="text-sm font-medium text-muted">Official docs</h2>
-            <ul className="mt-2 space-y-1">
-              {guide.officialDocs.map((d) => (
-                <li key={d.url}>
-                  <a href={d.url} target="_blank" rel="noreferrer" title={d.url} className="group -mx-2 flex items-center justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-surface">
-                    <span className="font-medium group-hover:underline">{d.label}</span>
-                    <svg viewBox="0 0 16 16" className="size-3.5 shrink-0 text-muted" aria-hidden>
-                      <path d="M6 3h7v7M13 3L5 11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <WhoDoesWhat guide={guide} />
-        </aside>
+        <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="max-w-4xl pt-6">
+          {tab === "intro" && <IntroPanel guide={guide} sources={sources} />}
+          {tab === "steps" && <StepsPanel guide={guide} onStart={() => document.getElementById("checklist")?.scrollIntoView({ behavior: "smooth" })} />}
+          {tab === "permissions" && <PermissionsPanel guide={guide} sources={sources} />}
+          {tab === "know" && <KnowPanel guide={guide} sources={sources} />}
+          {tab === "troubleshoot" && <TroubleshootPanel guide={guide} sources={sources} />}
+          {tab === "resources" && <ResourcesPanel guide={guide} />}
+        </div>
       </div>
+
+      <Checklist guide={guide} sources={sources} />
 
       <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} guide={guide} />
     </>
@@ -214,7 +200,7 @@ function Estimate({ label, range, sub, band, tip }: { label: string; range: stri
         </InfoTip>
       </p>
       <p className="mt-1 font-display text-3xl font-semibold tracking-tight">{range}</p>
-      <p className="mt-1 line-clamp-2 text-sm text-muted" title={sub}>
+      <p className="mt-1 text-sm text-muted">
         {sub}
       </p>
       <div className="relative mt-3 h-2.5 rounded-full bg-faint">{band}</div>
@@ -232,70 +218,122 @@ function EstimateEvidence({ evidence }: { evidence: Guide["verdict"]["timeToDev"
   );
 }
 
-function Chips<T extends string>({ value, options, onChange, label }: { value: T; options: { id: T; label: string; count?: number }[]; onChange: (v: T) => void; label: string }) {
+function OwnerTag({ owner }: { owner: keyof typeof OWNER }) {
   return (
-    <div role="group" aria-label={label} className="flex flex-wrap gap-1.5">
-      {options.map((o) => (
-        <button
-          key={o.id}
-          type="button"
-          aria-pressed={value === o.id}
-          onClick={() => onChange(o.id)}
-          className={`rounded-full border px-3 py-1 text-sm ${value === o.id ? "border-ink bg-ink text-surface" : "border-line bg-surface hover:border-ink"}`}
+    <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium whitespace-nowrap ${OWNER[owner].cls}`} title={OWNER[owner].hint}>
+      {OWNER[owner].label}
+    </span>
+  );
+}
+
+function PanelTitle({ children, tip }: { children: React.ReactNode; tip?: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center font-display text-xl font-semibold tracking-tight">
+      {children}
+      {tip && (
+        <InfoTip label="More about this section" align="start">
+          {tip}
+        </InfoTip>
+      )}
+    </h2>
+  );
+}
+
+function IntroPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
+  const waits = guide.steps.filter((s) => s.owner === "wait");
+  return (
+    <div className="space-y-10">
+      <section>
+        <PanelTitle tip="Have these ready before you open the provider's console. Missing ones are the usual cause of rejected reviews.">What you need first</PanelTitle>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          {guide.prerequisites.map((p) => (
+            <li key={p.item} className="rounded-xl border border-line bg-surface p-4">
+              <p className="font-medium">{p.item}</p>
+              <p className="mt-1 text-sm text-ink/75">{p.why}</p>
+              <div className="mt-2">
+                <EvidenceTag evidence={p.evidence} sources={sources} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <PanelTitle
+          tip={
+            <>
+              <span className="block font-medium">AI can do</span>
+              {OWNER.agent.hint}
+              <span className="mt-2 block font-medium">You</span>
+              {OWNER.human.hint}
+              <span className="mt-2 block font-medium">Provider review</span>
+              {OWNER.wait.hint}
+            </>
+          }
         >
-          {o.label}
-          {o.count !== undefined && <span className={value === o.id ? "text-surface/70" : "text-muted"}> {o.count}</span>}
-        </button>
-      ))}
+          Who does what
+        </PanelTitle>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <OwnerColumn owner="agent" items={guide.agentCanDo} guide={guide} />
+          <OwnerColumn owner="human" items={guide.humanMustDo} />
+          <OwnerColumn owner="wait" items={waits.length ? waits.map((s) => s.title) : ["Nothing. There's no provider review."]} />
+        </div>
+      </section>
     </div>
   );
 }
 
-function StepsPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
-  const [owner, setOwner] = useState<"all" | "human" | "agent" | "wait">("all");
-  const count = (o: string) => guide.steps.filter((s) => s.owner === o).length;
+function OwnerColumn({ owner, items, guide }: { owner: keyof typeof OWNER; items: string[]; guide?: Guide }) {
+  return (
+    <div className="rounded-xl border border-line bg-surface p-4">
+      <OwnerTag owner={owner} />
+      <p className="mt-2 text-xs text-muted">{OWNER[owner].hint}</p>
+      <ul className="mt-3 space-y-1.5 text-sm">
+        {items.map((x) => (
+          <li key={x} className="flex gap-2">
+            <span className="mt-2 size-1 shrink-0 rounded-full bg-muted" aria-hidden />
+            <span className="min-w-0 flex-1">
+              {x}
+              {owner === "agent" && guide && (
+                <span className="ml-2 inline-block align-middle">
+                  <CopyPrompt compact prompt={buildPrompt(guide, x)} />
+                </span>
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// Overview of the path; the interactive walkthrough lives in the checklist below the tabs.
+function StepsPanel({ guide, onStart }: { guide: Guide; onStart: () => void }) {
   return (
     <div>
-      <Chips
-        label="Filter steps"
-        value={owner}
-        onChange={setOwner}
-        options={[
-          { id: "all", label: "All steps", count: guide.steps.length },
-          { id: "human", label: "Your steps", count: count("human") },
-          { id: "agent", label: "Agent can do", count: count("agent") },
-          { id: "wait", label: "Waits", count: count("wait") },
-        ]}
-      />
-      <ol className="mt-4 divide-y divide-line rounded-xl border border-line bg-surface">
-        {guide.steps.map((s, i) =>
-          owner !== "all" && s.owner !== owner ? null : (
-            <li key={i}>
-              <details className="group">
-                <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 hover:bg-paper [&::-webkit-details-marker]:hidden">
-                  <span className="w-6 shrink-0 font-display text-lg font-semibold text-muted">{i + 1}</span>
-                  <span className="min-w-0 flex-1 font-medium">{s.title}</span>
-                  {s.duration && <span className="hidden shrink-0 text-sm text-muted sm:inline">{s.duration}</span>}
-                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${OWNER[s.owner].cls}`}>{OWNER[s.owner].short}</span>
-                  <Chevron />
-                </summary>
-                <div className="space-y-2 px-4 pb-4 pl-13">
-                  <p className="leading-relaxed text-ink/85">{s.detail}</p>
-                  {s.url && (
-                    <a href={s.url} target="_blank" rel="noreferrer" className="block truncate text-sm text-cobalt underline underline-offset-2">
-                      {s.url.replace(/^https:\/\//, "")}
-                    </a>
-                  )}
-                  <p className="flex flex-wrap items-center gap-3 text-sm text-muted">
-                    <span>{OWNER[s.owner].label}</span>
-                    {s.duration && <span className="sm:hidden">{s.duration}</span>}
-                    <EvidenceTag evidence={s.evidence} sources={sources} />
-                  </p>
-                </div>
-              </details>
-            </li>
-          ),
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <PanelTitle tip="The whole path at a glance. Use the step-by-step checklist below to work through it and track your progress.">Steps involved</PanelTitle>
+        <button type="button" onClick={onStart} className="rounded-lg border border-ink px-3 py-1.5 text-sm font-medium hover:bg-ink hover:text-surface">
+          Open the checklist
+        </button>
+      </div>
+      <ol className="relative mt-5 space-y-0 border-l border-line pl-6">
+        {guide.steps.map((s, i) => (
+          <li key={i} className="relative pb-4 last:pb-0">
+            <span
+              className={`absolute top-0.5 -left-[2.0625rem] flex size-5 items-center justify-center rounded-full text-[11px] font-semibold ${s.owner === "wait" ? "border border-dashed border-muted bg-paper text-muted" : "bg-ink text-surface"}`}
+              aria-hidden
+            >
+              {i + 1}
+            </span>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="font-medium">{s.title}</span>
+              <OwnerTag owner={s.owner} />
+              {s.owner === "agent" && <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />}
+              {s.duration && <span className="text-sm text-muted">{s.duration}</span>}
+            </div>
+          </li>
+        ))}
       </ol>
     </div>
   );
@@ -304,8 +342,9 @@ function StepsPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) 
 function PermissionsPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
   return (
     <div>
-      <p className="mb-4 text-muted">Ask for the lowest tier your agent needs. Higher tiers add review time.</p>
-      <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
+      <PanelTitle tip="Providers review apps based on the permissions (scopes) they request. Asking for less usually means less review.">Permissions</PanelTitle>
+      <p className="mt-1 text-muted">Ask for the lowest tier your agent needs. Higher tiers add review time.</p>
+      <ul className="mt-4 divide-y divide-line rounded-xl border border-line bg-surface">
         {guide.scopeTiers.map((t) => (
           <li key={t.tier} className="grid gap-2 p-4 sm:grid-cols-[1fr_auto] sm:gap-6">
             <div className="min-w-0">
@@ -331,12 +370,56 @@ function PermissionsPanel({ guide, sources }: { guide: Guide; sources: SourceInd
   );
 }
 
-function TroubleshootingPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
+// Good-to-know items grouped by what they affect, so a developer can jump to the topic they care about.
+const TOPICS = [
+  { id: "tokens", label: "Tokens & sessions", test: /token|refresh|expir|session|re-?auth|consent/i },
+  { id: "limits", label: "Limits & quotas", test: /rate limit|quota|per (minute|second|hour|day)|requests?\/|throttl|\bcap\b|capped|limit/i },
+  { id: "policy", label: "Data & AI policy", test: /\bAI\b|LLM|machine learning|\bML\b|train|policy|terms|privacy|store|retention|gdpr|compliance/i },
+  { id: "admins", label: "Installs & admins", test: /admin|workspace|tenant|organi[sz]ation|\borg\b|install|team|account owner/i },
+  { id: "pricing", label: "Pricing & plans", test: /\$|price|pricing|paid|plan|tier|subscription|fee|premium|enterprise/i },
+] as const;
+
+function topicOf(text: string): string {
+  return TOPICS.find((t) => t.test.test(text))?.id ?? "other";
+}
+
+function KnowPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
+  const groups = [...TOPICS, { id: "other", label: "Other" }]
+    .map((t) => ({ ...t, items: guide.nuances.filter((n) => topicOf(n.text) === t.id) }))
+    .filter((g) => g.items.length);
+  return (
+    <div>
+      <PanelTitle tip="Things that don't block setup but tend to surprise developers later.">Good to know</PanelTitle>
+      <div className="mt-4 space-y-6">
+        {groups.map((g) => (
+          <section key={g.id}>
+            <h3 className="text-sm font-medium text-muted">{g.label}</h3>
+            <ul className="mt-2 space-y-2">
+              {g.items.map((n) => (
+                <li key={n.text} className="flex gap-3 rounded-lg bg-surface px-4 py-3 shadow-[inset_3px_0_0_var(--color-line)]">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[0.9375rem] leading-relaxed text-ink/85">{n.text}</p>
+                  </div>
+                  <div className="shrink-0 pt-0.5">
+                    <EvidenceTag evidence={n.evidence} sources={sources} align="end" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TroubleshootPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
   const [query, setQuery] = useState("");
   const words = query.toLowerCase().split(/\W+/).filter((w) => w.length > 2);
   const matches = guide.blockers.filter((b) => !words.length || words.some((w) => `${b.symptom} ${b.cause} ${b.fix}`.toLowerCase().includes(w)));
   return (
     <div>
+      <PanelTitle tip="Known problems developers hit with this provider, each with the cause and the fix.">Troubleshoot</PanelTitle>
       <label htmlFor="blocker-q" className="sr-only">
         Paste an error message or describe the problem
       </label>
@@ -345,10 +428,10 @@ function TroubleshootingPanel({ guide, sources }: { guide: Guide; sources: Sourc
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Paste an error message or describe the problem"
-        className="h-11 w-full rounded-lg border border-line bg-surface px-4 placeholder:text-muted/70 focus:border-ink focus:outline-none"
+        className="mt-4 h-11 w-full rounded-lg border border-line bg-surface px-4 placeholder:text-muted/70 focus:border-ink focus:outline-none"
       />
       {matches.length === 0 ? (
-        <p className="mt-4 text-muted">No known blocker matches that. Try “Ask this guide”, or check the official docs.</p>
+        <p className="mt-4 text-muted">No known problem matches that. Try “Chat about this guide”, or check the official docs under Resources.</p>
       ) : (
         <ul className="mt-4 divide-y divide-line rounded-xl border border-line bg-surface">
           {matches.map((b) => (
@@ -378,53 +461,26 @@ function TroubleshootingPanel({ guide, sources }: { guide: Guide; sources: Sourc
   );
 }
 
-function BeforePanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
+function ResourcesPanel({ guide }: { guide: Guide }) {
   return (
-    <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
-      {guide.prerequisites.map((p) => (
-        <li key={p.item} className="flex gap-3 p-4">
-          <span className="mt-1 size-4 shrink-0 rounded border border-muted/60" aria-hidden />
-          <div className="min-w-0">
-            <p className="font-medium">{p.item}</p>
-            <p className="mt-0.5 text-sm text-ink/75">{p.why}</p>
-            <div className="mt-1.5">
-              <EvidenceTag evidence={p.evidence} sources={sources} />
-            </div>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
+    <div className="space-y-10">
+      <section>
+        <PanelTitle>Official docs</PanelTitle>
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          {guide.officialDocs.map((d) => (
+            <li key={d.url}>
+              <a href={d.url} target="_blank" rel="noreferrer" title={d.url} className="flex h-full items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 hover:border-ink">
+                <span className="font-medium">{d.label}</span>
+                <svg viewBox="0 0 16 16" className="size-3.5 shrink-0 text-muted" aria-hidden>
+                  <path d="M6 3h7v7M13 3L5 11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-function KnowPanel({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
-  const [all, setAll] = useState(false);
-  const shown = all ? guide.nuances : guide.nuances.slice(0, 5);
-  return (
-    <div>
-      <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
-        {shown.map((n) => (
-          <li key={n.text} className="p-4">
-            <p className="leading-relaxed text-ink/85">{n.text}</p>
-            <div className="mt-1.5">
-              <EvidenceTag evidence={n.evidence} sources={sources} />
-            </div>
-          </li>
-        ))}
-      </ul>
-      {!all && guide.nuances.length > 5 && (
-        <button type="button" onClick={() => setAll(true)} className="mt-3 text-sm font-medium underline underline-offset-2">
-          Show {guide.nuances.length - 5} more
-        </button>
-      )}
-    </div>
-  );
-}
-
-function SourcesPanel({ guide }: { guide: Guide }) {
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <section className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-line bg-surface p-5">
           <h3 className="font-medium">What was tested</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink/85">
@@ -437,56 +493,114 @@ function SourcesPanel({ guide }: { guide: Guide }) {
             {guide.verification.openQuestions.length ? guide.verification.openQuestions.map((x) => <li key={x}>{x}</li>) : <li>Nothing outstanding.</li>}
           </ul>
         </div>
-      </div>
-      <EvidenceLegend />
-      <ol className="space-y-2 text-sm">
-        {guide.sources.map((s, i) => (
-          <li key={s.id} id={`source-${s.id}`} className="grid grid-cols-[2rem_1fr]">
-            <span className="text-muted">[{i + 1}]</span>
-            <a href={s.url} target="_blank" rel="noreferrer" className="break-words text-cobalt underline decoration-cobalt/30 underline-offset-2 hover:decoration-cobalt">
-              {s.title}
-            </a>
-          </li>
-        ))}
-      </ol>
+      </section>
+
+      <section>
+        <PanelTitle tip="Every claim in this guide cites one or more of these. Numbers match the citations in the chat.">Sources</PanelTitle>
+        <div className="mt-3">
+          <EvidenceLegend />
+        </div>
+        <ol className="mt-4 space-y-2 text-sm">
+          {guide.sources.map((s, i) => (
+            <li key={s.id} id={`source-${s.id}`} className="grid grid-cols-[2rem_1fr]">
+              <span className="text-muted">[{i + 1}]</span>
+              <a href={s.url} target="_blank" rel="noreferrer" className="break-words text-cobalt underline decoration-cobalt/30 underline-offset-2 hover:decoration-cobalt">
+                {s.title}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
     </div>
   );
 }
 
-function WhoDoesWhat({ guide }: { guide: Guide }) {
-  const n = (o: string) => guide.steps.filter((s) => s.owner === o).length;
+// Interactive walkthrough. Progress is a per-browser convenience, so localStorage is enough.
+function Checklist({ guide, sources }: { guide: Guide; sources: SourceIndex }) {
+  const key = `checklist:${guide.app.slug}`;
+  const [done, setDone] = useState<number[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) ?? "[]");
+      if (Array.isArray(saved)) setDone(saved.filter((n) => Number.isInteger(n)));
+    } catch {
+      // storage unavailable (private mode): start empty
+    }
+  }, [key]);
+
+  function toggle(i: number) {
+    const next = done.includes(i) ? done.filter((n) => n !== i) : [...done, i];
+    setDone(next);
+    try {
+      localStorage.setItem(key, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  }
+
+  const total = guide.steps.length;
+  const pct = Math.round((done.length / total) * 100);
+
   return (
-    <div>
-      <h2 className="flex items-center text-sm font-medium text-muted">
-        Who does what
-        <InfoTip label="What an agent can do here" align="end">
-          <span className="block font-medium">An agent can</span>
-          <span className="mt-1 block space-y-0.5">
-            {guide.agentCanDo.map((x) => (
-              <span key={x} className="block">
-                – {x}
-              </span>
-            ))}
+    <section id="checklist" className="mt-12 max-w-4xl scroll-mt-16">
+      <details className="group rounded-xl border border-line bg-surface">
+        <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 [&::-webkit-details-marker]:hidden">
+          <span className="font-display text-xl font-semibold tracking-tight">Step-by-step checklist</span>
+          <span className="text-sm text-muted">
+            {done.length} of {total} done
           </span>
-          <span className="mt-2 block font-medium">You need to</span>
-          <span className="mt-1 block space-y-0.5">
-            {guide.humanMustDo.map((x) => (
-              <span key={x} className="block">
-                – {x}
-              </span>
-            ))}
+          <span className="relative h-1.5 w-32 rounded-full bg-faint" aria-hidden>
+            <span className="absolute inset-y-0 left-0 rounded-full bg-trivial" style={{ width: `${pct}%` }} />
           </span>
-        </InfoTip>
-      </h2>
-      <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
-        {(["agent", "human", "wait"] as const).map((o) => (
-          <div key={o} className="rounded-lg border border-line bg-surface px-2 py-2.5">
-            <dd className="font-display text-xl font-semibold">{n(o)}</dd>
-            <dt className="text-xs text-muted">{OWNER[o].label}</dt>
-          </div>
-        ))}
-      </dl>
-    </div>
+          <span className="ml-auto flex items-center gap-2 text-sm text-muted">
+            <span className="group-open:hidden">Open</span>
+            <span className="hidden group-open:inline">Close</span>
+            <Chevron />
+          </span>
+        </summary>
+        <ol className="divide-y divide-line border-t border-line">
+          {guide.steps.map((s, i) => {
+            const checked = done.includes(i);
+            return (
+              <li key={i} className="flex gap-3 px-5 py-3">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggle(i)}
+                  aria-label={`Mark step ${i + 1} done: ${s.title}`}
+                  className="mt-1 size-4 shrink-0 accent-trivial"
+                />
+                <details className="group/step min-w-0 flex-1">
+                  <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
+                    <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className={`font-medium ${checked ? "text-muted line-through" : ""}`}>
+                        {i + 1}. {s.title}
+                      </span>
+                      <OwnerTag owner={s.owner} />
+                      {s.owner === "agent" && <CopyPrompt compact prompt={buildPrompt(guide, s.title, s.detail, s.url)} />}
+                      {s.duration && <span className="text-sm text-muted">{s.duration}</span>}
+                    </span>
+                    <svg viewBox="0 0 20 20" className="mt-1 size-4 shrink-0 text-muted transition-transform group-open/step:rotate-180" aria-hidden>
+                      <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </summary>
+                  <div className="mt-2 space-y-2 pb-1">
+                    <p className="leading-relaxed text-ink/85">{s.detail}</p>
+                    {s.url && (
+                      <a href={s.url} target="_blank" rel="noreferrer" className="block truncate text-sm text-cobalt underline underline-offset-2">
+                        {s.url.replace(/^https:\/\//, "")}
+                      </a>
+                    )}
+                    <EvidenceTag evidence={s.evidence} sources={sources} />
+                  </div>
+                </details>
+              </li>
+            );
+          })}
+        </ol>
+      </details>
+    </section>
   );
 }
 

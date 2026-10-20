@@ -22,6 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${guide.app.name} OAuth setup`,
     description: `${guide.verdict.summary} Working in dev: ${guide.verdict.timeToDev.range}. Any user can connect: ${guide.verdict.timeToProd.range}.`,
+    // Guides the live agent wrote from pages anyone could have published: not indexed, links not followed.
+    ...(guide.verification.status === "agent-generated" ? { robots: { index: false, follow: false } } : {}),
   };
 }
 

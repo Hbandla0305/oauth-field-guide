@@ -45,7 +45,7 @@ const REFUSALS = {
   budget: "Chat has used its demo budget. Everything in the guide is still on the page.",
   daily_budget: "Chat has used today's budget. It resets within 24 hours; the guide is still on the page.",
   ip_rate: `You can ask ${LIMITS.chat.perIpPerHour} questions an hour. Try again later.`,
-  ip_daily: `You can ask ${LIMITS.chat.perIpPerDay} questions a day. Try again tomorrow.`,
+  ip_daily: "You've reached today's limit for questions. Try again tomorrow.",
   daily_rate: "Today's chat limit has been reached. Try again tomorrow.",
 } as const;
 
@@ -93,8 +93,9 @@ export async function POST(req: NextRequest) {
         await settleRun(reservation.runId, usd, "answered", slug);
       } catch (err) {
         console.error("chat failed", err instanceof Error ? err.message : err);
-        // Only a timeout can hide spend we never saw; otherwise charge what was used.
-        await settleRun(reservation.runId, err instanceof Error && err.name === "AbortError" ? Math.max(usd, LIMITS.chat.reservePerMessageUsd) : Math.max(usd, 0.001), "failed", slug).catch(() => {});
+        // A timeout keeps the full reservation; other failures pay at least half of it, since a call
+        // can fail after spending tokens we never saw.
+        await settleRun(reservation.runId, err instanceof Error && err.name === "AbortError" ? Math.max(usd, LIMITS.chat.reservePerMessageUsd) : Math.max(usd, LIMITS.chat.reservePerMessageUsd / 2), "failed", slug).catch(() => {});
         controller.enqueue(encoder.encode("\n\nThe answer was cut off. Try asking again."));
       } finally {
         controller.close();

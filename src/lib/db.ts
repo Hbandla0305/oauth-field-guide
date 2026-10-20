@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { createHash } from "node:crypto";
+import ipaddr from "ipaddr.js";
 import { StoredGuide, type Guide } from "./guide-schema";
 import { LIMITS } from "./agent/config";
 
@@ -35,10 +36,17 @@ export const SCHEMA = [
   `alter table runs add column if not exists kind text not null default 'generate'`,
 ];
 
+// IPv6 users get a whole /64 from their provider, so limits apply per /64, not per address.
+function rateKey(ip: string): string {
+  if (!ipaddr.isValid(ip)) return ip;
+  const addr = ipaddr.process(ip);
+  return addr.kind() === "ipv6" ? `${(addr as ipaddr.IPv6).parts.slice(0, 4).map((p) => p.toString(16)).join(":")}::/64` : addr.toString();
+}
+
 export function hashIp(ip: string): string {
   const salt = process.env.IP_HASH_SALT;
   if (!salt && process.env.VERCEL_ENV === "production") throw new Error("IP_HASH_SALT must be set in production");
-  return createHash("sha256").update(`${salt ?? "dev"}:${ip}`).digest("hex").slice(0, 32);
+  return createHash("sha256").update(`${salt ?? "dev"}:${rateKey(ip)}`).digest("hex").slice(0, 32);
 }
 
 export async function getGeneratedGuide(slug: string): Promise<Guide | null> {
@@ -58,10 +66,13 @@ export async function listGeneratedGuides(limit = 12): Promise<Guide[]> {
   });
 }
 
-export async function saveGuide(guide: Guide, input: string, costUsd: number) {
-  await sql()`
+// Never overwrites: returns false if a guide with this slug already exists.
+export async function saveGuide(guide: Guide, input: string, costUsd: number): Promise<boolean> {
+  if (!guide.app.slug) throw new Error("Guide has no slug");
+  const rows = await sql()`
     insert into guides (slug, guide, input, cost_usd) values (${guide.app.slug}, ${JSON.stringify(guide)}, ${input}, ${costUsd})
-    on conflict (slug) do update set guide = excluded.guide, input = excluded.input, cost_usd = excluded.cost_usd, created_at = now()`;
+    on conflict (slug) do nothing returning slug`;
+  return rows.length > 0;
 }
 
 export type Reservation =
@@ -84,10 +95,11 @@ export function reserveChat(ipHash: string, input: string) {
 }
 
 // Reserves worst-case spend for one run. The advisory lock serialises concurrent
-// reservations so two requests can't both squeeze under the cap. Rate limits are per
-// kind; the dollar cap is shared.
+// reservations so two requests can't both squeeze under the cap. Request counts are per
+// kind; the dollar caps (overall, per day, per IP) are shared, with some of each day kept for chat.
 async function reserve(kind: Kind, ipHash: string, input: string): Promise<Reservation> {
   const { reserve: amount, perIpPerHour, perIpPerDay, perDay } = KIND_LIMITS[kind];
+  const dailyCap = kind === "chat" ? LIMITS.dailyBudgetUsd : LIMITS.dailyBudgetUsd - LIMITS.chatHeadroomUsd;
   const db = sql();
   const [, result] = await db.transaction([
     db`select pg_advisory_xact_lock(7203)`,
@@ -99,9 +111,10 @@ async function reserve(kind: Kind, ipHash: string, input: string): Promise<Reser
         from runs
       ), ip as (
         select
-          count(*) filter (where created_at > now() - interval '1 hour') as hour_n,
-          count(*) as day_n
-        from runs where kind = ${kind} and ip_hash = ${ipHash} and created_at > now() - interval '1 day'
+          count(*) filter (where kind = ${kind} and created_at > now() - interval '1 hour') as hour_n,
+          count(*) filter (where kind = ${kind}) as day_n,
+          coalesce(sum(actual_usd), 0) as usd
+        from runs where ip_hash = ${ipHash} and created_at > now() - interval '1 day'
       ), day as (
         select count(*) as n from runs where kind = ${kind} and created_at > now() - interval '1 day'
       ), ins as (
@@ -109,20 +122,21 @@ async function reserve(kind: Kind, ipHash: string, input: string): Promise<Reser
         select ${ipHash}, ${input}, ${amount}, ${kind}
         from spend, ip, day
         where spend.total + ${amount} <= ${LIMITS.totalBudgetUsd}
-          and spend.today + ${amount} <= ${LIMITS.dailyBudgetUsd}
+          and spend.today + ${amount} <= ${dailyCap}
           and ip.hour_n < ${perIpPerHour}
           and ip.day_n < ${perIpPerDay}
+          and ip.usd < ${LIMITS.perIpUsdPerDay}
           and day.n < ${perDay}
         returning id
       )
-      select (select id from ins) as id, spend.total, spend.today, ip.hour_n, ip.day_n as ip_day_n, day.n as day_n from spend, ip, day`,
+      select (select id from ins) as id, spend.total, spend.today, ip.hour_n, ip.day_n as ip_day_n, ip.usd as ip_usd, day.n as day_n from spend, ip, day`,
   ]);
   const row = result[0];
   if (row.id) return { ok: true, runId: row.id };
   if (Number(row.total) + amount > LIMITS.totalBudgetUsd) return { ok: false, reason: "budget" };
-  if (Number(row.today) + amount > LIMITS.dailyBudgetUsd) return { ok: false, reason: "daily_budget" };
+  if (Number(row.today) + amount > dailyCap) return { ok: false, reason: "daily_budget" };
   if (Number(row.hour_n) >= perIpPerHour) return { ok: false, reason: "ip_rate" };
-  if (Number(row.ip_day_n) >= perIpPerDay) return { ok: false, reason: "ip_daily" };
+  if (Number(row.ip_day_n) >= perIpPerDay || Number(row.ip_usd) >= LIMITS.perIpUsdPerDay) return { ok: false, reason: "ip_daily" };
   return { ok: false, reason: "daily_rate" };
 }
 

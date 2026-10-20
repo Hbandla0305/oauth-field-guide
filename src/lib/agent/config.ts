@@ -21,7 +21,9 @@ export const LIMITS = {
   maxOutputTokens: { screen: 2_000, research: 24_000, audit: 16_000, gaps: 2_000 },
   runsPerIpPerHour: 10,
   runsPerIpPerDay: 25,
-  failureMinimumUsd: 0.02, // charged for a failed run when we know what it spent
+  failureMinimumUsd: 0.05, // charged for a failed run: covers one call failing after it spent tokens
+  perIpUsdPerDay: 0.2, // settled spend per IP (or IPv6 /64), research and chat together: ~8 new guides
+  chatHeadroomUsd: 0.1, // of the daily budget, kept for chat so heavy research can't switch chat off
   runsPerDay: 40, // ~40 runs at ~$0.03 stays well under the $1.80 cap, which is the real stop
   runTimeoutMs: 240_000,
   inputMaxLength: 80,

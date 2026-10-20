@@ -85,6 +85,8 @@ Rule applied: the headline is the provider's **official or typical** range; wors
 
 An independent review of the code, git history, dependencies, prompt-injection paths and the database role found no secrets anywhere, and 2 High and 6 Medium issues, all fixed. One of the fixes changes the evidence model: the model can no longer mark a claim **Tested**; only our own live checks can. See [`SECURITY_REVIEW.md`](SECURITY_REVIEW.md).
 
+A second end-to-end check (code, history, production bundles, 24 live requests including prompt-injection attempts) found no Critical or High issues. Its Medium findings are fixed: official domains now use the public suffix list and shared hosting is refused, guide links must point at pages the agent read, and spend is capped per network. See [`SECURITY_CHECK_2.md`](SECURITY_CHECK_2.md).
+
 ## What remains uncertain
 
 Each guide lists its own open questions under "Still uncertain". The biggest across the library:

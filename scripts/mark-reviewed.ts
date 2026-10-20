@@ -4,6 +4,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const slug = process.argv[2];
+if (!/^[a-z0-9-]+$/.test(slug ?? "")) throw new Error("Usage: npm run mark-reviewed -- <slug> (lowercase letters, digits and dashes)");
 const sheet = readFileSync(`docs/human-review/${slug}.md`, "utf8");
 const reviewer = sheet.match(/Reviewer:\s*([^·\n]+?)\s*·/)?.[1]?.replace(/_+/g, "").trim();
 const date = sheet.match(/Date:\s*(\d{4}-\d{2}-\d{2})/)?.[1];

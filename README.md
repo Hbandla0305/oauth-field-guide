@@ -137,7 +137,7 @@ A bounded pipeline with **one real decision point**. Our code picks every URL it
 
 Every stage is recorded and saved with the guide ("How this guide was made"). Full diagrams: [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-**Limits:** live research 10/hour and 25/day per network, 40/day overall; chat 20/hour and 100/day per network; $0.60/day and $1.80 lifetime spend caps. **MCP tools:** `search_guides`, `get_guide` (any section), `generate_guide` (starts live research in the background; same limits). **Slack:** built and tested with Slack-signed requests; not yet installed in a public workspace (setup on [/use](https://oauth-field-guide.vercel.app/use#slack)).
+**Limits:** live research 10/hour and 25/day per network, 40/day overall; chat 20/hour and 100/day per network; at most $0.20/day of spend per network (IPv6 counted per /64); $0.60/day and $1.80 lifetime spend caps, with $0.10 of each day kept for chat. **MCP tools:** `search_guides`, `get_guide` (any section), `generate_guide` (starts live research in the background; same limits). **Slack:** built and tested with Slack-signed requests; not yet installed in a public workspace (setup on [/use](https://oauth-field-guide.vercel.app/use#slack)).
 
 ## What the research found
 

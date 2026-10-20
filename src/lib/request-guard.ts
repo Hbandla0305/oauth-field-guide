@@ -4,10 +4,19 @@ export function crossSiteRefusal(req: Request): Response | null {
   const site = req.headers.get("sec-fetch-site");
   const origin = req.headers.get("origin");
   const host = req.headers.get("host");
-  const crossSite = site === "cross-site" || (origin !== null && host !== null && new URL(origin).host !== host);
+  const crossSite = site === "cross-site" || (origin !== null && host !== null && originHost(origin) !== host);
   if (crossSite) return Response.json({ error: "Requests from other sites aren't allowed." }, { status: 403 });
   if (!(req.headers.get("content-type") ?? "").includes("application/json")) return Response.json({ error: "Expected JSON." }, { status: 415 });
   return null;
+}
+
+// "null" (sandboxed iframes) and malformed origins count as cross-site.
+function originHost(origin: string): string | null {
+  try {
+    return new URL(origin).host;
+  } catch {
+    return null;
+  }
 }
 
 // Only ever link to https URLs. Guide data is agent-written from web pages.

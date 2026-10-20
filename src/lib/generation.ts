@@ -4,6 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { LIMITS, generationEnabled } from "./agent/config";
 import { runAgent, screenInput, toSlug, RunCost, NoThirdPartyOAuth, type AgentEvent } from "./agent/pipeline";
+import { isSharedHost } from "./agent/probes";
 import { findGuide } from "./guides";
 import { hashIp, reserveRun, saveGuide, settleRun } from "./db";
 
@@ -13,7 +14,7 @@ const REFUSALS = {
   budget: "Live generation has used its demo budget. The existing guides still work.",
   daily_budget: "Live generation has used today's budget. It resets within 24 hours; the existing guides still work.",
   ip_rate: `You can generate ${LIMITS.runsPerIpPerHour} new guides per hour. Try again later, or open an existing guide.`,
-  ip_daily: `You can generate ${LIMITS.runsPerIpPerDay} new guides a day. Try again tomorrow, or open an existing guide.`,
+  ip_daily: "You've reached today's limit for new guides. Try again tomorrow, or open an existing guide.",
   daily_rate: "Today's live generation limit has been reached. Try again tomorrow, or open an existing guide.",
 } as const;
 
@@ -55,6 +56,13 @@ export async function startGeneration(rawInput: unknown, ip: string): Promise<St
           await settleRun(runId, cost.usd, "rejected", null, screen.verdict);
           return { slug: null };
         }
+        // Anyone can publish on shared hosting (github.io, vercel.app) or a bare IP, so those are
+        // never treated as a provider's official site.
+        if (!screen.slug || isSharedHost(screen.website)) {
+          emit({ type: "error", message: "Enter the app's own website or name. Pages on shared hosting can't be used as official docs." });
+          await settleRun(runId, cost.usd, "rejected", null, "shared host or empty slug");
+          return { slug: null };
+        }
         slug = screen.slug;
         emit({ type: "stage", stage: "screen", status: "done", detail: screen.name });
 
@@ -67,7 +75,12 @@ export async function startGeneration(rawInput: unknown, ip: string): Promise<St
 
         const guide = await runAgent(input, screen, cost, emit, signal);
         emit({ type: "stage", stage: "save", status: "active" });
-        await saveGuide(guide, input, cost.usd);
+        // Two runs for the same app can finish together; the first one saved wins.
+        if (!(await saveGuide(guide, input, cost.usd))) {
+          await settleRun(runId, cost.usd, "cached", slug, undefined, cost.firecrawlCredits);
+          emit({ type: "done", slug: guide.app.slug, cached: true });
+          return { slug: guide.app.slug };
+        }
         // Without this, a 404 cached before the guide existed (or a stale home list) hides it.
         revalidatePath(`/guides/${guide.app.slug}`);
         revalidatePath("/");
@@ -83,8 +96,8 @@ export async function startGeneration(rawInput: unknown, ip: string): Promise<St
         }
         const message = err instanceof Error ? err.message : String(err);
         console.error("generate failed", { runId, message });
-        // Charge what we know was spent (every completed call is in `cost`). Only a timeout can
-        // cut a call off mid-flight with unseen spend, so only then keep the full reservation.
+        // Charge what we know was spent (every completed call is in `cost`), with a floor that covers
+        // one call failing after spending tokens. A timeout keeps the full reservation.
         const charged = signal.aborted ? Math.max(cost.usd, LIMITS.reservePerRunUsd) : Math.max(cost.usd, LIMITS.failureMinimumUsd);
         const credits = signal.aborted ? Math.max(cost.firecrawlCredits, LIMITS.firecrawl.reservePerRun) : cost.firecrawlCredits;
         await settleRun(runId, charged, "failed", slug, message.slice(0, 500), credits).catch(() => {});
@@ -115,6 +128,8 @@ function screenMessage(verdict: string, raw: string) {
   return `We couldn't identify an app from that. ${reason}`;
 }
 
+// Vercel sets x-vercel-forwarded-for and x-real-ip itself; a client can't choose them.
 export function clientIp(headers: Headers): string {
-  return headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip")?.trim() || headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return ip || (process.env.VERCEL_ENV === "production" ? "unknown" : "local");
 }

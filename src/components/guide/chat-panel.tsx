@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Guide } from "@/lib/guide-schema";
 import { EMPTY_PROFILE, defaultConfig, setupUrl, supportsSetup, type Profile } from "@/lib/setup-links";
+import { safeHref } from "@/lib/request-guard";
 
 // `label` is what the user sees in their bubble; `content` is what the AI receives.
 type Message = { role: "user" | "assistant"; content: string; task?: "draft" | "pack"; label?: string };
@@ -66,6 +67,16 @@ export function ChatPanel({ open, onClose, guide, task, onTaskStarted }: { open:
   }, [messages]);
 
   const full = messages.length >= MAX_MESSAGES;
+
+  // Elapsed seconds while a task runs, so a 30–40 second draft doesn't look stalled.
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!busy) return;
+    setElapsed(0);
+    const t0 = Date.now();
+    const id = setInterval(() => setElapsed(Math.round((Date.now() - t0) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [busy]);
 
   async function send(content: string, kind?: "draft" | "pack", label?: string) {
     const text = content.trim();
@@ -181,7 +192,13 @@ export function ChatPanel({ open, onClose, guide, task, onTaskStarted }: { open:
                 ) : (
                   <div key={i}>
                     <div className="text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere] text-ink">
-                      {m.content || (busy && i === messages.length - 1 ? <span className="text-muted">{m.task ? "Working on it…" : "Reading the guide…"}</span> : null)}
+                      {m.content ? (
+                        <WithCitations text={m.content} sources={guide.sources} />
+                      ) : busy && i === messages.length - 1 ? (
+                        <span className="text-muted">
+                          {m.task ? `Drafting… this usually takes 30–40 seconds · ${elapsed}s` : "Reading the guide…"}
+                        </span>
+                      ) : null}
                     </div>
                     {m.task && m.content && !(busy && i === messages.length - 1) && <ResultActions text={m.content} filename={`${guide.app.slug}-${m.task === "pack" ? "review-pack" : "draft"}.md`} />}
                   </div>
@@ -239,6 +256,28 @@ export function ChatPanel({ open, onClose, guide, task, onTaskStarted }: { open:
         </form>
       </aside>
     </div>
+  );
+}
+
+// Turns "[3]" citations into links to the source. The title and site show as a native tooltip,
+// which can't be clipped by the scrolling chat panel.
+function WithCitations({ text, sources }: { text: string; sources: Guide["sources"] }) {
+  const parts = text.split(/(\[\d{1,2}\])/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        const m = part.match(/^\[(\d{1,2})\]$/);
+        const src = m ? sources[Number(m[1]) - 1] : undefined;
+        const href = src ? safeHref(src.url) : undefined;
+        if (!src || !href) return <span key={i}>{part}</span>;
+        const host = new URL(href).hostname.replace(/^www\./, "");
+        return (
+          <a key={i} href={href} target="_blank" rel="noreferrer" title={`${src.title} (${host})`} aria-label={`Source ${m![1]}: ${src.title}`} className="text-cobalt underline decoration-cobalt/30 underline-offset-2 hover:decoration-cobalt">
+            [{m![1]}]
+          </a>
+        );
+      })}
+    </>
   );
 }
 

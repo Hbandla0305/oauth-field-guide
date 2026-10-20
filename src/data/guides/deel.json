@@ -35,7 +35,7 @@
   ],
   "verdict": {
     "difficulty": "hard",
-    "summary": "Creating an OAuth2 app in Deel's Developer Center is self-serve and works for your own organization within an hour or two. For other Deel customers to connect, you submit the app for App Store review (demo video, legal docs, test account), which Deel says typically takes 1–2 weeks.",
+    "summary": "For other Deel customers to connect, you submit the app for App Store review (demo video, legal docs, test account), which Deel says typically takes 1–2 weeks. Creating the OAuth2 app in Deel's Developer Center is self-serve and works for your own organization within an hour or two.",
     "timeToDev": {
       "range": "1–3 hours",
       "hours": {

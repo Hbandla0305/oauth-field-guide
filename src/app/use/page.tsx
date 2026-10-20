@@ -162,6 +162,10 @@ export default function UsePage() {
           Ask from any channel: <code>/oauth-guide gmail</code> posts a card with the difficulty, both timelines, what you&rsquo;re waiting on and the cost. Mention the bot with a question and
           it answers in a thread from the matching guide, with sources.
         </p>
+        <Note>
+          <strong>Status:</strong> the Slack app is built and tested with Slack-signed requests (signature checks, slash commands, the verdict card), but isn&rsquo;t installed
+          in a public workspace yet. Install it in your own workspace with the steps below; it runs on this deployment once the two Slack secrets are set.
+        </Note>
         <h3 className="mt-6 font-medium">Set it up (about 5 minutes, once per workspace)</h3>
         <Steps
           items={[

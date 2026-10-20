@@ -2,6 +2,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Guide } from "./guide-schema";
 import { LIBRARY, resolveSlug } from "./guides";
+import { costLabel } from "./cost";
 
 export function slackConfigured(): boolean {
   return Boolean(process.env.SLACK_SIGNING_SECRET && process.env.SLACK_BOT_TOKEN);
@@ -44,7 +45,7 @@ export function guideCard(g: Guide, url: string) {
         { type: "mrkdwn", text: `*Working in dev*\n${esc(clip(v.timeToDev.range, 200))}` },
         { type: "mrkdwn", text: `*Any user can connect*\n${esc(clip(v.timeToProd.range, 200))}` },
         { type: "mrkdwn", text: `*Waiting on*\n${esc(clip(v.timeToProd.waitingOn, 600))}` },
-        { type: "mrkdwn", text: `*Cost*\n${esc(clip(v.cost ?? "None", 600))}` },
+        { type: "mrkdwn", text: `*Cost*\n${esc(clip(costLabel(v.cost), 600))}` },
       ],
     },
     {

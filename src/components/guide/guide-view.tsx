@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Guide } from "@/lib/guide-schema";
 import { DIFFICULTY, DifficultyBadge } from "../difficulty";
 import { EvidenceLegend, EvidenceTag, EVIDENCE, type SourceIndex } from "../evidence";
@@ -11,6 +11,7 @@ import { ChatPanel, type AssistantTask } from "./chat-panel";
 import { ResearchTrail } from "./research-trail";
 import { ErrorBoundary } from "../error-boundary";
 import { safeHref } from "@/lib/request-guard";
+import { costLabel } from "@/lib/cost";
 import { CopyPrompt, buildPrompt } from "./copy-prompt";
 
 const TABS = [
@@ -44,6 +45,7 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
   const [tab, setTab] = useState<TabId>("intro");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatTask, setChatTask] = useState<AssistantTask | null>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
   const doWithAI = (task: AssistantTask) => {
     setChatTask(task);
     setChatOpen(true);
@@ -150,9 +152,7 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
           </div>
           <div>
             <dt className="text-muted">Cost</dt>
-            <dd className="mt-0.5">
-              {v.cost ?? "None"}
-            </dd>
+            <dd className="mt-0.5">{costLabel(v.cost)}</dd>
           </div>
           <ShareBar markdown={markdown} filename={`${guide.app.slug}-oauth-guide.md`} />
         </dl>
@@ -160,8 +160,16 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
 
       <div className="mt-8">
         <div className="sticky top-0 z-30 -mx-4 border-b border-line bg-paper/95 px-4 backdrop-blur sm:mx-0 sm:px-0">
-          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-paper to-transparent sm:hidden" />
-          <div role="tablist" aria-label="Guide sections" className="-mb-px flex gap-1 overflow-x-auto pr-8 sm:pr-0">
+          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-paper via-paper/80 to-transparent sm:hidden" />
+          <button
+            type="button"
+            aria-label="More sections"
+            onClick={() => tabsRef.current?.scrollBy({ left: 180, behavior: "smooth" })}
+            className="absolute top-1/2 right-1 z-20 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-sm sm:hidden"
+          >
+            ›
+          </button>
+          <div ref={tabsRef} role="tablist" aria-label="Guide sections" className="-mb-px flex gap-1 overflow-x-auto pr-10 sm:pr-0">
             {TABS.map((t) => (
               <button
                 key={t.id}

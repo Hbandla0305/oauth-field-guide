@@ -3,6 +3,8 @@
 <p align="center"><strong>How long until your users can connect?</strong><br/>
 Setup and approval guides for getting your own OAuth app live with 110+ providers, with the evidence behind every claim, and an agent that researches any other app in about two minutes.</p>
 
+<p align="center"><sub>OAuth Guide (repo and URL: <code>oauth-field-guide</code>)</sub></p>
+
 <p align="center">
   <a href="https://oauth-field-guide.vercel.app"><strong>Live app</strong></a> ·
   <a href="docs/ARCHITECTURE.md">Architecture</a> ·
@@ -20,6 +22,7 @@ Setup and approval guides for getting your own OAuth app live with 110+ provider
 - [The problem](#the-problem)
 - [What OAuth Guide does](#what-oauth-guide-does)
 - [Feature tour](#feature-tour)
+- [How the agent works](#how-the-agent-works)
 - [What the research found](#what-the-research-found)
 - [How it maps to the brief](#how-it-maps-to-the-brief)
 - [How guides are made, and how we know they're right](#how-guides-are-made-and-how-we-know-theyre-right)
@@ -106,7 +109,7 @@ The agent's reasoning doesn't disappear when the run ends. Every guide keeps a t
 claude mcp add --transport http oauth-guide https://oauth-field-guide.vercel.app/api/mcp
 ```
 
-Then ask: *"Using OAuth Guide, compare Gmail, Slack and HubSpot: which will take longest before any user can connect?"* In Slack: `/oauth-guide gmail`, or `@OAuth Guide what blocks a Slack app from reading messages?`
+Then ask: *"Using OAuth Guide, compare Gmail, Slack and HubSpot: which will take longest before any user can connect?"* In Slack (once installed in your workspace, see [/use](https://oauth-field-guide.vercel.app/use#slack)): `/oauth-guide gmail`, or `@OAuth Guide what blocks a Slack app from reading messages?`
 
 ### First visit, phone, and the details
 
@@ -116,6 +119,25 @@ Then ask: *"Using OAuth Guide, compare Gmail, Slack and HubSpot: which will take
 </p>
 
 A short frosted-glass tour on each page's first visit (replay with *Show tips*), tap-to-open help on phones, keyboard support throughout, and a check that nothing overflows on any guide at desktop or phone width.
+
+## How the agent works
+
+A bounded pipeline with **one real decision point**. Our code picks every URL it fetches; the models only read text and write structured output.
+
+| Stage | Input | Tools and model | Output, and what gets rejected |
+|---|---|---|---|
+| Identify | App name or website | gpt-5-nano (structured) | Canonical name and site. **Rejects** non-apps, prompt-injection input, apps with no third-party OAuth |
+| Probe | Provider domain | Our code: OIDC / OAuth discovery URLs | Endpoints, PKCE support (only if on the provider's domain) |
+| Read | Name, domain | Firecrawl search, our filters | Up to 8 pages: provider's own domain first, allowlisted doc sites only |
+| Write | Those pages | gpt-5-mini (Zod schema) | Draft guide citing page ids; sources set by code, so URLs can't be invented |
+| Try | Draft's endpoints | Our code: authorize URL with a test app, token endpoint with a bad code, console logged out | Status, redirect host, OAuth error code (never raw response text) |
+| **Decide** | Open questions | gpt-5-nano | **Whether** to run up to 2 more searches, which questions, and why |
+| Revise | New pages and checks | gpt-5-mini | Updated guide |
+| Audit | Final guide | Our code + gpt-5-nano | Model "tested" labels removed; Tested notes added only from our checks; dead links downgrade claims; **rejects** guides describing OAuth in the wrong direction |
+
+Every stage is recorded and saved with the guide ("How this guide was made"). Full diagrams: [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+**Limits:** live research 10/hour and 25/day per network, 40/day overall; chat 20/hour and 100/day per network; $0.60/day and $1.80 lifetime spend caps. **MCP tools:** `search_guides`, `get_guide` (any section), `generate_guide` (starts live research in the background; same limits). **Slack:** built and tested with Slack-signed requests; not yet installed in a public workspace (setup on [/use](https://oauth-field-guide.vercel.app/use#slack)).
 
 ## What the research found
 
@@ -149,12 +171,12 @@ The research agents turned up things a typical setup checklist misses:
 
 | Layer | What happened | Result |
 |---|---|---|
-| Research | 20 research agents followed one [research brief](docs/RESEARCH_BRIEF.md): official docs first, every claim labelled, no invented URLs | 110 guides |
-| Independent fact-check | A second agent, told to assume the researchers were wrong, re-checked 12 high-stakes claims against primary sources | 11 confirmed, 1 corrected, no wrong numbers |
+| Research | 26 research agent runs (6 for the first guides, then 20 batches) followed one [research brief](docs/RESEARCH_BRIEF.md): official docs first, every claim labelled, no invented URLs | 110 guides |
+| Independent fact-check | A second agent, told to assume the researchers were wrong, re-checked 12 high-stakes claims against primary sources | 11 confirmed, 1 corrected (plus 5 wording or label refinements), no wrong numbers |
 | Editorial review | Ratings and wording checked against our own definitions | e.g. HubSpot hard → moderate |
-| Timeline audit | Top 25 guides checked against providers' official timelines; tail risk moved out of headline ranges | 9 ranges corrected (Google: 6 weeks – 4+ months → 6–10 weeks) |
+| Timeline audit | 27 guides (the top 25 plus Google and Fitbit) checked against providers' official timelines; tail risk moved out of headline ranges | 9 ranges corrected, 1 wording change, 17 confirmed (Google: 6 weeks – 4+ months → 6–10 weeks) |
 | Live agent testing | Real production runs, compared before and after each change | Sources went from 5 of 7 noise to all official; wrong-direction guides now rejected |
-| Hands-on | A person sets up GitHub and Google apps with free accounts | See [HANDS_ON.md](docs/HANDS_ON.md) |
+| Hands-on | A person sets up GitHub and Google apps with free accounts | **In progress.** Checklist in [HANDS_ON.md](docs/HANDS_ON.md); results go into [VERIFICATION.md §3](docs/VERIFICATION.md) |
 
 Full details: [VERIFICATION.md](docs/VERIFICATION.md), [verification-desk.md](docs/verification-desk.md), [timing-audit.md](docs/timing-audit.md).
 
@@ -170,11 +192,19 @@ This is a prototype of the **research stage of a toolkit onboarding playbook**:
 - **Agent first, human where it counts:** agents identify, probe, read, try, audit and draft; people own provider accounts, legal pages, submissions and final QA. *Who does what* is exactly that split.
 - **Supply and health:** toolkits live, share with a human-verified guide, median time to production by tier, broken-link and stale-claim rate from scheduled re-runs.
 
+### Week 1 at Composio
+
+1. Run the agent across the current toolkit list to rate each toolkit's difficulty and two clocks, and compare with known pain points from the toolkit engineers.
+2. Pull the Hard and Gated toolkits on the roadmap forward: start their partner-program and security-review applications first, because approval, not engineering, sets the date.
+3. Propose 4 supply and health metrics (toolkits live, % with a human-verified guide, days in review, stale-claim rate from scheduled re-runs) and where they're tracked.
+4. Hand-verify a sample of guides with the toolkit engineers and publish the correction rate, so everyone knows how far to trust agent output.
+5. Write the first SOP: the agent researches and drafts, a person checks the gated steps and owns submissions, QA signs off before launch.
+
 ## Key decisions
 
 - **Two clocks, not one number.** The gap between "works in dev" and "any user can connect" is the surprise developers hit.
 - **"Tested" only from code.** The model can't award the strongest evidence label; only our own live checks can.
-- **A bounded agent with one real decision**, not an open-ended one: predictable cost (≈ $0.02) and time (≈ 2 min) under a $2 budget.
+- **A bounded agent with one real decision**, not an open-ended one: predictable cost (≈ $0.02) and time (≈ 2 min) within a $2 budget that hard-stops at $1.80.
 - **Our code picks every URL; models only read and write.** This removes the main prompt-injection and SSRF paths.
 - **The agent acts through drafts and pre-filled consoles,** never with the user's credentials.
 - **Breadth from agents, trust from labels.** 110 guides, clearly labelled agent-researched, with a verified sample showing how accurate they are.
@@ -219,7 +249,7 @@ npm run dev                     # http://localhost:3000
 
 ## Limitations and next steps
 
-- **Human verification is the open gap.** All 110 guides are agent-researched. Hands-on checks of GitHub and Google are in progress, and "Checked by a person" stays empty until they're done.
+- **Human verification is the open gap.** All 110 guides are agent-researched. Hands-on checks of GitHub and Google and desk reviews ([`docs/human-review/`](docs/human-review/)) are in progress; a guide is only marked "Checked by a person" after a person fills in its review sheet.
 - **Live guides are listed immediately.** They're labelled "Written live by an agent, not reviewed by a person". A review queue before listing would be the next step at scale.
 - **The timeline audit covered the 25 most popular guides.** The rest use the same evidence rules but haven't had a second timing pass.
 - **Provider rules change.** Next: a scheduled re-check that re-runs the agent on each guide, diffs the result and flags what changed.

@@ -264,7 +264,7 @@ Summary of `docs/SECURITY_REVIEW.md` (independent review, all findings fixed):
 
 ```mermaid
 flowchart LR
-  B["Shared research brief<br/>docs/RESEARCH_BRIEF.md"] --> R["20 research agents<br/>(5–6 apps each, 106 apps)"]
+  B["Shared research brief<br/>docs/RESEARCH_BRIEF.md"] --> R["26 research agent runs<br/>(6 single-app, then 20 batches)"]
   R --> V["Schema validation<br/>npm run validate"]
   V --> L["Link check<br/>npm run check-links"]
   L --> F["Independent fact-check agent<br/>12 high-stakes claims"]

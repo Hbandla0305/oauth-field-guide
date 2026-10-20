@@ -35,7 +35,7 @@
   ],
   "verdict": {
     "difficulty": "gated",
-    "summary": "Sign-in (openid/profile/email) and posting as the member (w_member_social) are self-serve, need no review and work the same day. Everything else an agent would want (reading a member's posts, feed or connections, managing Company Pages, ads, Sales Navigator) is behind partner programs that require a registered business, page-admin verification, vetting and often a screencast, with no published turnaround.",
+    "summary": "Anything an agent would want beyond sign-in and posting (reading a member's posts, feed or connections, managing Company Pages, ads, Sales Navigator) is behind partner programs that require a registered business, page-admin verification, vetting and often a screencast, with no published turnaround. Sign-in (openid/profile/email) and posting as the member (w_member_social) are self-serve, need no review and work the same day.",
     "timeToDev": {
       "range": "30 min – 2 hours",
       "hours": {

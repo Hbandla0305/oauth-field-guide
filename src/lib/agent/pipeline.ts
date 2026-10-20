@@ -5,6 +5,7 @@ import { Guide, type Evidence, type ResearchLog } from "../guide-schema";
 import { MODELS, LIMITS, costOf } from "./config";
 import { probeDiscovery, checkLinks, attemptSetup, rootDomain, type Attempt, type DiscoveryProbe } from "./probes";
 import { firecrawlConfigured, readOfficialDocs, readMore, type Page } from "./firecrawl";
+import { cleanCost } from "../cost";
 import { firecrawlCreditsCommitted } from "../db";
 import { RESEARCH_INSTRUCTIONS, SCREEN_INSTRUCTIONS, AUDIT_INSTRUCTIONS, PAGES_ADDENDUM, GAPS_INSTRUCTIONS, REVISE_ADDENDUM } from "./prompts";
 
@@ -384,6 +385,7 @@ function normalise(g: Guide, screen: Screen, probe: DiscoveryProbe, pages: Page[
 
   return {
     ...g,
+    verdict: { ...g.verdict, cost: cleanCost(g.verdict.cost) },
     app: { ...g.app, name: screen.name, slug: screen.slug, website: httpsOnly(screen.website) ?? `https://${rootDomain(screen.website)}`, developerPortal: httpsOnly(g.app.developerPortal) ?? httpsOnly(screen.website) ?? "" },
     officialDocs: g.officialDocs.filter((d) => httpsOnly(d.url)).slice(0, 6),
     steps: g.steps.map((st) => ({ ...st, url: httpsOnly(st.url) })),

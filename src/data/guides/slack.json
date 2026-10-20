@@ -35,7 +35,7 @@
   ],
   "verdict": {
     "difficulty": "hard",
-    "summary": "A working app installed in your own workspace takes minutes, and unlisted public distribution is self-serve with no review. But unlisted apps that are distributed commercially get 1 request/min and 15 messages per call on conversations.history/replies, can't use the Real-time Search API or the Slack MCP server, and per Slack's API terms aren't the channel for commercial distribution, so an AI agent that reads messages realistically needs a Marketplace listing (10+ active workspaces, then weeks to months of review).",
+    "summary": "An AI agent that reads messages realistically needs a Marketplace listing (10+ active workspaces, then weeks to months of review): unlisted apps distributed commercially get 1 request/min and 15 messages per call on conversations.history/replies, can't use the Real-time Search API or the Slack MCP server, and per Slack's API terms aren't the channel for commercial distribution. A working app in your own workspace takes minutes, and unlisted distribution is self-serve with no review.",
     "timeToDev": {
       "range": "15–60 min",
       "hours": {

@@ -70,7 +70,7 @@ export function PageTour({ id, steps }: { id: string; steps: TourStep[] }) {
             Skip
           </button>
         </div>
-        <div key={i} className="mt-4 animate-[fadein_250ms_ease-out]">
+        <div key={i} className="mt-4">
           <span aria-hidden className="flex size-10 items-center justify-center rounded-xl border border-white/70 bg-white/60 text-xl shadow-sm">
             {step.icon}
           </span>

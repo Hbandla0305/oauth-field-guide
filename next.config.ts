@@ -17,6 +17,8 @@ const csp = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
+  // Keep the in-browser page cache short so a guide saved moments ago shows up in the home list.
+  experimental: { staleTimes: { dynamic: 0, static: 30 } },
   async headers() {
     return [
       {

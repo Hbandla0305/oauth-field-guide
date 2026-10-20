@@ -6,11 +6,11 @@ Setup and approval guides for getting your own OAuth app live with 110+ provider
 <p align="center"><sub>OAuth Guide (repo and URL: <code>oauth-field-guide</code>)</sub></p>
 
 <p align="center">
-  <a href="https://oauth-field-guide.vercel.app"><strong>Live app</strong></a> ·
+  <a href="https://oauth-guide-composio.hrudvibandla.com"><strong>Live app</strong></a> ·
   <a href="docs/ARCHITECTURE.md">Architecture</a> ·
   <a href="docs/VERIFICATION.md">Verification log</a> ·
   <a href="docs/SECURITY_REVIEW.md">Security review</a> ·
-  <a href="https://oauth-field-guide.vercel.app/use">Use in AI assistants &amp; Slack</a>
+  <a href="https://oauth-guide-composio.hrudvibandla.com/use">Use in AI assistants &amp; Slack</a>
 </p>
 
 <p align="center"><img src="docs/screenshots/live-research.gif" alt="The live agent researching Harvest: identify, probe, read the docs, try the first setup steps, dig into what's unclear, audit" width="720"/></p>
@@ -106,10 +106,10 @@ The agent's reasoning doesn't disappear when the run ends. Every guide keeps a t
 <img src="docs/screenshots/use-anywhere.png" alt="Use it anywhere page: setup for the website, Claude, Claude Code, Cursor, VS Code and Slack, with prompts" width="100%"/>
 
 ```bash
-claude mcp add --transport http oauth-guide https://oauth-field-guide.vercel.app/api/mcp
+claude mcp add --transport http oauth-guide https://oauth-guide-composio.hrudvibandla.com/api/mcp
 ```
 
-Then ask: *"Using OAuth Guide, compare Gmail, Slack and HubSpot: which will take longest before any user can connect?"* In Slack (once installed in your workspace, see [/use](https://oauth-field-guide.vercel.app/use#slack)): `/oauth-guide gmail`, or `@OAuth Guide what blocks a Slack app from reading messages?`
+Then ask: *"Using OAuth Guide, compare Gmail, Slack and HubSpot: which will take longest before any user can connect?"* In Slack (once installed in your workspace, see [/use](https://oauth-guide-composio.hrudvibandla.com/use#slack)): `/oauth-guide gmail`, or `@OAuth Guide what blocks a Slack app from reading messages?`
 
 ### First visit, phone, and the details
 
@@ -137,7 +137,7 @@ A bounded pipeline with **one real decision point**. Our code picks every URL it
 
 Every stage is recorded and saved with the guide ("How this guide was made"). Full diagrams: [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-**Limits:** live research 10/hour and 25/day per network, 40/day overall; chat 20/hour and 100/day per network; at most $0.20/day of spend per network (IPv6 counted per /64); $0.60/day and $1.80 lifetime spend caps, with $0.10 of each day kept for chat. **MCP tools:** `search_guides`, `get_guide` (any section), `generate_guide` (starts live research in the background; same limits). **Slack:** built and tested with Slack-signed requests; not yet installed in a public workspace (setup on [/use](https://oauth-field-guide.vercel.app/use#slack)).
+**Limits:** live research 10/hour and 25/day per network, 40/day overall; chat 20/hour and 100/day per network; at most $0.20/day of spend per network (IPv6 counted per /64); $0.60/day and $1.80 lifetime spend caps, with $0.10 of each day kept for chat. **MCP tools:** `search_guides`, `get_guide` (any section), `generate_guide` (starts live research in the background; same limits). **Slack:** built and tested with Slack-signed requests; not yet installed in a public workspace (setup on [/use](https://oauth-guide-composio.hrudvibandla.com/use#slack)).
 
 ## What the research found
 

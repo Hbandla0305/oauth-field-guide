@@ -18,7 +18,7 @@ const path = `src/data/guides/${slug}.json`;
 const g = JSON.parse(readFileSync(path, "utf8"));
 const corrections = rows
   .filter((r) => r[5].includes("✏"))
-  .map((r) => ({ claim: r[2], before: r[3], after: r[7] || "(see review sheet)", source: (r[4].match(/\((https:[^)]+)\)/) ?? [])[1] ?? `https://oauth-field-guide.vercel.app/guides/${slug}` }));
+  .map((r) => ({ claim: r[2], before: r[3], after: r[7] || "(see review sheet)", source: (r[4].match(/\((https:[^)]+)\)/) ?? [])[1] ?? `https://oauth-guide-composio.hrudvibandla.com/guides/${slug}` }));
 const tested = rows.filter((r) => /tested/i.test(r[6])).map((r) => `Checked by ${reviewer} on ${date}: ${r[2]}`);
 
 g.verification.status = "human-verified";

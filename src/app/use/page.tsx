@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Use OAuth Guide on the web, in Slack, and inside Claude, Claude Code, Cursor and other MCP clients, with ready-to-copy prompts.",
 };
 
-const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "https://oauth-field-guide.vercel.app";
+const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "https://oauth-guide-composio.hrudvibandla.com";
 const MCP_URL = `${SITE}/api/mcp`;
 
 const SECTIONS = [

@@ -2,7 +2,7 @@ import type { Guide } from "@/lib/guide-schema";
 import { guideSection, type Section } from "@/lib/guide-text";
 import { guideCard, slackText, esc } from "@/lib/slack";
 
-export const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "https://oauth-field-guide.vercel.app";
+export const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "https://oauth-guide-composio.hrudvibandla.com";
 
 export const guideUrl = (slug: string) => `${SITE}/guides/${slug}`;
 

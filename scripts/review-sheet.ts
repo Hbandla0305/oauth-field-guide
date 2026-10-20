@@ -21,7 +21,7 @@ for (const slug of process.argv.slice(2)) {
   const md = [
     `# Human review: ${g.app.name}`,
     "",
-    `Guide: https://oauth-field-guide.vercel.app/guides/${slug} · researched ${g.verification.lastChecked}`,
+    `Guide: https://oauth-guide-composio.hrudvibandla.com/guides/${slug} · researched ${g.verification.lastChecked}`,
     "",
     "Open each source, check the claim against it (or against your own setup attempt), and fill in the last two columns.",
     "**Result:** ✅ confirmed · ✏️ corrected (write the correct text in Notes) · ❓ couldn't verify. **How:** `source` (read the docs) or `tested` (saw it yourself in the console).",

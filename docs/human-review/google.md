@@ -1,6 +1,6 @@
 # Human review: Google (Gmail, Calendar, Drive)
 
-Guide: https://oauth-field-guide.vercel.app/guides/google · researched 2026-10-20
+Guide: https://oauth-guide-composio.hrudvibandla.com/guides/google · researched 2026-10-20
 
 Open each source, check the claim against it (or against your own setup attempt), and fill in the last two columns.
 **Result:** ✅ confirmed · ✏️ corrected (write the correct text in Notes) · ❓ couldn't verify. **How:** `source` (read the docs) or `tested` (saw it yourself in the console).

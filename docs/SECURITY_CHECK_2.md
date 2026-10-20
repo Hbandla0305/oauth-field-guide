@@ -1,6 +1,6 @@
 # Security check 2: OAuth Field Guide (pre-merge of `feat/how-it-works`)
 
-Date: 2026-10-20. Branch reviewed: `feat/how-it-works` (HEAD 6ebd27a). Production probed: https://oauth-field-guide.vercel.app.
+Date: 2026-10-20. Branch reviewed: `feat/how-it-works` (HEAD 6ebd27a). Production probed: https://oauth-guide-composio.hrudvibandla.com.
 Method: full code read of all routes and libs, local runs (`scripts/ssrf-test.ts`, a Slack signature harness), secret scans of tree, all 50 commits on all refs, and the production client bundles, `npm audit`, and black-box requests against production. No source files were modified. At most 2 requests reached OpenAI (both cheap chat calls). No live research was run.
 
 ## Verdict: safe to merge? YES

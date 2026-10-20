@@ -33,7 +33,7 @@ async function main() {
   url.password = password;
   writeFileSync(".env.runtime-role.local", `DATABASE_URL=${url.toString()}\n`);
   console.log("Created app_runtime. Its connection string is in .env.runtime-role.local (gitignored).");
-  console.log("Next: paste it into Vercel → Settings → Environment Variables → DATABASE_URL (Production), then redeploy.");
+  console.log("Next: add it in Vercel as APP_DATABASE_URL (Production), then redeploy.");
 }
 main().catch((e) => {
   console.error(e.message);

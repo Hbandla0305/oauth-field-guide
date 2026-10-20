@@ -64,9 +64,26 @@ Every sampled scope class, token lifetime, user cap, install threshold and revie
 - **Notion, HubSpot, LinkedIn:** desk-checked only.
 - **Any provider review or approval:** reviews take weeks and need a real product.
 
-## 4. Live agent vs. checked guides
+## 4. Live agent tests in production
 
-> Pending: we run the live agent on library apps (bypassing the cache) and compare its output with the checked guides.
+| Test | What happened | What we changed |
+|---|---|---|
+| First live run (Harvest) | Correct guide, but only 2 of 7 pages it read were useful: the same-named "Greenhouse Harvest" API, YouTube, a competitor review and Capterra | Search the provider's own domain first; drop review, video and social sites; third-party pages only from an allowlist of documentation sites |
+| Freshdesk | The live agent wrote a guide about Freshworks Marketplace apps calling *other* services, the wrong direction. Freshdesk's API only takes keys (the research agent had already declined to write one) | Audit now checks direction and refuses to save. **Re-run in production on 2026-10-20: rejected, as intended** ($0.025) |
+| "Harvest" rejected as ambiguous | The cheap first check said "could be a generic term" | Ambiguous names resolve to the most likely software product |
+| Harvest after the agent upgrade | Sources all official (help.getharvest.com, support.getharvest.com, id.getharvest.com); 9 steps vs 6; the agent decided to look up "app review process timeline" and "rate limits"; 3 logged-out setup checks recorded | Live checks now always appear as Tested notes; before/after files in `docs/evidence/` |
+
+Costs from the ledger: live guides $0.014–0.025; chat answers $0.0003–0.0016.
+
+## 5. Timeline audit (top 25 guides)
+
+A user compared our Google guide with another assistant's answer and found the headline inflated: "6 weeks – 4+ months", with an upper bound taken from forum reports of stalled reviews. The other answer was also wrong in places (it gave sensitive scopes "3–7 days" where Google says 10 business days, and left out CASA).
+
+Rule applied: the headline is the provider's **official or typical** range; worst-case stalls go into the *assumes* text; ranges without a published timeline are labelled inferred. **9 of 25 ranges corrected**, including Google (now 6–10 weeks, from Google's FAQ: restricted verification "6 weeks", "not guaranteed", plus CASA), Slack, HubSpot, Meta, LinkedIn, Zoom, Shopify, YouTube and Fitbit. 17 were confirmed unchanged. Details and quotes: [`timing-audit.md`](timing-audit.md).
+
+## 6. Security review
+
+An independent review of the code, git history, dependencies, prompt-injection paths and the database role found no secrets anywhere, and 2 High and 6 Medium issues, all fixed. One of the fixes changes the evidence model: the model can no longer mark a claim **Tested**; only our own live checks can. See [`SECURITY_REVIEW.md`](SECURITY_REVIEW.md).
 
 ## What remains uncertain
 

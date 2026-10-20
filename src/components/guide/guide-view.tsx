@@ -438,7 +438,8 @@ function StepsPanel({ guide, sources, onDo }: { guide: Guide; sources: SourceInd
                     <span className={`font-medium ${checked ? "text-trivial line-through decoration-trivial/60" : ""}`}>
                       {i + 1}. {s.title}
                     </span>
-                    <OwnerTag owner={s.owner} />
+                    {/* AI steps are identified by their "Do it with AI" button, so they skip the tag. */}
+                    {(s.owner !== "agent" || checked) && <OwnerTag owner={s.owner} />}
                     {s.owner === "agent" && !checked && (
                       <>
                         <DoButton onClick={() => onDo({ kind: "draft", title: s.title, detail: s.detail })} />

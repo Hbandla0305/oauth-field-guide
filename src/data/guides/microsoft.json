@@ -35,7 +35,7 @@
   ],
   "verdict": {
     "difficulty": "hard",
-    "summary": "Registering a multitenant Entra app and calling Graph from your own tenant is self-serve and takes under an hour, and there is no Microsoft app review for Graph. But in work/school tenants on Microsoft's default consent policy, users can't consent to Mail.Read, Calendars.Read, Chat.Read, Files.Read.All and similar agent-relevant scopes at all, so every customer organization needs an admin to grant consent, and unverified multitenant apps get stepped up to admin consent even for lesser scopes, which makes publisher verification (a verified Microsoft AI Cloud Partner Program account) the practical first step.",
+    "summary": "In work/school tenants on Microsoft's default consent policy, users can't consent to Mail.Read, Calendars.Read, Chat.Read, Files.Read.All and similar agent-relevant scopes, so every customer organization needs an admin to grant consent; unverified multitenant apps get stepped up to admin consent even for lesser scopes, which makes publisher verification (a verified Microsoft AI Cloud Partner Program account) the practical first step. Registering a multitenant Entra app and calling Graph from your own tenant is self-serve and takes under an hour, and there is no Microsoft app review for Graph.",
     "timeToDev": {
       "range": "30–90 min",
       "hours": {

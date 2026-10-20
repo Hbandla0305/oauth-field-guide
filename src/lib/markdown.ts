@@ -1,4 +1,5 @@
 import type { Evidence, Guide } from "./guide-schema";
+import { cleanCost } from "./cost";
 
 const OWNER = { agent: "AI can help", human: "You (Developer)", wait: "Provider review" } as const;
 
@@ -13,7 +14,7 @@ export function guideToMarkdown(g: Guide, url: string): string {
   const lines = [
     `# ${g.app.name}: OAuth app setup guide`,
     "",
-    `**Difficulty:** ${v.difficulty} · **Working in dev:** ${v.timeToDev.range} · **Any user can connect:** ${v.timeToProd.range} (${v.timeToProd.assumes} Waiting on: ${v.timeToProd.waitingOn})${v.cost ? ` · **Cost:** ${v.cost}` : ""}`,
+    `**Difficulty:** ${v.difficulty} · **Working in dev:** ${v.timeToDev.range} · **Any user can connect:** ${v.timeToProd.range} (${v.timeToProd.assumes} Waiting on: ${v.timeToProd.waitingOn})${cleanCost(v.cost) ? ` · **Cost:** ${cleanCost(v.cost)}` : ""}`,
     "",
     v.summary,
     "",

@@ -35,7 +35,7 @@
   ],
   "verdict": {
     "difficulty": "gated",
-    "summary": "There's no app review: create an app in the Developer Console, set callback URLs and go, and any X user can authorize the same day. But since February 2026 the API is pay-per-use only (the free tier and fixed Basic/Pro plans are gone), so every post or user your agent reads and every post it writes draws down prepaid credits. Following, liking and quote-posting via the API were removed from self-serve plans in April 2026.",
+    "summary": "Every API call is paid: since February 2026 the API is pay-per-use only (the free tier and fixed Basic/Pro plans are gone), so every post or user your agent reads and every post it writes draws down prepaid credits, and following, liking and quote-posting were removed from self-serve plans in April 2026. There's no app review: create an app in the Developer Console, set callback URLs, and any X user can authorize the same day.",
     "timeToDev": {
       "range": "30–60 min",
       "hours": {

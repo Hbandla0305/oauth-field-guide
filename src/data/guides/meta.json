@@ -40,7 +40,7 @@
   ],
   "verdict": {
     "difficulty": "hard",
-    "summary": "Role holders (admins, developers, testers) get Standard Access to every permission instantly, so dev takes under an hour. Letting any other user or business connect needs Advanced Access, which takes three separate queues: Business Verification, App Review per permission (with a screencast and a successful API call in the last 30 days), and, for Tech Providers handling other businesses' data, Access Verification.",
+    "summary": "Letting any user or business outside your app's roles connect needs Advanced Access, which takes three separate queues: Business Verification, App Review per permission (with a screencast and a successful API call in the last 30 days), and, for Tech Providers handling other businesses' data, Access Verification. Role holders (admins, developers, testers) get Standard Access to every permission instantly, so dev takes under an hour.",
     "timeToDev": {
       "range": "30–90 min",
       "hours": {

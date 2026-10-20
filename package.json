@@ -21,7 +21,9 @@
     "try-attempts": "tsx scripts/try-attempts.ts",
     "slack-test": "tsx --env-file=.env.local scripts/slack-test.ts",
     "export-generated": "tsx --env-file=.env.local scripts/export-generated.ts",
-    "create-runtime-role": "tsx --env-file=.env.local scripts/create-runtime-role.ts"
+    "create-runtime-role": "tsx --env-file=.env.local scripts/create-runtime-role.ts",
+    "review-sheet": "tsx scripts/review-sheet.ts",
+    "mark-reviewed": "tsx scripts/mark-reviewed.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

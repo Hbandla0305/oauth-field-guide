@@ -17,6 +17,12 @@ for (const file of files) {
     console.error(`✗ ${file}\n${parsed.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n")}`);
     continue;
   }
+  const literal = JSON.stringify(parsed.data).match(/":"(null|undefined|NaN)"/g);
+  if (literal) {
+    failed = true;
+    console.error(`✗ ${file}: literal ${[...new Set(literal)].join(", ")} text where a value should be`);
+    continue;
+  }
   const ids = new Set(parsed.data.sources.map((s) => s.id));
   const dangling = [...JSON.stringify(parsed.data).matchAll(/"sourceIds":\[([^\]]*)\]/g)]
     .flatMap((m) => (m[1] ? JSON.parse(`[${m[1]}]`) : []))

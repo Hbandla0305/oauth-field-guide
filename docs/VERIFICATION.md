@@ -6,10 +6,10 @@ Four layers, from cheapest to strongest:
 
 | Layer | Who | What it catches |
 |---|---|---|
-| 1. Research with citations | 6 research agents, one per app | Every claim carries a label (tested / sourced / inferred / unverified) and source links |
+| 1. Research with citations | 26 research agent runs: 6 for the first guides (one app each), then 20 batches covering 104 more apps | Every claim carries a label (tested / sourced / inferred / unverified) and source links |
 | 2. Independent desk check | A separate verifier agent told to assume the researchers were wrong | Wrong facts, over-claiming, stale info, using primary sources fetched fresh |
 | 3. Editorial review | A person | Ratings and framing that don't fit our own definitions; readability |
-| 4. Hands-on setup attempts | A person, with free accounts | Whether the console actually matches the docs |
+| 4. Hands-on setup attempts | A person, with free accounts (in progress) | Whether the console actually matches the docs |
 
 ---
 
@@ -17,7 +17,7 @@ Four layers, from cheapest to strongest:
 
 Full table with quotes and URLs: [`verification-desk.md`](verification-desk.md).
 
-**Result: 11 confirmed, 1 corrected. No numbers were wrong.**
+**Result: 11 confirmed, 1 corrected. No numbers were wrong.** The table below lists 6 edits in total: the 1 factual correction (LinkedIn's Page requirement) plus 5 wording or label refinements.
 Every sampled scope class, token lifetime, user cap, install threshold and review window matched current official sources.
 
 **What we corrected:**
@@ -47,7 +47,7 @@ Every sampled scope class, token lifetime, user cap, install threshold and revie
 
 ## 3. Hands-on setup attempts
 
-> Pending: being run with free GitHub and Google accounts. See [`HANDS_ON.md`](HANDS_ON.md) for the checklist.
+> **In progress.** Hands-on: GitHub and Google with free accounts ([`HANDS_ON.md`](HANDS_ON.md)). Desk review: one-page sheets per guide in [`human-review/`](human-review/) (GitHub, Google, Notion), each listing the claims that matter with their sources. A guide is marked "Checked by a person" only after its sheet is filled in by a person (`npm run mark-reviewed`, which refuses unfilled sheets).
 
 | App | Claim checked | Result | Evidence |
 |---|---|---|---|
@@ -75,11 +75,11 @@ Every sampled scope class, token lifetime, user cap, install threshold and revie
 
 Costs from the ledger: live guides $0.014–0.025; chat answers $0.0003–0.0016.
 
-## 5. Timeline audit (top 25 guides)
+## 5. Timeline audit (27 guides)
 
 A user compared our Google guide with another assistant's answer and found the headline inflated: "6 weeks – 4+ months", with an upper bound taken from forum reports of stalled reviews. The other answer was also wrong in places (it gave sensitive scopes "3–7 days" where Google says 10 business days, and left out CASA).
 
-Rule applied: the headline is the provider's **official or typical** range; worst-case stalls go into the *assumes* text; ranges without a published timeline are labelled inferred. **9 of 25 ranges corrected**, including Google (now 6–10 weeks, from Google's FAQ: restricted verification "6 weeks", "not guaranteed", plus CASA), Slack, HubSpot, Meta, LinkedIn, Zoom, Shopify, YouTube and Fitbit. 17 were confirmed unchanged. Details and quotes: [`timing-audit.md`](timing-audit.md).
+Rule applied: the headline is the provider's **official or typical** range; worst-case stalls go into the *assumes* text; ranges without a published timeline are labelled inferred. **27 guides checked** (the 25 most popular, plus Google and Fitbit): **9 ranges corrected**, including Google (now 6–10 weeks, from Google's FAQ: restricted verification "6 weeks", "not guaranteed", plus CASA), Slack, HubSpot, Meta, LinkedIn, Zoom, Shopify, YouTube and Fitbit; **1 wording change** (Google Ads); **17 confirmed unchanged**. Details and quotes: [`timing-audit.md`](timing-audit.md).
 
 ## 6. Security review
 

@@ -36,7 +36,7 @@ Direction matters: the guide is about an OUTSIDE app getting OAuth access to thi
 
 Content rules:
 - verdict.difficulty: "trivial" (self-serve, no review, under an hour to production) | "moderate" (self-serve dev; config, optional review, or limits; days) | "hard" (mandatory review or security assessment; weeks) | "gated" (must apply to a partner program or paid tier to reach useful APIs).
-- verdict.summary: at most 2 sentences, plain language.
+- verdict.summary: at most 2 sentences, plain language. The FIRST sentence must state the main gate or limitation that sets the difficulty (the review, partner program, admin consent, paid tier or cap); mention what's easy second. It is shown on its own as the guide's headline.
 - timeToDev / timeToProd.range: a SHORT human range like "15–60 min", "Same day", "4–8 weeks". hours.min/max: the same range in hours (1 day = 24, 1 week = 168, 1 month = 720).
 - timeToProd.assumes: one sentence naming the path the headline assumes when time depends on scopes or scale. Pick the path a typical AI agent needs (e.g. reading data, not just sign-in) and mention the faster path if one exists.
 - timeToProd.waitingOn: what you wait for, or "No review needed" if none.

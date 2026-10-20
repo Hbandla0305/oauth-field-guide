@@ -42,4 +42,4 @@ Start a timer when you open the first page.
 
 ---
 
-When you're done, tell me in the chat (or just fill this file in). I'll turn every row into a ✅ confirmed / ✏️ corrected / ❓ couldn't verify entry in `VERIFICATION.md`, update the guides, and relabel those claims as **Tested**.
+After each run, every row is recorded in `VERIFICATION.md` §3 as ✅ confirmed, ✏️ corrected or ❓ couldn't verify, and the guide is updated: corrections go into its "What we corrected" list, and it's marked as checked by a person with the date.

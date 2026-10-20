@@ -1,6 +1,7 @@
 // Plain-text views of a guide for tools (MCP, Slack): one section at a time keeps answers short.
 import type { Evidence, Guide } from "./guide-schema";
 import { researchTrail } from "./research-trail";
+import { costLabel } from "./cost";
 
 export const SECTIONS = ["summary", "steps", "permissions", "good_to_know", "troubleshoot", "resources", "all"] as const;
 export type Section = (typeof SECTIONS)[number];
@@ -28,7 +29,7 @@ export function guideSection(g: Guide, section: Section, url: string): string {
       `Working in dev: ${v.timeToDev.range}${ev(v.timeToDev.evidence)}`,
       `Any user can connect: ${v.timeToProd.range}${ev(v.timeToProd.evidence)}. Assumes: ${v.timeToProd.assumes}`,
       `Waiting on: ${v.timeToProd.waitingOn}`,
-      `Cost: ${v.cost ?? "None"}`,
+      `Cost: ${costLabel(v.cost)}`,
       `Who does what: ${g.steps.filter((s) => s.owner === "agent").length} steps AI can help with, ${g.steps.filter((s) => s.owner === "human").length} for you, ${g.steps.filter((s) => s.owner === "wait").length} provider review.`,
       `${status}. Researched ${g.verification.lastChecked}.`,
     ],
@@ -62,7 +63,7 @@ export function guideContext(g: Guide): string {
   return [
     `GUIDE: ${g.app.name} (${v.difficulty}). Status: ${g.verification.status}, last checked ${g.verification.lastChecked}.`,
     `Summary: ${v.summary}`,
-    `Working in dev: ${v.timeToDev.range} (${v.timeToDev.evidence.label}). Any user can connect: ${v.timeToProd.range} (${v.timeToProd.evidence.label}). Assumes: ${v.timeToProd.assumes} Waiting on: ${v.timeToProd.waitingOn}. Cost: ${v.cost ?? "none"}.`,
+    `Working in dev: ${v.timeToDev.range} (${v.timeToDev.evidence.label}). Any user can connect: ${v.timeToProd.range} (${v.timeToProd.evidence.label}). Assumes: ${v.timeToProd.assumes} Waiting on: ${v.timeToProd.waitingOn}. Cost: ${costLabel(v.cost)}.`,
     `Developer portal: ${g.app.developerPortal}`,
     "OFFICIAL DOCS:",
     ...g.officialDocs.map((d) => `- ${d.label}: ${d.url}`),

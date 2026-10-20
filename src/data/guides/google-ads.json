@@ -35,7 +35,7 @@
   ],
   "verdict": {
     "difficulty": "hard",
-    "summary": "Developer tokens were sunset on 2026-09-09: access levels now belong to the Google Cloud project that issues your OAuth credentials, Explorer access (2,880 production operations/day) is usually auto-approved, and Basic (15,000/day) follows brand verification within minutes. The slow part is Google's OAuth app verification for the Google Ads scope (Google Ads docs call it restricted, others call it sensitive), plus a manual audit (about 10 business days) if you need Standard's unlimited operations.",
+    "summary": "The slow part is Google's OAuth app verification for the Google Ads scope (Google Ads docs call it restricted, others call it sensitive), plus a manual audit of about 10 business days if you need Standard's unlimited operations. Since developer tokens were sunset on 2026-09-09, access levels belong to the Google Cloud project that issues your OAuth credentials: Explorer access (2,880 production operations/day) is usually auto-approved, and Basic (15,000/day) follows brand verification within minutes.",
     "timeToDev": {
       "range": "1–2 hours",
       "hours": {

@@ -38,7 +38,7 @@ A developer building an AI agent who needs **their own production OAuth app** wi
   - `moderate`: self-serve, but with install/user caps, required config or optional review
   - `hard`: mandatory review or security assessment before most users can connect
   - `gated`: useful APIs need acceptance into a partner program or a paid tier
-- `verdict.summary`: at most 2 sentences.
+- `verdict.summary`: at most 2 sentences. The first sentence states the main gate or limitation that sets the difficulty; what's easy comes second (the first sentence is shown alone as the headline).
 - `timeToDev.range` and `timeToProd.range`: SHORT, e.g. "15–60 min", "Same day", "2–6 weeks". `hours.min/max` in hours (day = 24, week = 168, month = 720).
 - `timeToProd.assumes`: one sentence naming the path the headline assumes. Pick what a typical AI agent needs (reading or writing user data), and mention the faster path if there is one.
 - `timeToProd.waitingOn`: what you wait for, or "No review needed".

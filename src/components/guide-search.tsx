@@ -92,7 +92,7 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
           onChange={(e) => setQuery(e.target.value)}
           maxLength={80}
           autoComplete="off"
-          placeholder={`Search ${guides.length} apps, or enter any app or website`}
+          placeholder={`Search ${guides.length} apps or any website`}
           aria-label="Search apps, or enter any app or website"
           className="h-12 flex-1 rounded-lg border border-line bg-surface px-4 text-base placeholder:text-muted focus:border-ink focus:outline-none"
         />

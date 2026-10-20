@@ -25,7 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </Link>
             <nav aria-label="Main" className="flex gap-5 text-sm text-muted">
               <Link href="/use" className="hover:text-ink">
-                Use in Claude &amp; Slack
+                Use in AI assistants &amp; Slack
               </Link>
               <Link href="/#how" className="hidden hover:text-ink sm:inline">
                 How guides are made

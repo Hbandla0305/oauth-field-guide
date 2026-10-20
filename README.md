@@ -10,7 +10,7 @@ Setup and approval guides for getting your own OAuth app live with 110+ provider
   <a href="docs/ARCHITECTURE.md">Architecture</a> ·
   <a href="docs/VERIFICATION.md">Verification log</a> ·
   <a href="docs/SECURITY_REVIEW.md">Security review</a> ·
-  <a href="https://oauth-field-guide.vercel.app/use">Use in Claude &amp; Slack</a>
+  <a href="https://oauth-field-guide.vercel.app/use">Use in AI assistants &amp; Slack</a>
 </p>
 
 <p align="center"><img src="docs/screenshots/live-research.gif" alt="The live agent researching Harvest: identify, probe, read the docs, try the first setup steps, dig into what's unclear, audit" width="720"/></p>
@@ -101,7 +101,7 @@ The agent's work is visible as it happens: what it searched, which pages it read
 
 The agent's reasoning doesn't disappear when the run ends. Every guide keeps a timeline of what was read, tried, decided and corrected, and what's still uncertain.
 
-### Use it in Claude, Cursor and Slack
+### Use it in any AI assistant, and in Slack
 
 <img src="docs/screenshots/use-anywhere.png" alt="Use it anywhere page: setup for the website, Claude, Claude Code, Cursor, VS Code and Slack, with prompts" width="100%"/>
 

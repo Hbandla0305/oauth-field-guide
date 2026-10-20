@@ -6,7 +6,7 @@ import { LIMITS, generationEnabled } from "./agent/config";
 import { runAgent, screenInput, toSlug, RunCost, NoThirdPartyOAuth, type AgentEvent } from "./agent/pipeline";
 import { isSharedHost } from "./agent/probes";
 import { findGuide } from "./guides";
-import { hashIp, reserveRun, saveGuide, settleRun } from "./db";
+import { hashIp, recordProgress, reserveRun, saveGuide, settleRun } from "./db";
 
 const INPUT_PATTERN = /^[\p{L}\p{N} .,&'()+\-/:]+$/u;
 
@@ -44,7 +44,16 @@ export async function startGeneration(rawInput: unknown, ip: string): Promise<St
 
   return {
     kind: "started",
-    run: async (emit) => {
+    run: async (send) => {
+      // Every event goes to the live stream; stages and errors are also saved in order, so a
+      // reloaded page can follow the run from the database.
+      let saving = Promise.resolve();
+      const emit = (e: AgentEvent) => {
+        send(e);
+        const patch = e.type === "stage" ? { [e.stage]: { status: e.status, detail: e.detail ?? null } } : e.type === "error" ? { error: e.message } : null;
+        if (patch) saving = saving.then(() => recordProgress(runId, patch)).catch(() => {});
+      };
+      send({ type: "run", runId });
       const cost = new RunCost();
       const signal = AbortSignal.timeout(LIMITS.runTimeoutMs);
       let slug: string | null = null;
@@ -108,6 +117,8 @@ export async function startGeneration(rawInput: unknown, ip: string): Promise<St
             : "The investigation failed before finishing. Try again in a minute.",
         });
         return { slug: null };
+      } finally {
+        await saving;
       }
     },
   };

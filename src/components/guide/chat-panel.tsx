@@ -191,9 +191,9 @@ export function ChatPanel({ open, onClose, guide, task, onTaskStarted }: { open:
                   </div>
                 ) : (
                   <div key={i}>
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere] text-ink">
+                    <div className="text-sm leading-relaxed [overflow-wrap:anywhere] text-ink">
                       {m.content ? (
-                        <WithCitations text={m.content} sources={guide.sources} />
+                        <Formatted text={m.content} sources={guide.sources} />
                       ) : busy && i === messages.length - 1 ? (
                         <span className="text-muted">
                           {m.task ? `Drafting… this usually takes 30–40 seconds · ${elapsed}s` : "Reading the guide…"}
@@ -255,6 +255,38 @@ export function ChatPanel({ open, onClose, guide, task, onTaskStarted }: { open:
           </div>
         </form>
       </aside>
+    </div>
+  );
+}
+
+// Answers are plain text with "-" or "1." lists. Lists render as real lists; everything else keeps
+// its line breaks. No HTML is ever interpreted.
+function Formatted({ text, sources }: { text: string; sources: Guide["sources"] }) {
+  const blocks: { list: "ul" | "ol" | null; lines: string[] }[] = [];
+  for (const line of text.split("\n")) {
+    const kind = /^\s*[-*•]\s+/.test(line) ? "ul" : /^\s*\d{1,2}[.)]\s+/.test(line) ? "ol" : null;
+    const body = kind ? line.replace(/^\s*([-*•]|\d{1,2}[.)])\s+/, "") : line;
+    const last = blocks.at(-1);
+    if (last && last.list === kind && (kind || body.trim())) last.lines.push(body);
+    else blocks.push({ list: kind, lines: [body] });
+  }
+  return (
+    <div className="space-y-2">
+      {blocks.map((b, i) =>
+        b.list ? (
+          <b.list key={i} className={`space-y-1 pl-5 ${b.list === "ul" ? "list-disc" : "list-decimal"} marker:text-muted`}>
+            {b.lines.map((l, j) => (
+              <li key={j}>
+                <WithCitations text={l} sources={sources} />
+              </li>
+            ))}
+          </b.list>
+        ) : b.lines.join("").trim() ? (
+          <p key={i} className="whitespace-pre-wrap">
+            <WithCitations text={b.lines.join("\n")} sources={sources} />
+          </p>
+        ) : null,
+      )}
     </div>
   );
 }

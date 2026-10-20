@@ -100,14 +100,14 @@ export function GuideView({ guide, markdown }: { guide: Guide; markdown: string 
             </button>
           </p>
         </div>
-        <div className="flex flex-col items-stretch gap-2 sm:items-end">
-          <button type="button" onClick={() => setChatOpen(true)} className="rounded-lg bg-ink px-4 py-2.5 font-medium text-surface hover:bg-ink/90">
+        <div className="grid w-full gap-2 sm:w-60">
+          <button type="button" onClick={() => setChatOpen(true)} className="flex h-11 items-center justify-center rounded-lg bg-ink px-4 text-sm font-medium text-surface hover:bg-ink/90">
             Chat about this guide
           </button>
           <button
             type="button"
             onClick={() => setChatOpen(true)}
-            className="rounded-lg border border-trivial/40 bg-trivial-bg/50 px-4 py-2 text-sm font-medium text-trivial hover:border-trivial"
+            className="flex h-11 items-center justify-center rounded-lg border border-trivial/40 bg-trivial-bg/50 px-4 text-sm font-medium text-trivial hover:border-trivial"
           >
             ▶ Have the AI do the work
           </button>

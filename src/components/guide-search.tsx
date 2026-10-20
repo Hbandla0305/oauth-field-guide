@@ -43,7 +43,6 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Difficulty | "all">("all");
-  const [checkedOnly, setCheckedOnly] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [sort, setSort] = useState<Sort>(DEFAULT_SORT);
 
@@ -53,10 +52,9 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
     return guides.filter(
       (g) =>
         (filter === "all" || g.difficulty === filter) &&
-        (!checkedOnly || g.status === "human-verified") &&
         words.every((w) => normalise(`${g.name} ${g.slug} ${g.category}`).includes(w)),
     ).sort((a, b) => compare(a, b, sort));
-  }, [guides, q, filter, checkedOnly, sort]);
+  }, [guides, q, filter, sort]);
 
   const counts = useMemo(() => Object.fromEntries(FILTERS.map((f) => [f, f === "all" ? guides.length : guides.filter((g) => g.difficulty === f).length])), [guides]);
   const visible = showAll || q ? results : results.slice(0, PAGE);
@@ -132,20 +130,12 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
             <option value="name:asc">A to Z</option>
           </select>
         </label>
-        <label className="flex cursor-pointer items-center gap-2 text-sm">
-          <input type="checkbox" checked={checkedOnly} onChange={(e) => setCheckedOnly(e.target.checked)} className="size-4 accent-ink" />
-          Checked by a person only
-        </label>
       </div>
 
       {results.length === 0 ? (
         <div className="mt-5 rounded-xl border border-dashed border-muted/50 bg-surface p-6">
           <p className="font-medium">
-            {query.trim()
-              ? `No guide for “${query.trim()}” yet.`
-              : checkedOnly && !guides.some((g) => g.status === "human-verified")
-                ? "No guides have been checked by a person yet. Every guide is agent-researched; untick the box to see them all."
-                : "No guides match these filters."}
+            {query.trim() ? `No guide for “${query.trim()}” yet.` : "No guides match these filters."}
           </p>
           {query.trim() && (
             <>

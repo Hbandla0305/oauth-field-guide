@@ -3,6 +3,7 @@ import { DIFFICULTY } from "@/components/difficulty";
 import { EvidenceLegend } from "@/components/evidence";
 import { GuideSearch } from "@/components/guide-search";
 import { Typewriter } from "@/components/typewriter";
+import { HowItWorks } from "@/components/how-it-works";
 import { PageTour } from "@/components/page-tour";
 import { TOURS } from "@/lib/tours";
 
@@ -41,6 +42,8 @@ export default async function Home() {
         <GuideSearch guides={guides} />
       </section>
 
+      <HowItWorks />
+
       <section id="how" aria-labelledby="how-title" className="mt-20 grid scroll-mt-6 gap-10 border-t border-line pt-12 lg:grid-cols-[1fr_1.4fr]">
         <div>
           <h2 id="how-title" className="font-display text-2xl font-semibold tracking-tight">
@@ -50,10 +53,12 @@ export default async function Home() {
             Provider rules change often, and a wrong guide can cost weeks. So every guide says who checked it, and every claim says how we know it.
           </p>
           <dl className="mt-6 space-y-3 text-sm">
-            <div>
+            {checked > 0 && (
+              <div>
               <dt className="font-medium text-trivial">Checked ({checked})</dt>
               <dd className="text-muted">Researched by agents, fact-checked by a second agent, then reviewed and tried by a person.</dd>
             </div>
+            )}
             <div>
               <dt className="font-medium">Agent-researched ({LIBRARY.length - checked})</dt>
               <dd className="text-muted">Researched by agents from official docs with cited sources and checked links. Not yet reviewed by a person.</dd>

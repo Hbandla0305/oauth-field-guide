@@ -16,7 +16,7 @@ const SECTIONS = [
   ["web", "Website"],
   ["claude", "Claude"],
   ["claude-code", "Claude Code"],
-  ["editors", "Cursor, VS Code & others"],
+  ["editors", "Cursor, VS Code & other assistants"],
   ["slack", "Slack"],
   ["prompts", "Prompts to try"],
 ] as const;
@@ -79,7 +79,7 @@ export default function UsePage() {
       </div>
       <h1 className="font-display text-4xl font-semibold tracking-tight">Use it anywhere</h1>
       <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted">
-        The guides work on this site, and as a tool your AI assistant can call while you build. Same guides, same evidence labels, same agent for apps that aren&rsquo;t in the
+        The guides work on this site, in Slack, and as a tool any AI assistant that supports MCP can call while you build: Claude, ChatGPT, Cursor, VS Code, Windsurf and others. Same guides, same evidence labels, same agent for apps that aren&rsquo;t in the
         library yet.
       </p>
 
@@ -135,8 +135,10 @@ export default function UsePage() {
         />
       </Section>
 
-      <Section id="editors" title="In Cursor, VS Code and other MCP clients">
-        <p className="text-muted">Any client that supports remote MCP servers over HTTP works. Point it at the same URL.</p>
+      <Section id="editors" title="In Cursor, VS Code and other AI assistants">
+        <p className="text-muted">
+          Any assistant that supports remote MCP servers over HTTP works with the same URL, including ChatGPT (as a custom connector), Windsurf and Zed. Setup for the most common ones:
+        </p>
         <h3 className="mt-6 font-medium">Cursor</h3>
         <p className="mt-1 text-sm text-muted">
           Add to <code>~/.cursor/mcp.json</code> (all projects) or <code>.cursor/mcp.json</code> (one project):

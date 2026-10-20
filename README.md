@@ -226,7 +226,8 @@ npm run dev                     # http://localhost:3000
 
 | Variable | Needed for |
 |---|---|
-| `DATABASE_URL` | Live guides, spend ledger, rate limits |
+| `APP_DATABASE_URL` | Production database login (`app_runtime`: read, insert, update on two tables only). Create with `npm run create-runtime-role` |
+| `DATABASE_URL` | Owner connection from the Neon integration; used by local scripts, and as the fallback |
 | `OPENAI_API_KEY` | Live research and chat (use a dedicated project with a budget) |
 | `FIRECRAWL_API_KEY` | Reading docs pages (falls back to OpenAI web search without it) |
 | `IP_HASH_SALT` | Rate limiting (required in production) |

@@ -71,5 +71,5 @@ export function costOf(model: string, usage: Usage | undefined | null, searches 
 }
 
 export function generationEnabled(): boolean {
-  return process.env.GENERATION_ENABLED !== "false" && Boolean(process.env.OPENAI_API_KEY) && Boolean(process.env.DATABASE_URL);
+  return process.env.GENERATION_ENABLED !== "false" && Boolean(process.env.OPENAI_API_KEY) && Boolean(process.env.APP_DATABASE_URL || process.env.DATABASE_URL);
 }

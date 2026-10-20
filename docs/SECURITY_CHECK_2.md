@@ -122,7 +122,7 @@ OpenAI-reaching requests used: 2 of 8 (T14, T15). Generate or live research call
 |---|---|---|
 | M1 attacker domain treated as official | Registrable domain now comes from the public suffix list (`tldts`), so `*.github.io`, `*.vercel.app` and `*.co.uk` no longer collapse. Shared hosting, bare IPs and unknown TLDs are refused before any research. Every link a guide shows (portal, official docs, step links) must be on the provider's domain, a page we read, or a trusted docs site. Agent-written guide pages are `noindex, nofollow` | Unit checks (`foo.github.io` refused, `example.co.uk` kept, `github.com.evil.com` and path tricks rejected); build |
 | M2 one actor drains the day | Per-network spend cap of $0.20/day (research and chat together); IPv6 counted per /64; research can use only $0.50 of the $0.60 day, the rest is kept for chat | Live reservation test against Neon (a network at $0.25 is refused with `ip_daily`; test rows deleted) |
-| M3 runtime DB role | **Open: owner decision.** `npm run create-runtime-role`, then swap `DATABASE_URL` in Vercel | |
+| M3 runtime DB role | Done. `app_runtime` created; production connects through `APP_DATABASE_URL` (the integration-managed owner `DATABASE_URL` is only a fallback for local scripts) | Live as `app_runtime`: reads, reserve and settle work; DELETE, DROP, CREATE TABLE, CREATE ROLE, `neon_auth` and `pg_authid` all refused |
 | L1 `Origin: null` 500 | Malformed origins count as cross-site: 403 | Unit check |
 | L2 failure under-charge | Failed research runs charged at least $0.05; failed chat at least $0.01 | Code |
 | L3 MCP content | `search_guides` output carries the untrusted-data notice; `get_guide` no longer echoes input or phrases it as an instruction; input capped at 80 characters | Code |

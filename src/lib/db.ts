@@ -4,9 +4,19 @@ import ipaddr from "ipaddr.js";
 import { StoredGuide, type Guide } from "./guide-schema";
 import { LIMITS } from "./agent/config";
 
+// The running app connects as app_runtime (APP_DATABASE_URL): read, insert and update on its two
+// tables, nothing else. DATABASE_URL (the owner, managed by the Neon integration) is the fallback
+// for local scripts and previews.
+const dbUrl = () => process.env.APP_DATABASE_URL || process.env.DATABASE_URL;
+
+export function databaseConfigured(): boolean {
+  return Boolean(dbUrl());
+}
+
 function sql() {
-  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
-  return neon(process.env.DATABASE_URL);
+  const url = dbUrl();
+  if (!url) throw new Error("DATABASE_URL is not set");
+  return neon(url);
 }
 
 export const SCHEMA = [
@@ -50,7 +60,7 @@ export function hashIp(ip: string): string {
 }
 
 export async function getGeneratedGuide(slug: string): Promise<Guide | null> {
-  if (!process.env.DATABASE_URL) return null;
+  if (!databaseConfigured()) return null;
   const rows = await sql()`select guide from guides where slug = ${slug}`;
   if (!rows.length) return null;
   const parsed = StoredGuide.safeParse(rows[0].guide);
@@ -58,7 +68,7 @@ export async function getGeneratedGuide(slug: string): Promise<Guide | null> {
 }
 
 export async function listGeneratedGuides(limit = 12): Promise<Guide[]> {
-  if (!process.env.DATABASE_URL) return [];
+  if (!databaseConfigured()) return [];
   const rows = await sql()`select guide from guides order by created_at desc limit ${limit}`;
   return rows.flatMap((r) => {
     const parsed = StoredGuide.safeParse(r.guide);

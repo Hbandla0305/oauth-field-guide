@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AgentEvent, StageId } from "@/lib/agent/pipeline";
 import { DotLoader } from "@/components/dot-loader";
 import { TIPS } from "@/lib/tips";
-import { hasStart, clearStart } from "@/lib/start-intent";
+import { hasStart, clearStart, saveRun, loadRun, clearRun, type SavedRun } from "@/lib/start-intent";
 
 const STAGES: { id: StageId; label: string }[] = [
   { id: "screen", label: "Identify the app" },
@@ -25,6 +25,14 @@ export function GenerateRun() {
   const app = useSearchParams().get("app")?.trim() ?? "";
   const router = useRouter();
   const started = useRef(false);
+  // Stops polling when the visitor leaves the page (survives React's dev-mode remount).
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const [stages, setStages] = useState<Record<string, StageState>>({});
   const [searches, setSearches] = useState<string[]>([]);
   const [reads, setReads] = useState<{ title: string; url: string }[]>([]);
@@ -37,29 +45,69 @@ export function GenerateRun() {
   // asks for a click first, so other sites can't trigger paid research on visitors' behalf.
   const [confirmed, setConfirmed] = useState(false);
   const [sameSite, setSameSite] = useState<boolean | null>(null);
+  // A run this tab already started (the page was reloaded mid-run): follow it, don't start another.
+  const [saved, setSaved] = useState<SavedRun | null | undefined>(undefined);
   useEffect(() => {
     setSameSite(hasStart(app));
+    setSaved(loadRun(app));
   }, [app]);
 
   useEffect(() => {
-    if (!app || started.current || sameSite === null || (!sameSite && !confirmed)) return;
+    if (!app || started.current || sameSite === null || saved === undefined || (!saved && !sameSite && !confirmed)) return;
     started.current = true;
     clearStart();
-    const t0 = Date.now();
+    const t0 = saved?.t0 ?? Date.now();
     const timer = setInterval(() => setElapsed(Math.round((Date.now() - t0) / 1000)), 1000);
+    let runId = saved?.runId ?? null;
+    let settled = false;
 
     const handle = (e: AgentEvent) => {
+      if (e.type === "run") {
+        runId = e.runId;
+        saveRun(app, e.runId, t0);
+      }
       if (e.type === "stage") setStages((s) => ({ ...s, [e.stage]: { status: e.status, detail: e.detail } }));
       if (e.type === "search") setSearches((s) => [...s, e.query]);
       if (e.type === "read") setReads((r) => [...r, { title: e.title, url: e.url }]);
-      if (e.type === "error") setError(e.message);
+      if (e.type === "error") {
+        settled = true;
+        clearRun();
+        setError(e.message);
+      }
       if (e.type === "done") {
+        settled = true;
+        clearRun();
         setFinished(true);
         router.replace(`/guides/${e.slug}`);
       }
     };
 
+    // Follows a run from the database: after a reload, or if the live stream drops.
+    const follow = async (id: string) => {
+      while (alive.current) {
+        const res = await fetch(`/api/generate?run=${id}`, { cache: "no-store" }).catch(() => null);
+        if (res && res.status !== 200 && res.status < 500) {
+          clearRun();
+          return setError("This run can't be found any more. If it finished, the guide is under Recently generated on the home page.");
+        }
+        const run = res?.ok ? ((await res.json()) as { status: string; slug: string | null; progress: Record<string, unknown> }) : null;
+        if (run) {
+          const { error: failure, ...progress } = run.progress;
+          setStages(progress as Record<string, StageState>);
+          if ((run.status === "done" || run.status === "cached") && run.slug) return handle({ type: "done", slug: run.slug, cached: run.status === "cached" });
+          if (run.status === "failed" || run.status === "rejected") {
+            return handle({ type: "error", message: typeof failure === "string" ? failure : "The investigation failed before finishing. Try again in a minute." });
+          }
+        }
+        await new Promise((r) => setTimeout(r, 2500));
+      }
+    };
+
     (async () => {
+      if (runId) {
+        await follow(runId);
+        return clearInterval(timer);
+      }
       try {
         const res = await fetch("/api/generate", {
           method: "POST",
@@ -86,21 +134,25 @@ export function GenerateRun() {
             if (chunk.startsWith("data: ")) handle(JSON.parse(chunk.slice(6)));
           }
         }
+        // The stream closed without a result (a proxy cut it): the run is still going on the server.
+        if (!settled && runId && alive.current) await follow(runId);
       } catch {
-        setError("The connection dropped. If the agent finished, the guide will appear in Recently generated on the home page.");
+        // The stream dropped, but the run keeps going on the server: follow it from there.
+        if (runId && alive.current) await follow(runId);
+        else setError("The connection dropped. If the agent finished, the guide will appear in Recently generated on the home page.");
       } finally {
         clearInterval(timer);
       }
     })();
     return () => clearInterval(timer);
-  }, [app, router, sameSite, confirmed]);
+  }, [app, router, sameSite, saved, confirmed]);
 
   // Searches and reads show under whichever reading step is current.
   const stageForReading: StageId = stages.gaps ? "gaps" : "research";
   // The live run has started only once the server streams its first stage.
   const researching = Object.keys(stages).length > 0;
 
-  if (app && sameSite === false && !confirmed) {
+  if (app && sameSite === false && saved === null && !confirmed) {
     return (
       <div>
         <h1 className="mt-6 font-display text-4xl font-semibold tracking-tight">Research {app}?</h1>

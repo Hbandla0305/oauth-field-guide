@@ -15,8 +15,11 @@ export const WEB_SEARCH_USD_PER_CALL = 0.01;
 
 export const LIMITS = {
   totalBudgetUsd: 1.8, // hard stop, $0.20 under the $2 ceiling
-  dailyBudgetUsd: 0.6, // so one bad day (or one abuser) can't use up the lifetime budget
-  reservePerRunUsd: 0.2, // worst case for one run, held until the run settles
+  dailyBudgetUsd: 1.0, // so one bad day can't use up the lifetime budget; per-network caps stop one abuser
+  // Held while a run is in flight, then replaced by the real cost (about $0.02). Worst case if
+  // every call hits its output cap: research and revise 24k tokens each on gpt-5-mini (~$0.05
+  // each), plus 6 web searches on the fallback path ($0.06): about $0.15.
+  reservePerRunUsd: 0.15,
   maxSearchesPerRun: 6,
   maxOutputTokens: { screen: 2_000, research: 24_000, audit: 16_000, gaps: 2_000 },
   runsPerIpPerHour: 10,

@@ -41,6 +41,18 @@ const ALIASES: Record<string, string> = {
   "apollo-io": "apollo",
   "monday-com": "monday",
   "cal": "cal-com",
+  gdrive: "google",
+  gcal: "google",
+  "google-sheets": "google",
+  gsheets: "google",
+  "google-docs": "google",
+  gdocs: "google",
+  gsuite: "google",
+  "ms-teams": "microsoft",
+  o365: "microsoft",
+  m365: "microsoft",
+  "microsoft-365": "microsoft",
+  sfdc: "salesforce",
 };
 
 export function resolveSlug(slug: string): string {
@@ -69,6 +81,7 @@ export type GuideSummary = {
   devHours: Guide["verdict"]["timeToDev"]["hours"];
   prodHours: Guide["verdict"]["timeToProd"]["hours"];
   popularity: number;
+  aliases: string[];
 };
 
 export function summarise(g: Guide): GuideSummary {
@@ -83,5 +96,6 @@ export function summarise(g: Guide): GuideSummary {
     devHours: g.verdict.timeToDev.hours,
     prodHours: g.verdict.timeToProd.hours,
     popularity: popularity(g.app.slug),
+    aliases: Object.entries(ALIASES).filter(([, to]) => to === g.app.slug).map(([from]) => from.replace(/-/g, " ")),
   };
 }

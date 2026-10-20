@@ -15,6 +15,7 @@ export type AgentEvent =
   | { type: "stage"; stage: StageId; status: "active" | "done"; detail?: string }
   | { type: "search"; query: string }
   | { type: "read"; title: string; url: string }
+  | { type: "run"; runId: string } // first event, so a reloaded page can follow the same run
   | { type: "done"; slug: string; cached: boolean }
   | { type: "error"; message: string };
 

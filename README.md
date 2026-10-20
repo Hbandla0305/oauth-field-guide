@@ -137,7 +137,7 @@ A bounded pipeline with **one real decision point**. Our code picks every URL it
 
 Every stage is recorded and saved with the guide ("How this guide was made"). Full diagrams: [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-**Limits:** live research 10/hour and 25/day per network, 40/day overall; chat 20/hour and 100/day per network; at most $0.20/day of spend per network (IPv6 counted per /64); $0.60/day and $1.80 lifetime spend caps, with $0.10 of each day kept for chat. **MCP tools:** `search_guides`, `get_guide` (any section), `generate_guide` (starts live research in the background; same limits). **Slack:** built and tested with Slack-signed requests; not yet installed in a public workspace (setup on [/use](https://oauth-guide-composio.hrudvibandla.com/use#slack)).
+**Limits:** live research 10/hour and 25/day per network, 40/day overall; chat 20/hour and 100/day per network; at most $0.20/day of spend per network (IPv6 counted per /64); $1.00/day and $1.80 lifetime spend caps, with $0.10 of each day kept for chat. **MCP tools:** `search_guides`, `get_guide` (any section), `generate_guide` (starts live research in the background; same limits). **Slack:** built and tested with Slack-signed requests; not yet installed in a public workspace (setup on [/use](https://oauth-guide-composio.hrudvibandla.com/use#slack)).
 
 ## What the research found
 
@@ -180,7 +180,7 @@ The research agents turned up things a typical setup checklist misses:
 
 Full details: [VERIFICATION.md](docs/VERIFICATION.md), [verification-desk.md](docs/verification-desk.md), [timing-audit.md](docs/timing-audit.md).
 
-**Cost, measured from the spend ledger:** **$0.014–0.025 per live guide** and **$0.0003–0.0016 per chat answer**, under a hard **$1.80** lifetime cap and a **$0.60** daily cap. Total spent building, testing and demoing so far: **$0.08**.
+**Cost, measured from the spend ledger:** **$0.014–0.025 per live guide** and **$0.0003–0.0016 per chat answer**, under a hard **$1.80** lifetime cap and a **$1.00** daily cap. Total spent building, testing and demoing so far: **$0.14**.
 
 ## Why this matters for Composio
 

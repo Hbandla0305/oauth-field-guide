@@ -39,6 +39,34 @@ function compare(a: GuideSummary, b: GuideSummary, { key, dir }: Sort): number {
 
 const normalise = (s: string) => s.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[^a-z0-9]+/g, " ").trim();
 
+const haystack = (g: GuideSummary) => normalise(`${g.name} ${g.slug} ${g.category} ${g.aliases.join(" ")}`);
+
+// Edit distance with adjacent swaps counted as one edit ("slak", "hubspt", "gihtub").
+function distance(a: string, b: string): number {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+    }
+  }
+  return d[a.length][b.length];
+}
+
+// How far a typed word is from the closest word in a guide (also against same-length prefixes,
+// so a half-typed typo still matches). Infinity when it's too far to be a typo.
+function closeness(word: string, g: GuideSummary): number {
+  if (word.length < 3) return Infinity;
+  const allowed = word.length <= 5 ? 1 : 2;
+  let best = Infinity;
+  for (const w of haystack(g).split(" ")) {
+    best = Math.min(best, distance(word, w), w.length > word.length ? distance(word, w.slice(0, word.length)) + 0.5 : Infinity);
+  }
+  return best <= allowed ? best : Infinity;
+}
+
 export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -47,13 +75,17 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
   const [sort, setSort] = useState<Sort>(DEFAULT_SORT);
 
   const q = normalise(query);
-  const results = useMemo(() => {
+  // Exact matches first; if there are none, close matches for typos, closest first.
+  const { results, fuzzy } = useMemo(() => {
     const words = q.split(" ").filter(Boolean);
-    return guides.filter(
-      (g) =>
-        (filter === "all" || g.difficulty === filter) &&
-        words.every((w) => normalise(`${g.name} ${g.slug} ${g.category}`).includes(w)),
-    ).sort((a, b) => compare(a, b, sort));
+    const pool = guides.filter((g) => filter === "all" || g.difficulty === filter);
+    const exact = pool.filter((g) => words.every((w) => haystack(g).includes(w))).sort((a, b) => compare(a, b, sort));
+    if (exact.length || !words.length) return { results: exact, fuzzy: false };
+    const scored = pool
+      .map((g) => ({ g, score: words.reduce((sum, w) => sum + (haystack(g).includes(w) ? 0 : closeness(w, g)), 0) }))
+      .filter((x) => Number.isFinite(x.score))
+      .sort((a, b) => a.score - b.score || a.g.popularity - b.g.popularity);
+    return { results: scored.slice(0, 5).map((x) => x.g), fuzzy: true };
   }, [guides, q, filter, sort]);
 
   const counts = useMemo(() => Object.fromEntries(FILTERS.map((f) => [f, f === "all" ? guides.length : guides.filter((g) => g.difficulty === f).length])), [guides]);
@@ -61,9 +93,11 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
 
   function submit() {
     if (!query.trim()) return;
-    const exact = results.find((g) => normalise(g.name) === q || g.slug === q.replace(/ /g, "-"));
+    const exact = results.find((g) => normalise(g.name) === q || g.slug === q.replace(/ /g, "-") || g.aliases.includes(q));
     if (exact) router.push(`/guides/${exact.slug}`);
     else if (results.length === 1) router.push(`/guides/${results[0].slug}`);
+    // Close matches are on screen: let the visitor pick one rather than research a typo.
+    else if (fuzzy && results.length) document.getElementById("search-results")?.scrollIntoView({ block: "nearest" });
     else {
       markStart(query);
       router.push(`/generate?app=${encodeURIComponent(query.trim())}`);
@@ -127,7 +161,11 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
             <option value="difficulty:desc">Hardest first</option>
             <option value="difficulty:asc">Easiest first</option>
             <option value="prod:desc">Longest to go live</option>
+            <option value="prod:asc">Quickest to go live</option>
+            <option value="dev:asc">Quickest to work in dev</option>
+            <option value="dev:desc">Longest to work in dev</option>
             <option value="name:asc">A to Z</option>
+            <option value="name:desc">Z to A</option>
           </select>
         </label>
       </div>
@@ -148,7 +186,12 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
         </div>
       ) : (
         <>
-          <p className="mt-4 text-sm text-muted" aria-live="polite">
+          {fuzzy ? (
+            <p id="search-results" className="mt-4 text-sm" aria-live="polite">
+              No exact match for &ldquo;{query.trim()}&rdquo;. <span className="font-medium">Did you mean:</span>
+            </p>
+          ) : (
+          <p id="search-results" className="mt-4 text-sm text-muted" aria-live="polite">
             {results.length} {results.length === 1 ? "guide" : "guides"}
             {q ? " match" : ""}
             {sort.key === "popular" ? ", popular first" : sort.key === "difficulty" && sort.dir === "desc" ? ", hardest first" : ""}. All are agent-researched unless marked otherwise.
@@ -158,6 +201,7 @@ export function GuideSearch({ guides }: { guides: GuideSummary[] }) {
               </InfoTip>
             )}
           </p>
+          )}
           <ResultsTable guides={visible} sort={sort} onSort={setSort} />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
             <span />
@@ -211,12 +255,14 @@ function ResultsTable({ guides, sort, onSort }: { guides: GuideSummary[]; sort: 
                 <th key={c.key} aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"} className="px-5 py-3 font-medium">
                   <button
                     type="button"
-                    onClick={() => onSort({ key: c.key, dir: active && sort.dir === "desc" ? "asc" : c.key === "name" && !active ? "asc" : "desc" })}
+                    // First click: A to Z, quickest first, hardest first. A second click reverses it.
+                    onClick={() => onSort({ key: c.key, dir: active ? (sort.dir === "asc" ? "desc" : "asc") : c.key === "difficulty" ? "desc" : "asc" })}
+                    title={`Sort by ${c.label.toLowerCase()}`}
                     className={`inline-flex items-center gap-1 hover:text-ink ${active ? "text-ink" : ""}`}
                   >
                     {c.label}
-                    <span aria-hidden className={active ? "" : "opacity-0"}>
-                      {sort.dir === "asc" ? "↑" : "↓"}
+                    <span aria-hidden className={active ? "" : "text-muted/60"}>
+                      {active ? (sort.dir === "asc" ? "↑" : "↓") : "↕"}
                     </span>
                   </button>
                 </th>

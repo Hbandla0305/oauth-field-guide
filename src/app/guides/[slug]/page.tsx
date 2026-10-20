@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { findGuide, LIBRARY } from "@/lib/guides";
+import { LIBRARY, resolveSlug } from "@/lib/guides";
+import { getGeneratedGuide } from "@/lib/db";
 import { guideToMarkdown } from "@/lib/markdown";
 import { GuideView } from "@/components/guide/guide-view";
 import { PageTour } from "@/components/page-tour";
@@ -9,15 +10,18 @@ import { TOURS } from "@/lib/tours";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export const dynamicParams = true;
-export const revalidate = 3600;
+// Rendered per request: library guides come from memory (a few milliseconds) and live guides from
+// the database, so a page visited before its guide existed is never served as a cached 404.
+export const dynamic = "force-dynamic";
 
-export function generateStaticParams() {
-  return LIBRARY.map((g) => ({ slug: g.app.slug }));
+// A database error shows the error page instead of "not found".
+async function loadGuide(slug: string) {
+  const key = resolveSlug(slug);
+  return LIBRARY.find((g) => g.app.slug === key) ?? getGeneratedGuide(key);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const guide = await findGuide((await params).slug);
+  const guide = await loadGuide((await params).slug);
   if (!guide) return { title: "Guide not found" };
   return {
     title: `${guide.app.name} OAuth setup`,
@@ -28,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GuidePage({ params }: Props) {
-  const guide = await findGuide((await params).slug);
+  const guide = await loadGuide((await params).slug);
   if (!guide) notFound();
 
   const host = process.env.VERCEL_PROJECT_PRODUCTION_URL;

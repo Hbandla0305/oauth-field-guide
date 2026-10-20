@@ -44,6 +44,8 @@ export const SCHEMA = [
   `create index if not exists runs_ip_time on runs (ip_hash, created_at)`,
   // "generate" for live guides, "chat" for questions asked inside a guide. Both share the spend cap.
   `alter table runs add column if not exists kind text not null default 'generate'`,
+  // Stage-by-stage progress of a live run, so a reloaded page can pick up where it was.
+  `alter table runs add column if not exists progress jsonb not null default '{}'::jsonb`,
 ];
 
 // IPv6 users get a whole /64 from their provider, so limits apply per /64, not per address.
@@ -161,6 +163,17 @@ export async function settleRun(
   await sql()`
     update runs set actual_usd = ${actualUsd}, status = ${status}, slug = ${slug}, error = ${error ?? null}, firecrawl_credits = ${firecrawlCredits}
     where id = ${runId}`;
+}
+
+export async function recordProgress(runId: string, patch: Record<string, unknown>) {
+  await sql()`update runs set progress = progress || ${JSON.stringify(patch)}::jsonb where id = ${runId}`;
+}
+
+export type RunStatus = { status: string; slug: string | null; progress: Record<string, unknown> };
+
+export async function getRunStatus(runId: string): Promise<RunStatus | null> {
+  const rows = await sql()`select status, slug, progress from runs where id = ${runId} and kind = 'generate'`;
+  return rows.length ? { status: rows[0].status, slug: rows[0].slug, progress: rows[0].progress ?? {} } : null;
 }
 
 // Credits already spent, plus a reservation for each run still in flight.

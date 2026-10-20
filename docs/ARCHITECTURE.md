@@ -55,7 +55,8 @@ flowchart LR
 | `/guides/[slug]` | GET | Browser | One guide: verdict, tabs, checklist, research trail. Library pages are static; live guides render on demand from Neon | Public |
 | `/generate?app=` | GET | Browser | Live research screen; streams the agent's progress | Auto-starts only from our own pages, otherwise asks for a click |
 | `/use` | GET | Browser | Setup guides for Claude, Claude Code, Cursor, VS Code and Slack, with prompts | Public |
-| `/api/generate` | POST | Website | Starts live research. Returns `{slug, cached}` for library hits, otherwise a Server-Sent Events stream of `stage`, `search`, `read`, `done` and `error` events | Same-site JSON only; spend ledger; per-IP and daily caps |
+| `/api/generate` | POST | Website | Starts live research. Returns `{slug, cached}` for library hits, otherwise a Server-Sent Events stream of `run`, `stage`, `search`, `read`, `done` and `error` events. The run keeps going if the visitor leaves (`after()`) | Same-site JSON only; spend ledger; per-IP and daily caps |
+| `/api/generate?run=<id>` | GET | Website | Status, stage progress and slug of one run, so a reloaded page picks up where it was | Run id is an unguessable UUID; no personal data returned |
 | `/api/chat` | POST | Website | Answers questions, or performs a task (`draft`, `pack`) using one guide and optional product details. Streams text | Same-site JSON only; spend ledger; per-IP caps |
 | `/api/mcp` | POST | MCP clients | Stateless MCP (Streamable HTTP, JSON responses): `initialize`, `ping`, `tools/list`, `tools/call` | Public, no auth; batch ≤ 10; research rate-limited per IP |
 | `/api/slack/commands` | POST | Slack | `/oauth-guide <app> [section]` · `research <app>` · `help` | Slack signing secret (HMAC-SHA256, 5-minute window) |
@@ -239,18 +240,18 @@ All numbers live in `src/lib/agent/config.ts`.
 | Guard | Value |
 |---|---|
 | Lifetime budget | $1.80 (under the $2 ceiling) |
-| Daily budget | $0.60 |
+| Daily budget | $1.00 |
 | Reservation per research run | $0.20, settled to actual cost (≈ $0.02–0.03 in practice) |
 | Reservation per chat message or task | $0.02, settled to actual |
 | Research rate limits | 10 per hour and 25 per day per network; 40 per day overall |
 | Spend per network | $0.20 per day across research and chat (IPv6 counted per /64), so one visitor can't use up the day |
-| Chat headroom | Research can use $0.50 of the $0.60 daily budget; the last $0.10 is only for chat |
+| Chat headroom | Research can use $0.90 of the $1.00 daily budget; the last $0.10 is only for chat |
 | Chat rate limits | 20 per hour and 100 per day per network; 300 per day overall |
 | Per-run ceilings | output tokens per call; 2 extra searches; 8 + 4 pages; 4-minute timeout |
 | Firecrawl | 400 credits total, 30 reserved per run |
 | Free paths | library and saved guides never call a model |
 
-Reservations happen in one SQL statement under `pg_advisory_xact_lock`, so concurrent requests can't both squeeze under a cap. Failures are charged their known cost (min $0.02); only a timeout, which can hide unseen spend, keeps the full reservation.
+Reservations happen in one SQL statement under `pg_advisory_xact_lock`, so concurrent requests can't both squeeze under a cap. Each run holds $0.15 (its worst case) while in flight. Failures are charged their known cost (min $0.05); only a timeout, which can hide unseen spend, keeps the full reservation.
 
 ## Security
 

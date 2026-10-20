@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Guide } from "@/lib/guide-schema";
 import { EMPTY_PROFILE, defaultConfig, setupUrl, supportsSetup, type Profile } from "@/lib/setup-links";
 
-type Message = { role: "user" | "assistant"; content: string; task?: "draft" | "pack" };
+// `label` is what the user sees in their bubble; `content` is what the AI receives.
+type Message = { role: "user" | "assistant"; content: string; task?: "draft" | "pack"; label?: string };
 
 // What the panel was opened to do: a question, a draft for one step, the review pack, or app setup.
 export type AssistantTask = { kind: "draft"; title: string; detail?: string } | { kind: "pack" } | { kind: "setup" };
@@ -66,13 +67,13 @@ export function ChatPanel({ open, onClose, guide, task, onTaskStarted }: { open:
 
   const full = messages.length >= MAX_MESSAGES;
 
-  async function send(content: string, kind?: "draft" | "pack") {
+  async function send(content: string, kind?: "draft" | "pack", label?: string) {
     const text = content.trim();
     if (!text || busy || full) return;
     setError(null);
     setInput("");
     setView("main");
-    const history: Message[] = [...messages, { role: "user", content: text, task: kind }];
+    const history: Message[] = [...messages, { role: "user", content: text, task: kind, label }];
     setMessages([...history, { role: "assistant", content: "", task: kind }]);
     setBusy(true);
     try {
@@ -104,8 +105,8 @@ export function ChatPanel({ open, onClose, guide, task, onTaskStarted }: { open:
   }
 
   const draft = (title: string, detail?: string) =>
-    send(`Do this for me: ${title}.${detail ? ` Context from the guide: ${detail.slice(0, 300)}` : ""}`.slice(0, 480), "draft");
-  const pack = () => send(`Build my review pack for ${guide.app.name}.`, "pack");
+    send(`Do this for me: ${title}.${detail ? ` Context from the guide: ${detail.slice(0, 300)}` : ""}`.slice(0, 480), "draft", `Do it with AI: ${title}`);
+  const pack = () => send(`Build my review pack for ${guide.app.name}.`, "pack", "Build my review pack");
 
   // Start whatever the panel was opened for (e.g. "Do it with AI" on a step).
   useEffect(() => {
@@ -174,7 +175,8 @@ export function ChatPanel({ open, onClose, guide, task, onTaskStarted }: { open:
               {messages.map((m, i) =>
                 m.role === "user" ? (
                   <div key={i} className="ml-8 rounded-lg bg-ink px-3.5 py-2.5 text-sm text-surface">
-                    {m.content}
+                    {m.task && <span className="mr-1.5 text-trivial-bg">▶</span>}
+                    {m.label ?? m.content}
                   </div>
                 ) : (
                   <div key={i}>

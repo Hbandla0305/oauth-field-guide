@@ -244,7 +244,7 @@
     {
       "title": "Pick the narrowest scopes and map them to tiers",
       "owner": "agent",
-      "detail": "List every feature, then pick the least-privileged scope for each, for example gmail.send instead of gmail.modify, or drive.file instead of drive. Check each scope against Gmail's allowed application types. Whether any restricted scope remains decides whether you face a 1-2 week review or a 2-4 month review with CASA.",
+      "detail": "List every feature, then pick the least-privileged scope for each, for example gmail.send instead of gmail.modify, or drive.file instead of drive. Check each scope against Gmail's allowed application types. Whether any restricted scope remains decides your path: about 2 weeks (10 business days) for sensitive scopes, or 6–10 weeks with the CASA assessment for restricted ones.",
       "url": "https://developers.google.com/workspace/gmail/api/auth/scopes",
       "duration": "1-2 hours",
       "evidence": {

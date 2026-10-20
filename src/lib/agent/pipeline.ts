@@ -3,8 +3,8 @@ import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { Guide, type Evidence, type ResearchLog } from "../guide-schema";
 import { MODELS, LIMITS, costOf } from "./config";
-import { probeDiscovery, checkLinks, attemptSetup, rootDomain, type Attempt, type DiscoveryProbe } from "./probes";
-import { firecrawlConfigured, readOfficialDocs, readMore, type Page } from "./firecrawl";
+import { probeDiscovery, checkLinks, attemptSetup, rootDomain, onRoot, type Attempt, type DiscoveryProbe } from "./probes";
+import { firecrawlConfigured, readOfficialDocs, readMore, TRUSTED_THIRD_PARTY, type Page } from "./firecrawl";
 import { cleanCost } from "../cost";
 import { firecrawlCreditsCommitted } from "../db";
 import { RESEARCH_INSTRUCTIONS, SCREEN_INSTRUCTIONS, AUDIT_INSTRUCTIONS, PAGES_ADDENDUM, GAPS_INSTRUCTIONS, REVISE_ADDENDUM } from "./prompts";
@@ -228,7 +228,9 @@ export async function runAgent(input: string, screen: Screen, cost: RunCost, raw
   emit({ type: "stage", stage: "links", status: "active" });
   const read = new Set([...(draft.pages ?? []), ...extraPages].map((p) => p.url));
   const unread = guide.sources.filter((s) => s.id !== "probe" && !s.id.startsWith("attempt") && !read.has(s.url));
-  const links = await checkLinks(unread.map((s) => s.url));
+  // Only fetch links on the provider's domain or a trusted docs site; others stay unchecked.
+  const checkable = unread.filter((s) => onRoot(s.url, rootDomain(screen.website)) || TRUSTED_THIRD_PARTY.test(hostOf(s.url)));
+  const links = await checkLinks(checkable.map((s) => s.url));
   const dead = new Set(links.filter((l) => !l.ok).map((l) => l.url));
   guide = addLiveChecks(enforceEvidence(guide, dead), probe, attempts);
   for (const url of dead) rec.add(`Couldn't reach ${url}; claims relying only on it were marked unverified`);
@@ -368,6 +370,14 @@ function fence(text: string): string {
   return text.replace(/<\/?(page|attempt)\b/gi, (m) => m.replace("<", "&lt;"));
 }
 
+const hostOf = (u: string) => {
+  try {
+    return new URL(u).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+};
+
 const httpsOnly = (u: string | null | undefined): string | null => (typeof u === "string" && /^https:\/\/[^\s"'<>]+$/.test(u) ? u : null);
 
 function today() {
@@ -383,12 +393,21 @@ function normalise(g: Guide, screen: Screen, probe: DiscoveryProbe, pages: Page[
   if (probe.found) sources.push({ id: "probe", title: "Live probe: OAuth discovery document", url: probe.found.url });
   for (const a of attempts) sources.push({ id: a.id, title: a.title, url: a.url });
 
+  // Links the guide shows must point at the provider, a page we read, or a trusted docs site,
+  // so text on a page can't plant an arbitrary link on our site.
+  const root = rootDomain(screen.website);
+  const readHosts = new Set((pages ?? []).map((p) => hostOf(p.url)));
+  const allowed = (u: string | null | undefined): string | null => {
+    const url = httpsOnly(u);
+    return url && (onRoot(url, root) || readHosts.has(hostOf(url)) || TRUSTED_THIRD_PARTY.test(hostOf(url))) ? url : null;
+  };
+
   return {
     ...g,
     verdict: { ...g.verdict, cost: cleanCost(g.verdict.cost) },
-    app: { ...g.app, name: screen.name, slug: screen.slug, website: httpsOnly(screen.website) ?? `https://${rootDomain(screen.website)}`, developerPortal: httpsOnly(g.app.developerPortal) ?? httpsOnly(screen.website) ?? "" },
-    officialDocs: g.officialDocs.filter((d) => httpsOnly(d.url)).slice(0, 6),
-    steps: g.steps.map((st) => ({ ...st, url: httpsOnly(st.url) })),
+    app: { ...g.app, name: screen.name, slug: screen.slug, website: httpsOnly(screen.website) ?? `https://${root}`, developerPortal: allowed(g.app.developerPortal) ?? httpsOnly(screen.website) ?? "" },
+    officialDocs: g.officialDocs.filter((d) => allowed(d.url)).slice(0, 6),
+    steps: g.steps.map((st) => ({ ...st, url: allowed(st.url) })),
     sources,
     verification: {
       status: "agent-generated",

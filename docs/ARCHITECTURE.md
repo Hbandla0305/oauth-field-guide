@@ -243,6 +243,8 @@ All numbers live in `src/lib/agent/config.ts`.
 | Reservation per research run | $0.20, settled to actual cost (≈ $0.02–0.03 in practice) |
 | Reservation per chat message or task | $0.02, settled to actual |
 | Research rate limits | 10 per hour and 25 per day per network; 40 per day overall |
+| Spend per network | $0.20 per day across research and chat (IPv6 counted per /64), so one visitor can't use up the day |
+| Chat headroom | Research can use $0.50 of the $0.60 daily budget; the last $0.10 is only for chat |
 | Chat rate limits | 20 per hour and 100 per day per network; 300 per day overall |
 | Per-run ceilings | output tokens per call; 2 extra searches; 8 + 4 pages; 4-minute timeout |
 | Firecrawl | 400 credits total, 30 reserved per run |

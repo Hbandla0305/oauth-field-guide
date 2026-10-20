@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { StoredGuide, type Evidence } from "../src/lib/guide-schema";
 
 for (const slug of process.argv.slice(2)) {
+  if (!/^[a-z0-9-]+$/.test(slug)) throw new Error(`Not a guide slug: ${slug}`);
   const g = StoredGuide.parse(JSON.parse(readFileSync(`src/data/guides/${slug}.json`, "utf8")));
   const idx = new Map(g.sources.map((s, i) => [s.id, { n: i + 1, url: s.url }]));
   const src = (e: Evidence) =>

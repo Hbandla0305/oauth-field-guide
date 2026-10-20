@@ -4,6 +4,7 @@
 // Two searches: one restricted to the provider's own domain (official docs, and it rules out
 // same-named products), one on the open web for review/marketplace rules, filtered hard.
 import { LIMITS } from "./config";
+import { rootDomain } from "./probes";
 
 export type Page = { id: string; url: string; title: string; markdown: string };
 
@@ -14,7 +15,7 @@ const NOISE = /(^|\.)(youtube\.com|youtu\.be|capterra\.com|g2\.com|trustradius\.
 
 // Third-party pages are only read from well-known documentation and Q&A sites, so anyone can't
 // get a page into the agent's reading list just by mentioning a provider and "OAuth".
-const TRUSTED_THIRD_PARTY = /(^|\.)(learn\.microsoft\.com|docs\.github\.com|github\.com|stackoverflow\.com|developers\.google\.com|support\.google\.com|nango\.dev|developer\.nylas\.com|docs\.merge\.dev|developer\.mozilla\.org|oauth\.net)$/;
+export const TRUSTED_THIRD_PARTY = /(^|\.)(learn\.microsoft\.com|docs\.github\.com|github\.com|stackoverflow\.com|developers\.google\.com|support\.google\.com|nango\.dev|developer\.nylas\.com|docs\.merge\.dev|developer\.mozilla\.org|oauth\.net)$/;
 
 export function firecrawlConfigured(): boolean {
   return Boolean(process.env.FIRECRAWL_API_KEY);
@@ -62,7 +63,7 @@ export async function readMore(
   signal: AbortSignal,
   onQuery: (q: string) => void,
 ): Promise<{ pages: Page[]; credits: number }> {
-  const root = host(website).split(".").slice(-2).join(".");
+  const root = rootDomain(website);
   const brand = root.split(".")[0];
   const term = searchName(name);
   const seen = new Set(alreadyRead.map((u) => u.replace(/[#?].*$/, "").replace(/\/$/, "")));
@@ -97,7 +98,7 @@ export async function readOfficialDocs(
   signal: AbortSignal,
   onQuery: (q: string) => void,
 ): Promise<{ pages: Page[]; credits: number }> {
-  const root = host(website).split(".").slice(-2).join("."); // getharvest.com
+  const root = rootDomain(website); // getharvest.com
   const brand = root.split(".")[0];
   const term = searchName(name);
   const isOfficial = (url: string) => host(url) === root || host(url).endsWith(`.${root}`);

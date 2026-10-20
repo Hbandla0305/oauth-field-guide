@@ -14,9 +14,9 @@ export const maxDuration = 300;
 const ephemeral = (text: string) => Response.json({ response_type: "ephemeral", text });
 
 export async function POST(req: NextRequest) {
-  if (!slackConfigured()) return new Response("Slack isn't configured", { status: 503 });
   const raw = await req.text();
-  if (!verifySlack(raw, req.headers.get("x-slack-request-timestamp"), req.headers.get("x-slack-signature"))) {
+  // Unsigned callers get the same 401 whether or not Slack is set up here.
+  if (!slackConfigured() || !verifySlack(raw, req.headers.get("x-slack-request-timestamp"), req.headers.get("x-slack-signature"))) {
     return new Response("Invalid signature", { status: 401 });
   }
   const form = new URLSearchParams(raw);

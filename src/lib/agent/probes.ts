@@ -5,6 +5,7 @@ import { lookup as dnsLookup } from "node:dns";
 import { isIP } from "node:net";
 import ipaddr from "ipaddr.js";
 import { Agent, fetch as pinnedFetch } from "undici";
+import { getDomain, parse } from "tldts";
 
 const TIMEOUT_MS = 6_000;
 const MAX_BYTES = 200_000;
@@ -123,20 +124,35 @@ function describe(r: { status: number; body: string; redirects: string[] }): str
   return `HTTP ${r.status}${where}${err ? `, OAuth error "${err}"` : ""}.`;
 }
 
-// Registrable-ish domain: the last two labels (good enough to keep checks on the provider).
+// The registrable domain from the public suffix list, so "docs.example.co.uk" -> "example.co.uk"
+// and "someone.github.io" stays "someone.github.io" (not "github.io").
 export function rootDomain(urlOrHost: string): string {
-  const host = urlOrHost.includes("://") ? new URL(urlOrHost).hostname : urlOrHost;
-  return host.replace(/^www\./, "").split(".").slice(-2).join(".");
+  const host = (urlOrHost.includes("://") ? new URL(urlOrHost).hostname : urlOrHost).replace(/^www\./, "");
+  return getDomain(host, { allowPrivateDomains: true }) ?? host;
+}
+
+// Shared hosting (github.io, vercel.app, ...) and bare IPs can be claimed by anyone, so they
+// can never count as a provider's official domain.
+export function isSharedHost(urlOrHost: string): boolean {
+  try {
+    const r = parse(urlOrHost.includes("://") ? urlOrHost : `https://${urlOrHost}`, { allowPrivateDomains: true });
+    return r.isIp === true || !r.domain || r.isIcann !== true;
+  } catch {
+    return true;
+  }
+}
+
+export function onRoot(url: string, root: string): boolean {
+  try {
+    const host = new URL(url).hostname;
+    return host === root || host.endsWith(`.${root}`);
+  } catch {
+    return false;
+  }
 }
 
 function onDomain(url: string | undefined, root: string): string | undefined {
-  if (!url) return undefined;
-  try {
-    const host = new URL(url).hostname;
-    return host === root || host.endsWith(`.${root}`) ? url : undefined;
-  } catch {
-    return undefined;
-  }
+  return url && onRoot(url, root) ? url : undefined;
 }
 
 const FAKE_CLIENT = "oauth-guide-test-client";
